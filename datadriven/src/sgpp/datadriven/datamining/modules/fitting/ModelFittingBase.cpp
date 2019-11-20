@@ -34,7 +34,7 @@ using sgpp::solver::BiCGStab;
 using sgpp::solver::SLESolverConfiguration;
 
 ModelFittingBase::ModelFittingBase()
-    : verboseSolver{true}, config{nullptr}, dataset{nullptr}, solver{nullptr} {}
+    : verboseSolver{true}, config{nullptr}, dataset{nullptr}, solver{nullptr}, firstEpoch{true} {}
 
 const FitterConfiguration &ModelFittingBase::getFitterConfiguration() const { return *config; }
 
@@ -100,6 +100,10 @@ void ModelFittingBase::reconfigureSolver(SLESolver &solver,
 
 Dataset *ModelFittingBase::getDataset() {
   return dataset;
+}
+
+void ModelFittingBase::switchFirstEpochFlag() {
+  firstEpoch = false;
 }
 } /* namespace datadriven */
 } /* namespace sgpp */

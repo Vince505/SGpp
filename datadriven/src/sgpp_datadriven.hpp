@@ -86,7 +86,6 @@
 #include <sgpp/datadriven/application/learnersgdeonoffparallel/RoundRobinScheduler.hpp>
 #endif /* USE_MPI */
 
-#include <sgpp/datadriven/tools/NearestNeighbors.hpp>
 
 #include <sgpp/datadriven/operation/hash/simple/OperationRegularizationDiagonal.hpp>
 #include <sgpp/datadriven/operation/hash/simple/OperationTest.hpp>
