@@ -123,6 +123,7 @@ def doConfigure(env, moduleFolders, languageWrapperFolders):
   checkDAKOTA(config)
   checkCGAL(config)
   checkBoostTests(config)
+  checkBoostGraph(config)
   checkSWIG(config)
   checkPython(config)
   checkJava(config)
@@ -266,6 +267,30 @@ def checkCGAL(config):
         if not config.CheckCXXHeader("CGAL/basic.h"):
             Helper.printErrorAndExit("CGAL/basic.h not found, but required for CGAL. Consider setting the flag 'CPPPATH'.")
 
+def checkBoostGraph(config):
+  # Check the availability of the boost graph dependencies
+  if not config.CheckHeader(os.path.join("boost", "graph", "adjacency_list.hpp"), language="c++"):
+    config.env["USE_BOOST_GRAPH"] = False
+    Helper.printWarning("****************************************************",
+                        "No Boost Graph Headers found. Omitting Boost Graph related files.",
+                        "Please install the corresponding package, e.g., on Ubuntu",
+                        "> sudo apt-get install libboost-graph-dev",
+                        "****************************************************")
+  if not config.CheckHeader(os.path.join("boost", "graph", "connected_components.hpp"), language="c++"):
+    config.env["USE_BOOST_GRAPH"] = False
+    Helper.printWarning("****************************************************",
+                        "No Boost Graph Headers found. Omitting Boost Graph related files.",
+                        "Please install the corresponding package, e.g., on Ubuntu",
+                        "> sudo apt-get install libboost-graph-dev",
+                        "****************************************************")
+  if not config.CheckHeader(os.path.join("boost", "graph", "graph_traits.hpp"), language="c++"):
+    config.env["USE_BOOST_GRAPH"] = False
+    Helper.printWarning("****************************************************",
+                        "No Boost Graph Headers found. Omitting Boost Graph related files.",
+                        "Please install the corresponding package, e.g., on Ubuntu",
+                        "> sudo apt-get install libboost-graph-dev",
+                        "****************************************************")
+
 def checkBoostTests(config):
   # Check the availability of the boost unit test dependencies
   if config.env["COMPILE_BOOST_TESTS"]:
@@ -274,6 +299,7 @@ def checkBoostTests(config):
 
     if not config.CheckHeader(os.path.join("boost", "test", "unit_test.hpp"), language="c++"):
       config.env["COMPILE_BOOST_TESTS"] = False
+
       Helper.printWarning("****************************************************",
                           "No Boost Unit Test Headers found. Omitting Boost unit tests.",
                           "Please install the corresponding package, e.g., on Ubuntu",
@@ -300,8 +326,8 @@ def checkSWIG(config):
         r"[0-9.]*[0-9]+", getOutput(["swig", "-version"]))[0]
 
     swigVersionTuple = config.env._get_major_minor_revision(swigVersion)
-    if swigVersionTuple < (3, 0, 3):
-      Helper.printErrorAndExit("SWIG version too old! At least 3.0.3 required.")
+    if swigVersionTuple < (3, 0, 4):
+      Helper.printErrorAndExit("SWIG version too old! At least 3.0.4 required.")
 
     Helper.printInfo("Using SWIG {}".format(swigVersion))
 
@@ -464,10 +490,15 @@ def configureGNUCompiler(config):
   # add this as the very first LIBPATH.
   # Note, that this code also disables OpenMP if the mitigation command did not produce an
   # adequate path.
-  import platform
-  linuxDist = platform.dist()
-  if ((linuxDist[0] == "Ubuntu") and
-      (linuxDist[1] in ["16.04", "16.10", "17.04", "17.10", "18.04", "18.10"])):
+  ubuntuVersion = None
+
+  try:
+    match = re.search(r"Ubuntu ([0-9]{2}\.[0-9]{2})", getOutput(["lsb_release", "-d"]))
+    if match is not None: ubuntuVersion = match.group(1)
+  except OSError:
+    pass
+
+  if ubuntuVersion in ["16.04", "16.10", "17.04", "17.10", "18.04", "18.10"]:
     output = getOutput([config.env["CXX"], "-v", "-fopenmp", "-xc", "/dev/null"])
     match = re.search(r"LIBRARY_PATH=(.*?):", output)
     firstLibPath = (match.group(1) if match is not None else None)

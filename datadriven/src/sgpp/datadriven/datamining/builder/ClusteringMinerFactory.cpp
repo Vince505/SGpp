@@ -3,6 +3,7 @@
 // use, please see the copyright notice provided with SG++ or at
 // sgpp.sparsegrids.org
 
+#ifdef USE_BOOST_GRAPH
 #include <sgpp/datadriven/datamining/builder/ClusteringMinerFactory.hpp>
 
 #include <sgpp/base/exception/data_exception.hpp>
@@ -13,7 +14,7 @@
 #include <sgpp/datadriven/datamining/base/SparseGridMinerSplitting.hpp>
 #include <sgpp/datadriven/datamining/modules/hpo/ClusteringFitterFactory.hpp>
 
-#include <sgpp/datadriven/datamining/modules/visualization/VisualizerDummy.hpp>
+#include <sgpp/datadriven/datamining/modules/visualization/VisualizerClustering.hpp>
 
 #include <string>
 
@@ -38,8 +39,9 @@ const {
 
   config.readParams(parser);
 
-  return new VisualizerDummy();
-}
+      return new VisualizerClustering(config);
+    }
 
 } /* namespace datadriven */
 } /* namespace sgpp */
+#endif

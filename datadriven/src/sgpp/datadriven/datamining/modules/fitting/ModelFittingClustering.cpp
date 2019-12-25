@@ -3,6 +3,8 @@
 // use, please see the copyright notice provided with SG++ or at
 // sgpp.sparsegrids.org
 
+#ifdef USE_BOOST_GRAPH
+#include <sgpp/base/exception/application_exception.hpp>
 
 #include <sgpp/base/exception/application_exception.hpp>
 
@@ -243,3 +245,4 @@ DataVector ModelFittingClustering::getLabels() const{
 
 }  // namespace datadriven
 }  // namespace sgpp
+#endif
