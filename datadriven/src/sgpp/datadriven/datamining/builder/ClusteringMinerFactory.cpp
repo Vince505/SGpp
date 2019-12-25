@@ -13,33 +13,33 @@
 #include <sgpp/datadriven/datamining/base/SparseGridMinerSplitting.hpp>
 #include <sgpp/datadriven/datamining/modules/hpo/ClusteringFitterFactory.hpp>
 
-#include <sgpp/datadriven/datamining/modules/visualization/VisualizerClustering.hpp>
+#include <sgpp/datadriven/datamining/modules/visualization/VisualizerDummy.hpp>
 
 #include <string>
 
 namespace sgpp {
 namespace datadriven {
 
-    ModelFittingBase* ClusteringMinerFactory::createFitter(
-        const DataMiningConfigParser& parser) const {
-      FitterConfigurationClustering config{};
-      config.readParams(parser);
-      return new ModelFittingClustering(config);
-    }
+ModelFittingBase* ClusteringMinerFactory::createFitter(
+    const DataMiningConfigParser& parser) const {
+  FitterConfigurationClustering config{};
+  config.readParams(parser);
+  return new ModelFittingClustering(config);
+}
 
-    FitterFactory *ClusteringMinerFactory::createFitterFactory(
-        const DataMiningConfigParser &parser) const {
-      return new ClusteringFitterFactory(parser);
-    }
+FitterFactory *ClusteringMinerFactory::createFitterFactory(
+    const DataMiningConfigParser &parser) const {
+  return new ClusteringFitterFactory(parser);
+}
 
-    Visualizer* ClusteringMinerFactory::createVisualizer(const DataMiningConfigParser& parser)
-    const {
-      VisualizerConfiguration config;
+Visualizer* ClusteringMinerFactory::createVisualizer(const DataMiningConfigParser& parser)
+const {
+  VisualizerConfiguration config;
 
-      config.readParams(parser);
+  config.readParams(parser);
 
-      return new VisualizerClustering(config);
-    }
+  return new VisualizerDummy();
+}
 
 } /* namespace datadriven */
 } /* namespace sgpp */

@@ -3,7 +3,8 @@
 // use, please see the copyright notice provided with SG++ or at
 // sgpp.sparsegrids.org
 
-// Based on the implementation of Van de Laurens for the t-SNE algortithm
+#pragma once
+
 #include <sgpp/datadriven/tools/vpTree/VpNode.hpp>
 #include <sgpp/datadriven/tools/vpTree/VpHeapItem.hpp>
 
@@ -12,7 +13,11 @@
 #include <queue>
 namespace sgpp {
 namespace datadriven {
-
+/**
+ * Class for the Vantage Point Tree.
+ * Based on the code by Steve Hanov's great tutorial
+ * at http://stevehanov.ca/blog/index.php?id=130
+ */
 class VpTree {
  public:
   /**
@@ -23,7 +28,9 @@ class VpTree {
   explicit VpTree(sgpp::base::DataMatrix matrix);
 
   // Destructor
-  ~VpTree();
+  ~VpTree() {
+    delete root;
+  }
 
   std::priority_queue<VpHeapItem>  getNearestNeighbors(sgpp::base::DataVector &target,
       size_t noNearestNeighbors);

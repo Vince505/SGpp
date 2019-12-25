@@ -14,7 +14,8 @@ namespace datadriven {
  * An entry exists for each object that derives from #sgpp::datadriven::Metric. Used for
  * configuration and factory methods.
  */
-enum class ScorerMetricType { mse, nll, accuracy };
+enum class ScorerMetricType { mse, nll, accuracy, fowlkes_mallows, v_measure, calinski_harabasz,
+  david_bouldin};
 
 /**
  * Set of parameters to define a scorer instance

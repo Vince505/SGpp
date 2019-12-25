@@ -107,6 +107,9 @@ datadriven::OperationMultipleEvalConfiguration &FitterConfiguration::getMultiple
 }
 
 void FitterConfiguration::setupDefaults() {
+  // (Sebastian Kreisel) The comments "mirrors struct default" are no longer
+  // applicable since all structs now have default values that (should)
+  // match the ones set here. The comments are kept for history / debugging.
   gridConfig.type_ = sgpp::base::GridType::Linear;  // mirrors struct default
   gridConfig.dim_ = 0;
   gridConfig.level_ = 3;
@@ -116,10 +119,10 @@ void FitterConfiguration::setupDefaults() {
   gridConfig.filename_ = "";
   gridConfig.t_ = 0.0;  // mirrors struct default
 
-  adaptivityConfig.numRefinements_ = 0;
+  adaptivityConfig.numRefinements_ = 1;
   adaptivityConfig.threshold_ = 0.0;
   adaptivityConfig.maxLevelType_ = false;
-  adaptivityConfig.noPoints_ = 0;
+  adaptivityConfig.noPoints_ = 1;
   adaptivityConfig.percent_ = 1.0;                     // mirrors struct default
   adaptivityConfig.errorBasedRefinement = false;       // mirrors struct default
   adaptivityConfig.errorConvergenceThreshold = 0.001;  // mirrors struct default
@@ -147,7 +150,9 @@ void FitterConfiguration::setupDefaults() {
   // in the subclass FitterConfigurationDensityEstimation but were moved here
   // to have all of the default value config in this file.
   densityEstimationConfig.type_ = sgpp::datadriven::DensityEstimationType::Decomposition;
-  densityEstimationConfig.decomposition_ = sgpp::datadriven::MatrixDecompositionType::Chol;
+  densityEstimationConfig.decomposition_ = sgpp::datadriven::MatrixDecompositionType::OrthoAdapt;
+  // Offline permutation is used per default
+  densityEstimationConfig.useOfflinePermutation = true;
 
   densityEstimationConfig.iCholSweepsDecompose_ = 4;     // mirrors struct default;
   densityEstimationConfig.iCholSweepsRefine_ = 4;        // mirrors struct default;
@@ -157,7 +162,7 @@ void FitterConfiguration::setupDefaults() {
   clusteringConfig.noNearestNeighbors = 10;
   clusteringConfig.densityThreshold = 0.1;
 
-  databaseConfig.filepath = "";
+  //databaseConfig.filepath = "";
 
   solverRefineConfig.type_ = sgpp::solver::SLESolverType::CG;
   solverRefineConfig.eps_ = 1e-12;
@@ -179,13 +184,18 @@ void FitterConfiguration::setupDefaults() {
   regularizationConfig.lambda_log_scale_ = false;
   regularizationConfig.l1Ratio_ = 0.0;
   regularizationConfig.exponentBase_ = 1.0;
+  regularizationConfig.optimizeLambda_ = false;
+  regularizationConfig.optimizerTolerance_ = 1e-15;
+  regularizationConfig.convergenceThreshold_ = 1e-5;
+  regularizationConfig.intervalA_ = 1e-15;
+  regularizationConfig.intervalB_ = 1.0;
 
-  learnerConfig.beta = 1.0;        // mirrors struct default
-  learnerConfig.usePrior = false;  // mirrors struct default
+  learnerConfig.learningRate = 1.0;  // mirrors struct default
+  learnerConfig.usePrior = false;    // mirrors struct default
 
   // configure geometry configuration
-  geometryConfig.stencilType = sgpp::datadriven::StencilType::None;
-  geometryConfig.dim = std::vector<int64_t>();
+  geometryConfig.dim = std::vector<std::vector<int64_t>>();
+  geometryConfig.stencils = std::vector<sgpp::datadriven::StencilConfiguration>();
 }
 }  // namespace datadriven
 }  // namespace sgpp

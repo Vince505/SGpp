@@ -454,7 +454,7 @@ void VisualizerDensityEstimation::getLinearCutsMore3D(
       DataVector evaluation(cutMatrix.getNrows());
 
       model.evaluate(cutMatrix, evaluation);
-      evaluation.normalize();
+
       cutResults.appendCol(evaluation);
 
       translateColumnsRight(cutMatrix, variableColumnIndexes);
@@ -488,7 +488,7 @@ void VisualizerDensityEstimation::getLinearCuts2D(
     DataVector evaluation(cutMatrix.getNrows());
 
     model.evaluate(cutMatrix, evaluation);
-    evaluation.normalize();
+
     cutResults.appendCol(evaluation);
 
     translateColumns(cutMatrix, cutMatrix.getNcols());
@@ -513,7 +513,7 @@ void VisualizerDensityEstimation::getLinearCuts1D(ModelFittingBase &model,
   DataVector evaluation(cutMatrix.getNrows());
 
   model.evaluate(cutMatrix, evaluation);
-  evaluation.normalize();
+
   cutResults.appendCol(evaluation);
   if (config.getGeneralConfig().targetFileType == VisualizationFileType::CSV) {
     CSVTools::writeMatrixToCSVFile(outputDir+"FittedModel", cutResults);
@@ -555,7 +555,6 @@ ModelFittingBase &model, std::string currentDirectory, DataMatrix &heatMapMatrix
         DataMatrix heatMapResults(heatMapMatrix);
         DataVector evaluation(heatMapMatrix.getNrows());
         model.evaluate(heatMapMatrix, evaluation);
-        evaluation.normalize();
         heatMapResults.appendCol(evaluation);
 
         if (iteration == 0) {
@@ -618,7 +617,7 @@ void VisualizerDensityEstimation::getHeatmap3D(ModelFittingBase &model,
     DataVector evaluation(heatMapMatrix.getNrows());
 
     model.evaluate(heatMapMatrix, evaluation);
-    evaluation.normalize();
+
     heatMapResults.appendCol(evaluation);
 
     translateColumns(heatMapMatrix, heatMapMatrix.getNcols());
@@ -647,7 +646,7 @@ void VisualizerDensityEstimation::getHeatmap2D(
   DataVector evaluation(heatMapMatrix.getNrows());
 
   model.evaluate(heatMapMatrix, evaluation);
-  evaluation.normalize();
+
   heatMapResults.appendCol(evaluation);
 
   if (config.getGeneralConfig().targetFileType == VisualizationFileType::CSV) {

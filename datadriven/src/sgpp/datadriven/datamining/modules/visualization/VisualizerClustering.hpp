@@ -10,6 +10,7 @@
 #include <vector>
 #include <string>
 
+
 namespace sgpp {
 namespace datadriven {
 
@@ -44,6 +45,7 @@ class VisualizerClustering : public VisualizerClassification {
    */
   void storeTsneJson(DataMatrix &matrix, ModelFittingBase &model,
                        std::string currentDirectory);
+
 };
 }  // namespace datadriven
 }  // namespace sgpp
