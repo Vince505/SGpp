@@ -3,6 +3,7 @@
 // use, please see the copyright notice provided with SG++ or at
 // sgpp.sparsegrids.org
 
+#ifdef USE_BOOST_GRAPH
 #include <sgpp/datadriven/datamining/modules/scoring/DavidBouldin.hpp>
 #include <sgpp/datadriven/datamining/modules/fitting/ModelFittingClustering.hpp>
 #include <sgpp/base/datatypes/DataVector.hpp>
@@ -120,3 +121,4 @@ double DavidBouldin::measureLowerIsBetter(const DataVector &predictedValues, con
 }
 }//  namespace datadriven
 } //  namespace sgpp
+#endif

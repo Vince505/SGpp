@@ -101,12 +101,14 @@ Visualizer *UniversalMinerFactory::createVisualizer(const DataMiningConfigParser
     visualizer = new VisualizerDummy();
   } else if (fType == FitterType::Classification) {
     visualizer = new VisualizerClassification(config);
-  #ifdef USE_BOOST_GRAPH
-  else if (fType == FitterType::Clustering) {
-    visualizer =  visualizer = new VisualizerClustering(config);
   }
-  #endif
-  return visualizer;
+#ifdef USE_BOOST_GRAPH
+    else if (fType == FitterType::Clustering) {
+      visualizer =  visualizer = new VisualizerClustering(config);
+    }
+#endif
+    return visualizer;
 }
+
 } /* namespace datadriven */
 } /* namespace sgpp */

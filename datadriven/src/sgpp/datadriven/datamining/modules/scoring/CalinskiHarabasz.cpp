@@ -3,6 +3,7 @@
 // use, please see the copyright notice provided with SG++ or at
 // sgpp.sparsegrids.org
 
+#ifdef USE_BOOST_GRAPH
 #include <sgpp/datadriven/datamining/modules/scoring/CalinskiHarabasz.hpp>
 #include <sgpp/datadriven/datamining/modules/fitting/ModelFittingClustering.hpp>
 #include <sgpp/base/datatypes/DataVector.hpp>
@@ -113,3 +114,4 @@ double CalinskiHarabasz::measureLowerIsBetter(const DataVector &predictedValues,
 }
 }//  namespace datadriven
 } //  namespace sgpp
+# endif

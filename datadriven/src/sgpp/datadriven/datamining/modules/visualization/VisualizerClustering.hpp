@@ -2,7 +2,7 @@
 // This file is part of the SG++ project. For conditions of distribution and
 // use, please see the copyright notice provided with SG++ or at
 // sgpp.sparsegrids.org
-
+#ifdef USE_BOOST_GRAPH
 #pragma once
 
 #include <sgpp/datadriven/datamining/modules/visualization/VisualizerConfiguration.hpp>
@@ -49,3 +49,4 @@ class VisualizerClustering : public VisualizerClassification {
 };
 }  // namespace datadriven
 }  // namespace sgpp
+#endif

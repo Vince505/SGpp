@@ -34,14 +34,6 @@ const ScorerMetricTypeParser::RegularizationTypeMap_t
           std::make_pair(RegularizationMetricType::residual, "Residual")};
     }();
 
-const ScorerMetricTypeParser::RegularizationTypeMap_t
-    ScorerMetricTypeParser::regularizationTypeMap = []() {
-      return RegularizationTypeMap_t{
-          std::make_pair(RegularizationMetricType::mse, "MSE"),
-          std::make_pair(RegularizationMetricType::nll, "NLL"),
-          std::make_pair(RegularizationMetricType::accuracy, "Accuracy"),
-          std::make_pair(RegularizationMetricType::residual, "Residual")};
-    }();
 
 const std::string& ScorerMetricTypeParser::toString(ScorerMetricType type) {
   return metricTypeMap.at(type);
