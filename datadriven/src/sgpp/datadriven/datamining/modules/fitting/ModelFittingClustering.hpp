@@ -3,7 +3,6 @@
 // use, please see the copyright notice provided with SG++ or at
 // sgpp.sparsegrids.org
 
-#ifdef USE_BOOST_GRAPH
 #pragma once
 
 #include <sgpp/globaldef.hpp>
@@ -202,5 +201,3 @@ class ModelFittingClustering : public ModelFittingBase {
 };
 }  // namespace datadriven
 }  // namespace sgpp
-
-#endif

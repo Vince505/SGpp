@@ -3,7 +3,6 @@
 // use, please see the copyright notice provided with SG++ or at
 // sgpp.sparsegrids.org
 
-#ifdef USE_BOOST_GRAPH
 #pragma once
 
 #include <sgpp/datadriven/datamining/modules/hpo/FitterFactory.hpp>
@@ -44,4 +43,3 @@ class ClusteringFitterFactory : public FitterFactory {
 };
 }  // namespace datadriven
 }  // namespace sgpp
-#endif

@@ -123,7 +123,6 @@ def doConfigure(env, moduleFolders, languageWrapperFolders):
   checkDAKOTA(config)
   checkCGAL(config)
   checkBoostTests(config)
-  checkBoostGraph(config)
   checkSWIG(config)
   checkPython(config)
   checkJava(config)
@@ -267,29 +266,6 @@ def checkCGAL(config):
         if not config.CheckCXXHeader("CGAL/basic.h"):
             Helper.printErrorAndExit("CGAL/basic.h not found, but required for CGAL. Consider setting the flag 'CPPPATH'.")
 
-def checkBoostGraph(config):
-  # Check the availability of the boost graph dependencies
-  if not config.CheckHeader(os.path.join("boost", "graph", "adjacency_list.hpp"), language="c++"):
-    config.env["USE_BOOST_GRAPH"] = False
-    Helper.printWarning("****************************************************",
-                        "No Boost Graph Headers found. Omitting Boost Graph related files.",
-                        "Please install the corresponding package, e.g., on Ubuntu",
-                        "> sudo apt-get install libboost-graph-dev",
-                        "****************************************************")
-  if not config.CheckHeader(os.path.join("boost", "graph", "connected_components.hpp"), language="c++"):
-    config.env["USE_BOOST_GRAPH"] = False
-    Helper.printWarning("****************************************************",
-                        "No Boost Graph Headers found. Omitting Boost Graph related files.",
-                        "Please install the corresponding package, e.g., on Ubuntu",
-                        "> sudo apt-get install libboost-graph-dev",
-                        "****************************************************")
-  if not config.CheckHeader(os.path.join("boost", "graph", "graph_traits.hpp"), language="c++"):
-    config.env["USE_BOOST_GRAPH"] = False
-    Helper.printWarning("****************************************************",
-                        "No Boost Graph Headers found. Omitting Boost Graph related files.",
-                        "Please install the corresponding package, e.g., on Ubuntu",
-                        "> sudo apt-get install libboost-graph-dev",
-                        "****************************************************")
 
 def checkBoostTests(config):
   # Check the availability of the boost unit test dependencies

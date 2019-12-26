@@ -3,7 +3,6 @@
 // use, please see the copyright notice provided with SG++ or at
 // sgpp.sparsegrids.org
 
-#ifdef USE_BOOST_GRAPH
 #include <sgpp/datadriven/datamining/modules/scoring/DavidBouldin.hpp>
 #include <sgpp/datadriven/datamining/modules/fitting/ModelFittingClustering.hpp>
 #include <sgpp/base/datatypes/DataVector.hpp>
@@ -50,14 +49,12 @@ double DavidBouldin::measure(const DataVector &predictedValues, const DataVector
   // Getting the number of labels and the centroids
   for (size_t index = 0; index < values.size() ; index++) {
     auto value = values.get(index);
-
     if (value != -1) {  // Skipping all noisy data
       if (std::find(clusterLabels.begin(), clusterLabels.end(), value) == clusterLabels.end()) {
         clusterLabels.push_back(value);
         DataVector centroid(samples.getNcols(), 0);
         clusterCentroids[value] = centroid;
       }
-
       DataVector row(samples.getNcols());
       samples.getRow(index, row);
       clusterCentroids[value].add(row);
@@ -97,6 +94,7 @@ double DavidBouldin::measure(const DataVector &predictedValues, const DataVector
       if (labeli == labelj) {
         continue;
       } else {
+        // to calculate distance between centroids
         tempCentroid.sub(clusterCentroids[labelj]);
         double index =
           (averageDistances[labeli] + averageDistances[labelj])/tempCentroid.l2Norm();
@@ -108,9 +106,8 @@ double DavidBouldin::measure(const DataVector &predictedValues, const DataVector
     }
     davidBouldinIndex+=maxIndex;
   }
-
-  std::cout << "Number noisy points " << numberNoise<<std::endl;
-  davidBouldinIndex = davidBouldinIndex/clusterLabels.size()+numberNoise/2.0;
+  
+  davidBouldinIndex = davidBouldinIndex/clusterLabels.size()+numberNoise/4.0;
 
   return davidBouldinIndex;
 }
@@ -121,4 +118,3 @@ double DavidBouldin::measureLowerIsBetter(const DataVector &predictedValues, con
 }
 }//  namespace datadriven
 } //  namespace sgpp
-#endif

@@ -162,8 +162,6 @@ vars.Add("GSL_INCLUDE_PATH", "Set path to the GSL header files", "/usr/include")
 vars.Add("GSL_LIBRARY_PATH", "Set path to the GSL library", None)
 vars.Add("SCALAPACK_LIBRARY_PATH", "Set the path to the ScaLAPACK/MKL library", None)
 vars.Add("SCALAPACK_LIBRARY_NAME", "Set the name of the ScaLAPACK library", None)
-vars.Add(BoolVariable("USE_BOOST_GRAPH",
-                      "Set if Boost graph is to be used", False))
 vars.Add(BoolVariable("COMPILE_BOOST_TESTS",
                       "Compile the test cases written using Boost Test", True))
 vars.Add(BoolVariable("COMPILE_BOOST_PERFORMANCE_TESTS",

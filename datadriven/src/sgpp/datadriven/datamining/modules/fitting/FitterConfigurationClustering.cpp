@@ -3,7 +3,6 @@
 // use, please see the copyright notice provided with SG++ or at
 // sgpp.sparsegrids.org
 
-#ifdef USE_BOOST_GRAPH
 #include <sgpp/datadriven/datamining/modules/fitting/FitterConfigurationClustering.hpp>
 
 namespace sgpp {
@@ -24,5 +23,3 @@ namespace datadriven {
   }
 }  // namespace datadriven
 }  // namespace sgpp
-
-#endif

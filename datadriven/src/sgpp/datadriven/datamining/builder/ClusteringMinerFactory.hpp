@@ -4,7 +4,6 @@
 // use, please see the copyright notice provided with SG++ or at
 // sgpp.sparsegrids.org
 
-#ifdef USE_BOOST_GRAPH
 #pragma once
 
 #include <sgpp/datadriven/datamining/builder/MinerFactory.hpp>
@@ -51,4 +50,3 @@ class ClusteringMinerFactory : public MinerFactory {
 };
 } /* namespace datadriven */
 } /* namespace sgpp */
-#endif
