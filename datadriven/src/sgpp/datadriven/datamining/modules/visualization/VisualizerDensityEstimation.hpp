@@ -9,7 +9,6 @@
 #include <sgpp/datadriven/datamining/modules/fitting/ModelFittingDensityEstimation.hpp>
 #include <sgpp/datadriven/datamining/modules/visualization/VisualizerConfiguration.hpp>
 #include <sgpp/datadriven/datamining/modules/visualization/Visualizer.hpp>
-#include <sgpp/datadriven/tools/CSVTools.hpp>
 #include <vector>
 #include <string>
 
@@ -42,21 +41,6 @@ class VisualizerDensityEstimation:public Visualizer {
     size_t fold, size_t batch) override;
 
  protected:
-  /**
-   * Method which starts the heatmap generation for Density Estimation Models
-   * @param model The model used to evaluate the heatmap
-   * @param currentDirectory The current directory to store the heatmap results
-   * @param matrix The matrix containing the points to evaluate the heatmap
-   */
-  void getHeatmap(ModelFittingBase &model, std::string currentDirectory, DataMatrix &matrix);
-
-  /**
-   * Method which starts the linear cut generation for Density Estimation Models
-   * @param model The model used to evaluate the linear cuts
-   * @param currentDirectory The current directory to store the linear cuts results
-   * @param matrix The matrix containing the points to evaluate the cuts
-   */
-  void getLinearCuts(ModelFittingBase &model, std::string currentDirectory, DataMatrix &matrix);
 
   /**
    * Method which stores the coordinates of the grid points
@@ -66,106 +50,6 @@ class VisualizerDensityEstimation:public Visualizer {
    */
   void storeGrid(ModelFittingBase &model, std::string currentDirectory);
 
-  /**
-   * Method which generates the linear cuts graphs for models of 3 or more dimensions
-   * @param model the model used to evaluate the linear cuts
-   * @param currentDirectory The current directory to store the linear cuts results
-   * @param matrix The matrix containing the points to evaluate the cuts
-   */
-  void getLinearCutsMore3D(ModelFittingBase &model, std::string currentDirectory,
-    DataMatrix &matrix);
-
-  /**
-   * Method which generates the linear cuts graphs for models of 1 dimension
-   * @param model the model used to evaluate the linear cuts
-   * @param currentDirectory The current directory to store the linear cuts results
-   * @param matrix The matrix containing the points to evaluate the cuts
-   */
-  void getLinearCuts1D(ModelFittingBase &model, std::string currentDirectory, DataMatrix &matrix);
-
-  /**
-   * Method which generates the linear cuts graphs for models of 2 dimensions
-   * @param model the model used to evaluate the linear cuts
-   * @param currentDirectory The current directory to store the linear cuts results
-   * @param matrix The matrix containing the points to evaluate the cuts
-   */
-  void getLinearCuts2D(ModelFittingBase &model, std::string currentDirectory, DataMatrix &matrix);
-
-  /**
-   * Method which generates the heatmap of models of 4 or more dimensions
-   * @param model The model used to evaluate the heatmap
-   * @param currentDirectory The current directory to store the heatmap results
-   * @param matrix The matrix containing the points to evaluate the heatmap
-   */
-  void getHeatmapMore4D(ModelFittingBase &model, std::string currentDirectory, DataMatrix &matrix);
-
-  /**
-   * Method which generates the heatmap of models of 3 dimensions
-   * @param model The model used to evaluate the heatmap
-   * @param currentDirectory The current directory to store the heatmap results
-   * @param matrix The matrix containing the points to evaluate the heatmap
-   */
-  void getHeatmap3D(ModelFittingBase &model, std::string currentDirectory, DataMatrix &matrix);
-
-  /**
-   * Method which generates the heatmap of models of 2 dimensions
-   * @param model The model used to evaluate the heatmap
-   * @param currentDirectory The current directory to store the heatmap results
-   * @param matrix The matrix containing the points to evaluate the heatmap
-   */
-  void getHeatmap2D(ModelFittingBase &model, std::string currentDirectory, DataMatrix &matrix);
-
-  /**
-   * Method which shifts one position the columns of a matrix from left to right
-   * in a circular fashion until the column given by the parameters maxColumns
-   * @param matrix The matrix to be shifted
-   * @param maxColumns The max number of columns used when shifting
-   */
-  void translateColumns(DataMatrix &matrix, size_t maxColumns);
-
-  /**
-   * Method which shifts the columns given by the vector indexes
-   * of a matrix from left to right
-   * in a circular fashion. If indexes are <1,3,6> Then column 1 will be shifted to
-   * 3, 3 to 6 and 6 to 1.
-   * @param matrix The matrix to be shifted
-   * @param indexes Vector containing the columns to shift
-   */
-  void translateColumnsRight(DataMatrix &matrix, std::vector<size_t> indexes);
-
-  /**
-   * Method which shifts the columns given by the vector indexes
-   * of a matrix from right to left
-   * in a circular fashion. If indexes are <1,3,6> Then column 1 will be shifted to
-   * 6, 6 to 3 and 1 to 6.
-   * @param matrix The matrix to be shifted
-   * @param indexes Vector containing the columns to shift
-   */
-  void translateColumnsLeft(DataMatrix &matrix, std::vector<size_t> indexes);
-
-  /**
-   * Method to update the columns indexes to be shifted when generating
-   * the linear cuts
-   * @param columnIndexes Vector to update
-   * @param matrix The matrix whose columns are being shifted
-   */
-  void updateIndexesCuts(std::vector<size_t> &columnIndexes, DataMatrix &matrix);
-
-  /**
-   * Method to update the columns indexes to be shifted when generating
-   * the heatmap
-   * @param columnIndexes Vector to update
-   * @param matrix The matrix whose columns are being shifted
-   */
-  void updateIndexesHeatmap(std::vector<size_t> &columnIndexes, DataMatrix &matrix);
-
-  /**
-   * Method to swap to columns of a matrix
-   * @param matrix The matrix whose columns are to be swaped
-   * @param col1 The column identifier to be swaped with the column identified by col2
-   * @param col2 The colum identifier to be swaped with the column identified by col1
-   */
-  void swapColumns(DataMatrix &matrix, size_t col1, size_t col2);
 
   /**
    * Method to generate and store in json  format for the
@@ -185,7 +69,7 @@ class VisualizerDensityEstimation:public Visualizer {
    * @param filepath The current directory to store the json file
    */
   void storeCutJson(DataMatrix &matrix,
-    std::vector<size_t> indexes, size_t &varDim, std::string filepath);
+    std::vector<size_t> indexes, size_t &varDim, std::string filepath) override;
 
   /**
    * Method to generate and store in json  format for the
@@ -193,7 +77,7 @@ class VisualizerDensityEstimation:public Visualizer {
    * @param matrix Matrix with the content to be stored
    * @param filepath The current directory to store the json file
    */
-  void storeCutJson(DataMatrix &matrix, std::string filepath);
+  void storeCutJson(DataMatrix &matrix, std::string filepath) override;
 
   /**
    * Method to generate and store in json  format for the
@@ -208,7 +92,7 @@ class VisualizerDensityEstimation:public Visualizer {
    * @param filepath The current directory to store the json file
    */
   void storeHeatmapJson(DataMatrix &matrix, ModelFittingBase &model,
-    std::vector<size_t> indexes, size_t &varDim1, size_t &varDim2, std::string filepath);
+    std::vector<size_t> indexes, size_t &varDim1, size_t &varDim2, std::string filepath) override;
 
   /**
    * Method to generate and store in json  format for the
@@ -217,19 +101,8 @@ class VisualizerDensityEstimation:public Visualizer {
    * @param model The model used when evaluating the heatmaps
    * @param filepath The current directory to store the json file
    */
-  void storeHeatmapJson(DataMatrix &matrix, ModelFittingBase &model, std::string filepath);
+  void storeHeatmapJson(DataMatrix &matrix, ModelFittingBase &model, std::string filepath) override;
 
-  /**
-   * Method which builds the matrices used to generate the cuts and the
-   * heatmaps
-   * @param model The model used to evaluate the linear cuts and the heatmaps
-   * @param cutMatrix Matrix to be initialized which will be
-   * used to evaluate the linear cuts
-   * @param heatMapMatrix Matrix to be initialized which will be
-   * used to evaluate the heatmaps
-   */
-  void initializeMatrices(ModelFittingBase &model, DataMatrix &cutMatrix,
-    DataMatrix &heatMapMatrix);
 };
 
 }  // namespace datadriven

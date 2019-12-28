@@ -95,9 +95,8 @@ Visualizer *UniversalMinerFactory::createVisualizer(const DataMiningConfigParser
   } else if (fType == FitterType::Classification) {
     visualizer = new VisualizerClassification(config);
   } else if (fType == FitterType::Clustering) {
-      visualizer =  visualizer = new VisualizerClustering(config);
-      std::cout << "Creating visualizer done"<<std::endl;
-    }
+    visualizer = new VisualizerClustering(config);
+  }
   return visualizer;
 }
 

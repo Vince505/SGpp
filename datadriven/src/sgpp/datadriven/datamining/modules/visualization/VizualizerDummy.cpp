@@ -17,5 +17,24 @@ void VisualizerDummy::runVisualization(ModelFittingBase &model, DataSource &data
   return;
 }
 
+void VisualizerDummy::storeHeatmapJson(DataMatrix &matrix, ModelFittingBase &model,
+  std::vector<size_t> indexes, size_t &varDim1, size_t &varDim2, std::string filepath) {
+  return;
+}
+
+void VisualizerDummy::storeHeatmapJson(DataMatrix &matrix,
+  ModelFittingBase &model, std::string filepath) {
+  return;
+}
+
+void VisualizerDummy::storeCutJson(DataMatrix &matrix, std::vector<size_t> indexes,
+                                            size_t &varDim, std::string filepath) {
+  return;
+}
+
+void VisualizerDummy::storeCutJson(DataMatrix &matrix, std::string filepath) {
+  return;
+}
+
 }  // namespace datadriven
 }  // namespace sgpp

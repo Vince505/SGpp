@@ -21,6 +21,7 @@ namespace sgpp {
 namespace datadriven {
 VisualizerClassification::VisualizerClassification(VisualizerConfiguration config) {
   this->config = config;
+  this->visualizerDensityEstimation = new VisualizerDensityEstimation(config);
 }
 
 
@@ -31,10 +32,12 @@ void VisualizerClassification::runVisualization(ModelFittingBase &model, DataSou
     return;
   }
 
+  size_t nDimensions = model.getDataset()->getDimension();
   if (fold == 0 && batch == 0) {
     originalData = dataSource.getAllSamples()->getData();
     resolution = static_cast<size_t>(pow(2,
       model.getFitterConfiguration().getGridConfig().level_+2));
+    visualizerDensityEstimation->setResolution(resolution);
   }
 
   ModelFittingClassification* classificationModel =
@@ -81,8 +84,8 @@ void VisualizerClassification::runVisualization(ModelFittingBase &model, DataSou
                    config.getGeneralConfig().algorithm.end(), "heatmaps") !=
                    config.getGeneralConfig().algorithm.end()) {
         DataMatrix heatMapClassificationMatrix;
-        initializeMatrices(model, heatMapClassificationMatrix);
-        getHeatmapsClassification(model, currentDirectory+"/Classification", heatMapClassificationMatrix);
+        getHeatmap(model, currentDirectory+"/Classification", heatMapClassificationMatrix,
+                   nDimensions);
       }
     }
     /* To be added after tsne is functioning again
@@ -118,8 +121,6 @@ void VisualizerClassification::runVisualization(ModelFittingBase &model, DataSou
       for (size_t index=0; index < models->size(); index++) {
         DataMatrix heatMapMatrixThread;
         DataMatrix cutMatrixThread;
-        VisualizerDensityEstimation::initializeMatrices(model, cutMatrixThread,
-          heatMapMatrixThread);
         if (config.getGeneralConfig().crossValidation) {
           currentDirectory = config.getGeneralConfig().
                    targetDirectory+"/Fold_" + std::to_string(fold)
@@ -141,7 +142,8 @@ void VisualizerClassification::runVisualization(ModelFittingBase &model, DataSou
             if (std::find(config.getGeneralConfig().algorithm.begin(),
                          config.getGeneralConfig().algorithm.end(), "linearcuts")
                          != config.getGeneralConfig().algorithm.end()) {
-              getLinearCuts(**currentModel, currentDirectory, cutMatrixThread);
+              visualizerDensityEstimation->getLinearCuts
+              (**currentModel, currentDirectory, cutMatrixThread, nDimensions);
             }
           }
           #pragma omp section
@@ -149,222 +151,13 @@ void VisualizerClassification::runVisualization(ModelFittingBase &model, DataSou
             if (std::find(config.getGeneralConfig().algorithm.begin(),
                          config.getGeneralConfig().algorithm.end(), "heatmaps")
                          != config.getGeneralConfig().algorithm.end()) {
-              getHeatmap(**currentModel, currentDirectory, heatMapMatrixThread);
+              visualizerDensityEstimation->getHeatmap
+              (**currentModel, currentDirectory, heatMapMatrixThread, nDimensions);
             }
           }
         }
       }
     }
-  }
-}
-
-
-void VisualizerClassification::initializeMatrices(ModelFittingBase &model,
-  DataMatrix &classMatrix) {
-    std::cout << "Resolution " << std::to_string(resolution) << std::endl;
-    double step = 1.0/static_cast<double>(resolution);
-
-    auto nDimensions = model.getDataset()->getDimension();
-
-    classMatrix.resize(0, nDimensions);
-    if (nDimensions >=3) {
-      if (nDimensions >= 4) {
-        for (double dim1 = 0; dim1 <= 1; dim1+=0.25) {
-          for (double dim2 = 0; dim2 <= 1; dim2+=0.25) {
-            for (double dim3 = 0; dim3 <= 1; dim3+= step) {
-              for (double dim4 = 0; dim4 <= 1; dim4+= step) {
-              DataVector row(classMatrix.getNcols(), 0.5);
-              row.set(0, dim3);
-              row.set(1, dim4);
-              row.set(2, dim1);
-              row.set(3, dim2);
-
-              classMatrix.appendRow(row);
-              }
-            }
-          }
-        }
-     } else {
-       for (double dim1 = 0; dim1 <= 1; dim1+=0.25) {
-         for (double dim2 = 0; dim2 <= 1; dim2 += step) {
-           for (double dim3 = 0; dim3 <= 1; dim3 += step) {
-             DataVector row(3, 0.5);
-             row.set(0, dim3);
-             row.set(1, dim2);
-             row.set(2, dim1);
-             classMatrix.appendRow(row);
-           }
-         }
-       }
-     }
-    } else {
-      for (double dim1 = 0; dim1 <= 1; dim1 += step) {
-        for (double dim2 = 0; dim2 <= 1; dim2 += step) {
-          DataVector row(2, 0.5);
-          row.set(0, dim1);
-          row.set(1, dim2);
-          classMatrix.appendRow(row);
-        }
-      }
-    }
-}
-
-void VisualizerClassification::getHeatmapsClassification(ModelFittingBase &model,
-  std::string currentDirectory, DataMatrix &classMatrix) {
-  std::cout << "Generating the classification heatmaps" << std::endl;
-
-  auto nDimensions = model.getDataset()->getDimension();
-
-  if ( nDimensions == 1 ) {
-    std::cout << "Heatmap generation is not available for models of 1 dimension" <<std::endl;
-    return;
-  }
-  if ( nDimensions >=3 ) {
-    std::string outputDir(currentDirectory+"/Classification"+
-       "/Heatmaps/");
-    createFolder(outputDir);
-    if ( nDimensions >= 4 ) {
-     getHeatmapMore4DClassification(model, currentDirectory, classMatrix);
-    } else {
-      getHeatmap3DClassification(model, currentDirectory, classMatrix);
-    }
-  } else {
-    getHeatmap2DClassification(model, currentDirectory, classMatrix);
-  }
-}
-
-// The algorithm used for the heatmaps is this:
-// 1° Evaluate the initial matrix
-// 2° Store current evaluation
-// 3° Shift to the right based on the column indexes
-// 4° Repeat steps 1 to 3 two more times
-// 5° Repeat the steps 1 to 4 but shifting to the left instead
-// 6° Shift to the right if its the first time you reach this step
-// 7° Shift to the left
-// 8° Update the indexes
-// 9° Repeat until the last column index exceeds the number of dimensions
-void VisualizerClassification::getHeatmapMore4DClassification(
-ModelFittingBase &model, std::string currentDirectory, DataMatrix &classMatrix) {
-  std::string outputDir(currentDirectory+
-    "/Heatmaps/");
-
-  std::vector <size_t> variableColumnIndexes = {0, 1, 2, 3};
-
-  std::vector<size_t> workingIndexes = {0, 0, 0};
-
-  while (variableColumnIndexes.at(3) < classMatrix.getNcols()) {
-    std::string subfolder(outputDir+"dimensions_"+
-    std::to_string(variableColumnIndexes.at(0)+1)+"_"+
-    std::to_string(variableColumnIndexes.at(1)+1)+"_"+
-    std::to_string(variableColumnIndexes.at(2)+1)+"_"+
-    std::to_string(variableColumnIndexes.at(3)+1));
-
-    createFolder(subfolder);
-    std::copy(variableColumnIndexes.begin()+1, variableColumnIndexes.end(),
-    workingIndexes.begin());
-
-    for (size_t iteration = 0; iteration < 2; iteration++) {
-      for (size_t combination = 0; combination < 3; combination++) {
-        DataMatrix heatMapResults(classMatrix);
-        DataVector evaluation(classMatrix.getNrows());
-
-        model.evaluate(classMatrix, evaluation);
-
-        heatMapResults.appendCol(evaluation);
-
-        if (iteration == 0) {
-          if (config.getGeneralConfig().targetFileType == VisualizationFileType::CSV) {
-            CSVTools::writeMatrixToCSVFile(subfolder+"/Heatmap_var_dimensions_"
-            +std::to_string(variableColumnIndexes.at(0)+1)+"_"+
-            std::to_string(variableColumnIndexes.at(combination+1)+1), heatMapResults);
-          } else if (config.getGeneralConfig().targetFileType == VisualizationFileType::json) {
-           storeHeatmapJsonClassification(heatMapResults, model,
-            variableColumnIndexes, variableColumnIndexes.at(0),
-            variableColumnIndexes.at(combination+1),
-            subfolder+"/Heatmap_var_dimensions_"
-                       +std::to_string(variableColumnIndexes.at(0)+1)+"_"+
-                       std::to_string(variableColumnIndexes.at(combination+1)+1));
-          }
-          translateColumnsRight(classMatrix, workingIndexes);
-        } else {
-          if (config.getGeneralConfig().targetFileType == VisualizationFileType::CSV) {
-            CSVTools::writeMatrixToCSVFile(subfolder+"/Heatmap_var_dimensions_"
-              +std::to_string(variableColumnIndexes.at((combination < 2)?1:2)+1)+"_"+
-              std::to_string(variableColumnIndexes.at((combination < 1)?2:3)+1), heatMapResults);
-          } else if (config.getGeneralConfig().targetFileType == VisualizationFileType::json) {
-           storeHeatmapJsonClassification(heatMapResults, model,
-             variableColumnIndexes, variableColumnIndexes.at((combination < 2)?1:2),
-             variableColumnIndexes.at((combination < 1)?2:3),
-             subfolder+"/Heatmap_var_dimensions_"
-             +std::to_string(variableColumnIndexes.at((combination < 2)?1:2)+1)+"_"+
-             std::to_string(variableColumnIndexes.at((combination < 1)?2:3)+1));
-          }
-          translateColumnsLeft(classMatrix, workingIndexes);
-        }
-      }
-
-      if (iteration == 0) {
-        translateColumnsRight(classMatrix, variableColumnIndexes);
-      }
-    }
-    translateColumnsLeft(classMatrix, variableColumnIndexes);
-
-    updateIndexesHeatmap(variableColumnIndexes, classMatrix);
-  }
-}
-
-// The algorithm used for the heatmaps is this:
-// 1° Evaluate the initial matrix
-// 2° Store current evaluation
-// 3° Shift to the right
-// 4° Repeat steps 1 to 3 two more times
-void VisualizerClassification::getHeatmap3DClassification(ModelFittingBase &model,
-  std::string currentDirectory, DataMatrix &classMatrix) {
-  std::string outputDir(currentDirectory);
-
-  // Dummy to reutilize the storejson method
-  std::vector <size_t> variableColumnIndexes = {0, 1, 2};
-
-  for (size_t combination = 0; combination < 3; combination++) {
-    DataMatrix heatMapResults(classMatrix);
-    DataVector evaluation(classMatrix.getNrows());
-
-    model.evaluate(classMatrix, evaluation);
-
-    heatMapResults.appendCol(evaluation);
-
-    translateColumns(classMatrix, classMatrix.getNcols());
-    if (config.getGeneralConfig().targetFileType == VisualizationFileType::CSV) {
-      CSVTools::writeMatrixToCSVFile(outputDir+"Heatmap_var_dimensions_"
-      +std::to_string(combination+1)
-      +"_"+((combination < 2)?std::to_string(combination+2):std::to_string(1)), heatMapResults);
-
-    } else if (config.getGeneralConfig().targetFileType == VisualizationFileType::json) {
-      storeHeatmapJsonClassification(heatMapResults,
-      model,
-      variableColumnIndexes,
-      variableColumnIndexes.at(combination),
-      variableColumnIndexes.at((combination < 2)?combination+1:0),
-      outputDir+"Heatmap_var_dimensions_"+std::to_string(combination+1)+"_"+
-      ((combination < 2)?std::to_string(combination+2):std::to_string(1)));
-    }
-  }
-}
-void VisualizerClassification::getHeatmap2DClassification(
-  ModelFittingBase &model, std::string currentDirectory, DataMatrix &classMatrix) {
-  std::string outputDir(currentDirectory);
-
-  DataMatrix heatMapResults(classMatrix);
-  DataVector evaluation(classMatrix.getNrows());
-  model.evaluate(classMatrix, evaluation);
-  heatMapResults.appendCol(evaluation);
-
-  if (config.getGeneralConfig().targetFileType == VisualizationFileType::CSV) {
-  CSVTools::writeMatrixToCSVFile(outputDir+"/ClassificationModel", heatMapResults);
-  } else if (config.getGeneralConfig().targetFileType == VisualizationFileType::json) {
-    std::cout << "Storing json" <<std::endl;
-    storeHeatmapJsonClassification(heatMapResults,
-    model, outputDir+"/ClassificationModel");
   }
 }
 
@@ -420,7 +213,16 @@ void VisualizerClassification::storeTsneJson(DataMatrix &matrix, ModelFittingBas
   jsonOutput.serialize(currentDirectory + "/tsneCompression.json");
 }
 
-void VisualizerClassification::storeHeatmapJsonClassification(DataMatrix &matrix,
+void VisualizerClassification::storeCutJson(DataMatrix &matrix, std::vector<size_t> indexes,
+                                               size_t &varDim, std::string filepath) {
+  return;
+}
+
+void VisualizerClassification::storeCutJson(DataMatrix &matrix, std::string filepath) {
+  return;
+}
+
+void VisualizerClassification::storeHeatmapJson(DataMatrix &matrix,
   ModelFittingBase &model, std::vector<size_t> indexes, size_t &varDim1,
   size_t &varDim2, std::string filepath) {
   indexes.erase(std::find(indexes.begin(), indexes.end(), varDim1));
@@ -746,7 +548,7 @@ void VisualizerClassification::storeHeatmapJsonClassification(DataMatrix &matrix
 }
 
 
-void VisualizerClassification::storeHeatmapJsonClassification(DataMatrix &matrix,
+void VisualizerClassification::storeHeatmapJson(DataMatrix &matrix,
   ModelFittingBase &model, std::string filepath) {
   ModelFittingClassification* classificationModel =
      dynamic_cast<ModelFittingClassification*>(&model);

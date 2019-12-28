@@ -32,6 +32,51 @@ class VisualizerDummy:public Visualizer {
    */
   void runVisualization(ModelFittingBase &model,  DataSource &dataSource,
     size_t fold, size_t batch) override;
+
+  /**
+ * Method to generate and store in json  format for the
+ * plotly library the output of the hetamaps for models of 3 or more dimensions
+ * @param matrix Matrix with the content to be stored
+ * @param model The model used when evaluating the heatmaps
+ * @param indexes Vectors containing the dimensions used when generating these heatmaps
+ * @param varDim1 The first dimension number varying and whose evaluation
+ * is shown in the model
+ * @param varDim2 The second dimension number varying and whose evaluation
+ * is shown in the model
+ * @param filepath The current directory to store the json file
+ */
+  void storeHeatmapJson(DataMatrix &matrix, ModelFittingBase &model,
+                        std::vector<size_t> indexes, size_t &varDim1, size_t &varDim2,
+                        std::string filepath) override;
+
+  /**
+   * Method to generate and store in json  format for the
+   * plotly library the output of the heatmaps for models of 2 dimensions
+   * @param matrix Matrix with the content to be stored
+   * @param model The model used when evaluating the heatmaps
+   * @param filepath The current directory to store the json file
+   */
+  void storeHeatmapJson(DataMatrix &matrix, ModelFittingBase &model, std::string filepath)
+  override;
+
+  /**
+   * Method to generate and store in json  format for the
+   * plotly library the output of the linear cuts for models of 2 or more dimensions
+   * @param matrix Matrix with the content to be stored
+   * @param indexes Vectors containing the dimensions used when generating these cuts
+   * @param varDim THe dimension number varying and whose evaluation is shown in the model
+   * @param filepath The current directory to store the json file
+   */
+  void storeCutJson(DataMatrix &matrix,
+                    std::vector<size_t> indexes, size_t &varDim, std::string filepath) override;
+
+  /**
+   * Method to generate and store in json  format for the
+   * plotly library the output of the linear cuts for models of 1 dimension
+   * @param matrix Matrix with the content to be stored
+   * @param filepath The current directory to store the json file
+   */
+  void storeCutJson(DataMatrix &matrix, std::string filepath) override;
 };
 
 }  // namespace datadriven

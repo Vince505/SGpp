@@ -16,7 +16,7 @@
 namespace sgpp {
 namespace datadriven {
 
-class VisualizerClassification:public VisualizerDensityEstimation {
+class VisualizerClassification:public Visualizer {
  public:
   VisualizerClassification()= default;
 
@@ -27,7 +27,10 @@ class VisualizerClassification:public VisualizerDensityEstimation {
    */
   explicit VisualizerClassification(VisualizerConfiguration config);
 
-  ~VisualizerClassification() override = default;
+  ~VisualizerClassification() override {
+    delete visualizerDensityEstimation;
+  };
+
   /**
    * Method to run the visualization process for a given batch and fold
    * @param model The model used to evaluate the visualization
@@ -40,40 +43,23 @@ class VisualizerClassification:public VisualizerDensityEstimation {
 
  protected:
   /**
-   * Method which starts the heatmap generation for Classification Models
-   * @param model The model used to evaluate the heatmap
-   * @param currentDirectory The current directory to store the heatmap results
-   * @param classMatrix matrix to be evaluated to generate the heatmap
+   * Method to generate and store in json  format for the
+   * plotly library the output of the linear cuts for models of 2 or more dimensions
+   * @param matrix Matrix with the content to be stored
+   * @param indexes Vectors containing the dimensions used when generating these cuts
+   * @param varDim THe dimension number varying and whose evaluation is shown in the model
+   * @param filepath The current directory to store the json file
    */
-  void getHeatmapsClassification(ModelFittingBase &model, std::string currentDirectory,
-    DataMatrix &classMatrix);
+  void storeCutJson(DataMatrix &matrix,
+                    std::vector<size_t> indexes, size_t &varDim, std::string filepath) override;
+
   /**
-   * Method which generates the classification heatmap
-   * of models of 4 or more dimensions
-   * @param model The model used to evaluate the heatmap
-   * @param currentDirectory The current directory to store the heatmap results
-   * @param classMatrix matrix to be evaluated to generate the heatmap
+   * Method to generate and store in json  format for the
+   * plotly library the output of the linear cuts for models of 1 dimension
+   * @param matrix Matrix with the content to be stored
+   * @param filepath The current directory to store the json file
    */
-  void getHeatmapMore4DClassification(ModelFittingBase &model, std::string currentDirectory,
-    DataMatrix &classMatrix);
-  /**
-   * Method which generates the classification heatmap
-   * of models of 2 dimensions
-   * @param model The model used to evaluate the heatmap
-   * @param currentDirectory The current directory to store the heatmap results
-   * @param classMatrix matrix to be evaluated to generate the heatmap
-   */
-  void getHeatmap2DClassification(ModelFittingBase &model, std::string currentDirectory,
-    DataMatrix &classMatrix);
-  /**
-   * Method which generates the classification heatmap
-   * of models of 3 sdimensions
-   * @param model The model used to evaluate the heatmap
-   * @param currentDirectory The current directory to store the heatmap results
-   * @param classMatrix matrix to be evaluated to generate the heatmap
-   */
-  void getHeatmap3DClassification(ModelFittingBase &model, std::string currentDirectory,
-    DataMatrix &classMatrix);
+  void storeCutJson(DataMatrix &matrix, std::string filepath) override;
 
   /**
    * Method to generate and store in json format for the
@@ -86,19 +72,19 @@ class VisualizerClassification:public VisualizerDensityEstimation {
     std::string currentDirectory);
 
   /**
-   * Method to generate and store in json  format for the
+   * Method to generate and store in json format for the
    * plotly library the output of the classification
-   * heatmaps for models of 3 or more dimensions
+   * heatmaps for models of 2 dimensions
    * @param matrix Matrix with the content to be stored
    * @param model The model used when evaluating the heatmaps
    * @param filepath The current directory to store the json file
    */
-  void storeHeatmapJsonClassification(DataMatrix &matrix, ModelFittingBase &model,
-  std::string filepath);
+  void storeHeatmapJson(DataMatrix &matrix, ModelFittingBase &model,
+  std::string filepath) override;
 
   /**
    * Method to generate and store in json  format for the
-   * plotly library the output of the classification heatmaps for models of 2 dimensions
+   * plotly library the output of the classification heatmaps for models of 3 or more dimensions
    * @param matrix Matrix with the content to be stored
    * @param model The model used when evaluating the heatmaps
    * @param indexes Vectors containing the dimensions used when generating these heatmaps
@@ -108,16 +94,9 @@ class VisualizerClassification:public VisualizerDensityEstimation {
    * is shown in the model
    * @param filepath The current directory to store the json file
    */
-  void storeHeatmapJsonClassification(DataMatrix &matrix, ModelFittingBase &model,
-  std::vector<size_t> indexes, size_t &varDim1, size_t &varDim2, std::string filepath);
+  void storeHeatmapJson(DataMatrix &matrix, ModelFittingBase &model,
+  std::vector<size_t> indexes, size_t &varDim1, size_t &varDim2, std::string filepath) override;
 
-  /**
-   * Method which builds the matrices used to generate the cuts and the
-   * heatmaps
-   * @param model The model used to evaluate the linear cuts and the heatmaps
-   * @param classMatrix matrix to be initialized
-   */
-  void initializeMatrices(ModelFittingBase &model, DataMatrix &classMatrix);
 
   /**
    * List of colors to add to the grids per class in high dimensional cases
@@ -130,6 +109,8 @@ class VisualizerClassification:public VisualizerDensityEstimation {
    * Vector which contains the all of the class label values in the model
    */
   DataVector classes;
+
+  VisualizerDensityEstimation* visualizerDensityEstimation;
 };
 
 }  // namespace datadriven
