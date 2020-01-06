@@ -25,7 +25,7 @@ namespace datadriven {
   }
 
   void VisualizerClustering::runVisualization(ModelFittingBase &model, DataSource &dataSource,
-      size_t fold, size_t batch) {
+      size_t epoch, size_t fold, size_t batch) {
     /*model.getDataset()->getDimension();
     if (batch % config.getGeneralConfig().numBatches != 0 ||
         !config.getGeneralConfig().execute) {

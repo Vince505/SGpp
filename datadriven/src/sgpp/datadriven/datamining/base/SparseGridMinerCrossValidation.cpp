@@ -109,7 +109,7 @@ double SparseGridMinerCrossValidation::learn(bool verbose) {
           print(out);
         }
 
-        visualizer->runVisualization(*fitter, *dataSource, fold, iteration);
+        visualizer->runVisualization(*fitter, *dataSource, epoch, fold, iteration);
         // Refine the model if neccessary
         monitor->pushToBuffer(numInstances, scoreVal, scoreTrain);
         size_t refinements = monitor->refinementsNecessary();

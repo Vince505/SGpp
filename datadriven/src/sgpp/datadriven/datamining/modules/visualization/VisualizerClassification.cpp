@@ -26,14 +26,14 @@ VisualizerClassification::VisualizerClassification(VisualizerConfiguration confi
 
 
 void VisualizerClassification::runVisualization(ModelFittingBase &model, DataSource &dataSource,
-  size_t fold, size_t batch) {
+  size_t epoch, size_t fold, size_t batch) {
   if (batch % config.getGeneralConfig().numBatches != 0 ||
     !config.getGeneralConfig().execute) {
     return;
   }
 
   size_t nDimensions = model.getDataset()->getDimension();
-  if (fold == 0 && batch == 0) {
+  if (epoch == 0 && fold == 0 && batch == 0) {
     originalData = dataSource.getAllSamples()->getData();
     resolution = static_cast<size_t>(pow(2,
       model.getFitterConfiguration().getGridConfig().level_+2));
@@ -54,18 +54,26 @@ void VisualizerClassification::runVisualization(ModelFittingBase &model, DataSou
 
   createFolder(config.getGeneralConfig().
     targetDirectory);
+
   // Creating the output directory
   if (config.getGeneralConfig().crossValidation) {
     currentDirectory = config.getGeneralConfig().
-    targetDirectory+"/Fold_" + std::to_string(fold);
+      targetDirectory+"/Epoch_" + std::to_string(epoch);
     createFolder(currentDirectory);
     currentDirectory = config.getGeneralConfig().
-        targetDirectory+"/Fold_" + std::to_string(fold) + "/Batch_" + std::to_string(batch);
+      targetDirectory+"/Epoch_" + std::to_string(epoch)+"/Fold_" + std::to_string(fold);
+    createFolder(currentDirectory);
+    currentDirectory = config.getGeneralConfig().
+      targetDirectory+"/Epoch" + std::to_string(epoch)+
+                       "/Fold_" + std::to_string(fold) + "/Batch_" + std::to_string(batch);
     createFolder(currentDirectory);
 
   } else {
     currentDirectory = config.getGeneralConfig().
-    targetDirectory+"/Batch_" + std::to_string(batch);
+      targetDirectory+"/Epoch_" + std::to_string(epoch);
+    createFolder(currentDirectory);
+    currentDirectory = config.getGeneralConfig().
+      targetDirectory+"/Epoch_" + std::to_string(epoch)+"/Batch_" + std::to_string(batch);
     createFolder(currentDirectory);
   }
 
@@ -123,12 +131,16 @@ void VisualizerClassification::runVisualization(ModelFittingBase &model, DataSou
         DataMatrix cutMatrixThread;
         if (config.getGeneralConfig().crossValidation) {
           currentDirectory = config.getGeneralConfig().
-                   targetDirectory+"/Fold_" + std::to_string(fold)
+                   targetDirectory
+                   + "/Epoch_" + std::to_string(epoch)
+                   + "/Fold_" + std::to_string(fold)
                    + "/Batch_" + std::to_string(batch)
                    +"/Model_Class_" + std::to_string(static_cast<int>(classes.get(index)));
          } else {
            currentDirectory = config.getGeneralConfig().
-                    targetDirectory+"/Batch_" + std::to_string(batch)
+                    targetDirectory
+                    + "/Epoch_" + std::to_string(epoch)
+                    + "/Batch_" + std::to_string(batch)
                     +"/Model_Class_" + std::to_string(static_cast<int>(classes.get(index)));
          }
 

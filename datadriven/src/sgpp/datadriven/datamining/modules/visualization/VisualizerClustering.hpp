@@ -29,10 +29,11 @@ class VisualizerClustering : public VisualizerClassification {
    * Method to run the visualization process for a given batch and fold
    * @param model The model used to evaluate the visualization
    * @param dataSource The datasource from where the data points are obtained
+   * @param epoch The current epoch running
    * @param fold The current fold being processed
    * @param batch The current batch being processed
    */
-  void runVisualization(ModelFittingBase &model, DataSource &dataSource,
+  void runVisualization(ModelFittingBase &model, DataSource &dataSource, size_t epoch,
                         size_t fold, size_t batch) override;
 
  protected:
