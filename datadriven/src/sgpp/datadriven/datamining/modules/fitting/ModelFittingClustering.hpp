@@ -15,6 +15,7 @@
 #include <sgpp/datadriven/datamining/modules/fitting/FitterConfigurationClustering.hpp>
 #include <sgpp/datadriven/datamining/modules/fitting/FitterConfigurationDensityEstimation.hpp>
 #include <sgpp/datadriven/tools/Graph.hpp>
+#include <sgpp/datadriven/tools/hierarchyTree/HierarchyTree.hpp>
 
 #include<list>
 #include <queue>
@@ -110,6 +111,7 @@ class ModelFittingClustering : public ModelFittingBase {
    */
   std::unique_ptr<ModelFittingClassification>* getClassificationModel();
 
+  std::unique_ptr<HierarchyTree>* getHierarchyTree();
 
   DataMatrix getPoints() const;
 
@@ -141,7 +143,12 @@ class ModelFittingClustering : public ModelFittingBase {
   /**
    * Graph that keeps a copy of the nearest neighbors graph and on which the pruning is done
    */
-  std::shared_ptr<Graph> prunedGraph;
+  std::shared_ptr<Graph> prunedGraphPreviousStep;
+
+  std::shared_ptr<Graph> prunedGraphCurrentStep;
+
+  std::unique_ptr<HierarchyTree> hierarchy;
+
 
   /**
    * Classification Model
@@ -174,22 +181,21 @@ class ModelFittingClustering : public ModelFittingBase {
    * @params deletedNodes Matrix to store all of the indexes of the
    * deleted points for further labelling
    */
-  void applyDensityThresholds(std::vector<size_t> &deletedNodes);
+  void applyDensityThresholds(double densityThreshold);
 
   /**
    * Method that detects all of the disconected components from the graph and assigns a label
    * to each of its corresponding points
    * @params deletedNodes List of nodes which were deleted from the graph
    */
-  void detectComponentsAndLabel(std::vector<size_t> &deletedNodes);
+  void detectComponentsAndLabel(std::map<UndirectedGraph::vertex_descriptor, size_t> &clusterMap);
 
+  void getHierarchy(std::map<UndirectedGraph::vertex_descriptor, size_t> &clusterMap, double densityThreshold);
   /**
    * Method that generates a classification model to cluster out of sample points based
    * on the cluster obtained by the training data.
-   * @params labeledSamples The matrix containing the training data with labeles to generate
-   * the classification model.
    */
-  void generateClassificationModel(DataMatrix &labeledSamples);
+  void generateClassificationModel(std::map<UndirectedGraph::vertex_descriptor, size_t> &clusterMapp);
 
   /**
    * Creates a density estimation model that fits the model settings.
@@ -198,6 +204,8 @@ class ModelFittingClustering : public ModelFittingBase {
    */
   std::unique_ptr<ModelFittingDensityEstimation> createNewDensityModel(
       sgpp::datadriven::FitterConfigurationDensityEstimation& densityEstimationConfig);
+
+
 };
 }  // namespace datadriven
 }  // namespace sgpp

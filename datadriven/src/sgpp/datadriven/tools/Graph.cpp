@@ -20,36 +20,40 @@ namespace datadriven {
 
 Graph::Graph(size_t vertices) {
   this->graph = new UndirectedGraph(vertices);
+
+  boost::graph_traits<UndirectedGraph>::vertex_iterator vi, vend;
+  size_t cnt = 0;
+  for (boost::tie(vi, vend) = boost::vertices(*graph); vi != vend; ++vi) {
+    indexToPointer[cnt] = *vi;
+    pointerToIndex[*vi] = cnt;
+    cnt++;
+  }
 }
 
-
 void Graph::addVertex() {
-  boost::add_vertex(*graph);
+  auto vertex = boost::add_vertex(*graph);
+  auto newIndex = indexToPointer.rbegin()->first + 1;
+  indexToPointer[newIndex] = vertex;
+  pointerToIndex[vertex] = newIndex;
 }
 
 void Graph::removeVertex(size_t vertex) {
-  auto vertex_descriptor = boost::vertex(vertex, *graph);
-  boost::clear_vertex(vertex_descriptor, *graph);
-  boost::remove_vertex(vertex_descriptor, *graph);
+  if (indexToPointer.find(vertex) != indexToPointer.end()) {
+    boost::clear_vertex(indexToPointer[vertex], *graph);
+    boost::remove_vertex(indexToPointer[vertex], *graph);
+    pointerToIndex.erase(indexToPointer[vertex]);
+    indexToPointer.erase(vertex);
+    deletedVertices.push_back(vertex);
+  }
 }
 
 size_t Graph::getConnectedComponents(
     std::map<UndirectedGraph::vertex_descriptor, size_t> &componentMap) {
 
-  /*
-   * This index has to be created in order for the connected components to work
-   * while using lists as a vertex conatiner
-   */
-  boost::property_map<UndirectedGraph, boost::vertex_index_t>::type
-      index = get(boost::vertex_index, *graph);
-  boost::graph_traits<UndirectedGraph>::vertex_iterator vi, vend;
-  boost::graph_traits<UndirectedGraph>::vertices_size_type cnt = 0;
-  for (boost::tie(vi, vend) = boost::vertices(*graph); vi != vend; ++vi) {
-    boost::put(index, *vi, cnt++);
-  }
-
+  fillIndexMap();
   auto numberComponents = boost::connected_components(*graph,
       boost::make_assoc_property_map(componentMap));
+
   return numberComponents;
 }
 
@@ -61,11 +65,55 @@ void Graph::createEdges(size_t vertex, std::priority_queue<VpHeapItem> nearestNe
 }
 
 void Graph::addEdge(size_t vertex1, size_t vertex2) {
-  boost::add_edge(boost::vertex(vertex1, *graph), boost::vertex(vertex2, *graph), *graph);
+  boost::add_edge(indexToPointer[vertex1], indexToPointer[vertex2], *graph);
 }
 
 void Graph::deleteEdge(size_t vertex1, size_t vertex2) {
-  boost::remove_edge(boost::vertex(vertex1, *graph), boost::vertex(vertex2, *graph), *graph);
+  boost::remove_edge(indexToPointer[vertex1], indexToPointer[vertex2], *graph);
+}
+
+void Graph::fillIndexMap() {
+  /*
+  * This index has to be created in order for the connected components to work
+  * while using lists as a vertex conatiner
+  */
+  boost::property_map<UndirectedGraph, boost::vertex_index_t>::type
+    index = get(boost::vertex_index, *graph);
+
+  boost::graph_traits<UndirectedGraph>::vertex_iterator vi, vend;
+  size_t cnt = 0;
+  for (boost::tie(vi, vend) = boost::vertices(*graph); vi != vend; ++vi) {
+    boost::put(index, *vi, cnt++);
+  }
+}
+
+std::vector<size_t> Graph::getAdjacentVertices(size_t vertex) {
+  std::vector<size_t> indexes;
+  boost::graph_traits<UndirectedGraph>::vertex_iterator begin, end;
+  // Getting the Iterator
+  auto neighborsIterator = boost::adjacent_vertices(indexToPointer[vertex], *graph);
+  for (auto vd : boost::make_iterator_range(neighborsIterator)) {
+    // Translating to the indexes
+    indexes.push_back(pointerToIndex[vd]);
+  }
+
+  return indexes;
+}
+
+size_t Graph::getIndex(UndirectedGraph::vertex_descriptor vertexDescriptor) {
+  return pointerToIndex[vertexDescriptor];
+}
+
+UndirectedGraph::vertex_descriptor Graph::getVertexDescriptor(size_t vertex) {
+  return indexToPointer[vertex];
+}
+
+bool Graph::containsVertex(size_t vertex) {
+  if (indexToPointer.find(vertex) != indexToPointer.end()) {
+    return true;
+  } else {
+    return false;
+  }
 }
 
 UndirectedGraph* Graph::getGraph() {

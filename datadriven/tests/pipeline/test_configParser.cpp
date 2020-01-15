@@ -320,7 +320,9 @@ BOOST_AUTO_TEST_CASE(testClusteringConfig) {
     ClusteringConfiguration defaults;
 
     defaults.noNearestNeighbors = 3;
-    defaults.densityThreshold = 0.8;
+    defaults.minDensityThreshold = 0.2;
+    defaults.maxDensityThreshold = 0.8;
+    defaults.steps = 5;
     ClusteringConfiguration config;
     bool hasConfig;
 
@@ -328,7 +330,9 @@ BOOST_AUTO_TEST_CASE(testClusteringConfig) {
 
     BOOST_CHECK_EQUAL(hasConfig, true);
     BOOST_CHECK_EQUAL(config.noNearestNeighbors, 20);
-    BOOST_CHECK_EQUAL(config.densityThreshold, 0.6);
+    BOOST_CHECK_EQUAL(config.minDensityThreshold, 0.1);
+    BOOST_CHECK_EQUAL(config.maxDensityThreshold, 0.3);
+    BOOST_CHECK_EQUAL(config.steps, 4);
 }
 
 BOOST_AUTO_TEST_CASE(testVisualizationGeneralConfig) {

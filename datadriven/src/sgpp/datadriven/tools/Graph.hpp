@@ -11,6 +11,7 @@
 
 #include <map>
 #include <queue>
+#include <iostream>
 
 namespace sgpp {
 namespace datadriven {
@@ -37,6 +38,17 @@ class Graph {
    */
   Graph(const Graph &rhs) {
     this->graph = new UndirectedGraph(*(rhs.graph));
+    this->deletedVertices = rhs.deletedVertices;
+    size_t cnt = 0;
+    boost::graph_traits<UndirectedGraph>::vertex_iterator vi, vend;
+    for (boost::tie(vi, vend) = boost::vertices(*graph); vi != vend; ++vi) {
+      if (std::find(this->deletedVertices.begin(), this->deletedVertices.end(), cnt)
+      == this->deletedVertices.end()) {
+        this->indexToPointer[cnt] = *vi;
+        this->pointerToIndex[*vi] = cnt;
+      }
+      cnt++;
+    }
   }
 
   /**
@@ -74,8 +86,8 @@ class Graph {
 
   /**
    * Deletes and edge between to vertices
-   * @param vertex1
-   * @param vertex2
+   * @param vertex1 The index used to identify the source vertex
+   * @param vertex2 The index used to identify the sink vertex
    */
   void deleteEdge(size_t vertex1, size_t vertex2);
 
@@ -92,11 +104,33 @@ class Graph {
    */
   size_t getConnectedComponents(std::map<UndirectedGraph::vertex_descriptor, size_t> &componentMap);
 
+  /**
+   * Obtains the indexes of the vertices connected to the given vertex
+   * @param vertex The index used to identify the vertex
+   * @return A list of the indexes of the vertices connceted to the given vertex
+   */
+  std::vector<size_t> getAdjacentVertices(size_t vertex);
+
+  size_t getIndex (UndirectedGraph::vertex_descriptor vertexDescriptor);
+
+  UndirectedGraph::vertex_descriptor getVertexDescriptor(size_t vertex);
+
+  bool containsVertex(size_t vertex);
+
  private:
+
+    void fillIndexMap();
     /**
      * Boost graph data structure
      */
     UndirectedGraph* graph;
+
+    std::map<UndirectedGraph::vertex_descriptor, size_t> pointerToIndex;
+
+    std::map<size_t, UndirectedGraph::vertex_descriptor> indexToPointer;
+
+    std::vector<size_t> deletedVertices;
+
 };
 }  // namespace datadriven
 }  // namspace sgpp

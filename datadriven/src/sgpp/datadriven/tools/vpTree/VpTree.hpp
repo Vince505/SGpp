@@ -15,7 +15,7 @@ namespace sgpp {
 namespace datadriven {
 /**
  * Class for the Vantage Point Tree.
- * Based on the code by Steve Hanov's great tutorial
+ * Based on the code by Steve Hanov's tutorial
  * at http://stevehanov.ca/blog/index.php?id=130
  */
 class VpTree {

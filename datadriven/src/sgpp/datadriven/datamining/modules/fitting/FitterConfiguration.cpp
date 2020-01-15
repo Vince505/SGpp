@@ -160,7 +160,8 @@ void FitterConfiguration::setupDefaults() {
   densityEstimationConfig.iCholSweepsSolver_ = 2;        // mirrors struct default;
 
   clusteringConfig.noNearestNeighbors = 10;
-  clusteringConfig.densityThreshold = 0.1;
+  clusteringConfig.minDensityThreshold = 0.1;
+  clusteringConfig.maxDensityThreshold = 0.5;
 
   //databaseConfig.filepath = "";
 

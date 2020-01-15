@@ -104,7 +104,9 @@
         },
         "clusteringConfig" :{
             "kNearestNeighbors": 20,
-            "densityThreshold": 0.6
+            "minDensityThreshold": 0.1,
+            "maxDensityThreshold": 0.3,
+            "steps":4
         }
     },
     "visualization": {

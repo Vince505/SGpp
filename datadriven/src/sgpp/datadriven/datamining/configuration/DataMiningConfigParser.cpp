@@ -418,8 +418,14 @@ bool DataMiningConfigParser::getFitterClusteringConfig(ClusteringConfiguration &
     config.noNearestNeighbors = parseUInt(*clusteringConfig, "kNearestNeighbors",
         defaults.noNearestNeighbors, "clusteringConfig");
 
-    config.densityThreshold = parseDouble(*clusteringConfig, "densityThreshold",
-                                          defaults.densityThreshold, "clusteringConfig");
+    config.minDensityThreshold = parseDouble(*clusteringConfig, "minDensityThreshold",
+                                          defaults.minDensityThreshold, "clusteringConfig");
+
+    config.maxDensityThreshold = parseDouble(*clusteringConfig, "maxDensityThreshold",
+                                             defaults.maxDensityThreshold, "clusteringConfig");
+
+    config.steps = parseUInt(*clusteringConfig, "steps",
+                                          defaults.steps, "clusteringConfig");
   } else {
     std::cout
         << "# Could not find specification  of fitter[clusteringConfig]. Falling Back to "

@@ -18,91 +18,99 @@
 #include <string>
 #include <queue>
 
+using json::JSON;
 namespace sgpp {
 namespace datadriven {
   VisualizerClustering::VisualizerClustering(VisualizerConfiguration config) {
     this->config = config;
+    this->visualizerDensityEstimation = new VisualizerDensityEstimation(config);
+
   }
 
   void VisualizerClustering::runVisualization(ModelFittingBase &model, DataSource &dataSource,
       size_t epoch, size_t fold, size_t batch) {
-    /*model.getDataset()->getDimension();
+
     if (batch % config.getGeneralConfig().numBatches != 0 ||
         !config.getGeneralConfig().execute) {
       return;
     }
 
-    if (fold == 0 && batch == 0) {
-      originalData = dataSource.getAllSamples()->getData();
+    size_t nDimensions = model.getDataset()->getDimension();
+    if (epoch == 0 && fold == 0 && batch == 0) {
+      //originalData = dataSource.getAllSamples()->getData();
       resolution = static_cast<size_t>(pow(2,
-                                           model.getFitterConfiguration().getGridConfig().level_ +
-                                           2));
+                                           model.getFitterConfiguration().getGridConfig().level_+2));
+      visualizerDensityEstimation->setResolution(resolution);
     }
 
-    ModelFittingClustering *clusteringModel =
-        dynamic_cast<ModelFittingClustering *>(&model);
-
-    std::cout << "Creating output directory " << config.getGeneralConfig().targetDirectory
-              << std::endl;
-
     createFolder(config.getGeneralConfig().
-        targetDirectory);
+      targetDirectory);
+
     // Creating the output directory
     if (config.getGeneralConfig().crossValidation) {
       currentDirectory = config.getGeneralConfig().
-          targetDirectory + "/Fold_" + std::to_string(fold);
+        targetDirectory+"/Epoch_" + std::to_string(epoch);
       createFolder(currentDirectory);
       currentDirectory = config.getGeneralConfig().
-          targetDirectory + "/Fold_" + std::to_string(fold) + "/Batch_" + std::to_string(batch);
+        targetDirectory+"/Epoch_" + std::to_string(epoch)+"/Fold_" + std::to_string(fold);
+      createFolder(currentDirectory);
+      currentDirectory = config.getGeneralConfig().
+        targetDirectory+"/Epoch" + std::to_string(epoch)+
+                         "/Fold_" + std::to_string(fold) + "/Batch_" + std::to_string(batch);
       createFolder(currentDirectory);
 
     } else {
       currentDirectory = config.getGeneralConfig().
-          targetDirectory + "/Batch_" + std::to_string(batch);
+        targetDirectory+"/Epoch_" + std::to_string(epoch);
+      createFolder(currentDirectory);
+      currentDirectory = config.getGeneralConfig().
+        targetDirectory+"/Epoch_" + std::to_string(epoch)+"/Batch_" + std::to_string(batch);
       createFolder(currentDirectory);
     }
 
-    std::string outputDirectory = currentDirectory + "/Clustering";
-    createFolder(outputDirectory);
+    std::cout << "Creating output directory " << config.getGeneralConfig().targetDirectory
+              << std::endl;
+
+    createFolder(currentDirectory+"/Clustering");
 
     omp_set_num_threads(static_cast<int> (config.getVisualizationParameters().numberCores));
 
-    DataMatrix points = clusteringModel->getLabeledPoints();
-    storeTsneJson(points, model, outputDirectory);
+    ModelFittingClustering *clusteringModel =
+      dynamic_cast<ModelFittingClustering *>(&model);
+
+    tsneCompressedData = clusteringModel->getPoints();
     #pragma omp parallel sections
     {
       #pragma omp section
       {
-        auto densityEstimationModel = clusteringModel->getDensityEstimationModel();
-        auto classificationModel = clusteringModel->getClassificationModel();
-
-        DataMatrix heatMapMatrixDE;
-        DataMatrix cutMatrixDE;
-        VisualizerDensityEstimation::initializeMatrices(model, cutMatrixDE,
-                                                        heatMapMatrixDE);
-
-        DataMatrix heatMapMatrixCls;
-        VisualizerClassification::initializeMatrices(model, heatMapMatrixCls);
-
-        auto models = (*classificationModel)->getModels();
-        auto classIdx = (*classificationModel)->getClassIdx();
-
-        classes.resizeZero(models->size());
-
-        for (auto const& x : classIdx) {
-          classes.set(x.second, x.first);
-        }
-
+        storeTsneJson(tsneCompressedData,
+          model, currentDirectory+"/Clustering");
+      }
+      #pragma omp section
+      {
         if (std::find(config.getGeneralConfig().algorithm.begin(),
-                      config.getGeneralConfig().algorithm.end(), "heatmaps") !=
-            config.getGeneralConfig().algorithm.end()) {
-          VisualizerDensityEstimation::getHeatmap(**densityEstimationModel, outputDirectory,
-                                                  heatMapMatrixDE);
-          VisualizerClassification::getHeatmapsClassification(**classificationModel,
-                outputDirectory, heatMapMatrixCls);
+                      config.getGeneralConfig().algorithm.end(), "linearcuts")
+            != config.getGeneralConfig().algorithm.end()) {
+          createFolder(currentDirectory+"/DensityEstimation");
+          DataMatrix cutMatrix;
+          visualizerDensityEstimation->getLinearCuts
+            (**(clusteringModel->getDensityEstimationModel()),
+              currentDirectory+"/DensityEstimation", cutMatrix, nDimensions);
         }
       }
-
+      #pragma omp section
+      {
+        if (std::find(config.getGeneralConfig().algorithm.begin(),
+                      config.getGeneralConfig().algorithm.end(), "heatmaps")
+            != config.getGeneralConfig().algorithm.end()) {
+          createFolder(currentDirectory+"/DensityEstimation");
+          DataMatrix heatMapMatrix;
+          visualizerDensityEstimation->getHeatmap
+            (**(clusteringModel->getDensityEstimationModel()),
+              currentDirectory+"/DensityEstimation", heatMapMatrix, nDimensions);
+        }
+      }
+    }
       /* To be added after tsne is functioning again
        * #pragma omp section
       {
@@ -134,7 +142,7 @@ namespace datadriven {
 
   void VisualizerClustering::storeTsneJson(DataMatrix &matrix, ModelFittingBase &model,
       std::string currentDirectory) {
-    json::JSON jsonOutput;
+    JSON jsonOutput;
 
     ModelFittingClustering *clusteringModel =
         dynamic_cast<ModelFittingClustering *>(&model);
@@ -157,7 +165,7 @@ namespace datadriven {
     matrix.getColumn(1, yCol);
     jsonOutput["data"][0].addIDAttr("y", yCol.toString());
 
-    // Trace for the edges
+    /*// Trace for the edges
     jsonOutput["data"].addDictValue();
     jsonOutput["data"][1].addIDAttr("type", "\"scatter\"");
     jsonOutput["data"][1].addIDAttr("mode", "\"lines\"");
@@ -169,49 +177,97 @@ namespace datadriven {
     DataVector sink(matrix.getNcols());
 
     jsonOutput["data"][1].addListAttr("x");
-    jsonOutput["data"][1].addListAttr("y");
+    jsonOutput["data"][1].addListAttr("y");*/
 
-    /*for (size_t index = 0; index < matrix.getNrows(); index++) {
-      matrix.getRow(index, source);
-      std::priority_queue<VpHeapItem> heap2(nearestNeighbors[index]);
-      while (!heap2.empty()) {
-        jsonOutput["data"][1]["x"].addIdValue(source.get(0));
-        jsonOutput["data"][1]["y"].addIdValue(source.get(1));
-        matrix.getRow(heap2.top().index, sink);
-        jsonOutput["data"][1]["x"].addIdValue(sink.get(0));
-        jsonOutput["data"][1]["y"].addIdValue(sink.get(1));
-        heap2.pop();
-        jsonOutput["data"][1]["x"].addIdValue("\"None\"\n");
-        jsonOutput["data"][1]["y"].addIdValue("\"None\"\n");
-      }
-    }*/
-    /*
-    DataVector zCol(matrix.getNrows());
-
-    matrix.getColumn(2, zCol);
-     jsonOutput["data"][0]["marker"].addIDAttr("color", zCol.toString());
-
-    jsonOutput["data"][0]["marker"].addIDAttr("colorscale", "\"Viridis\"");
-
-    jsonOutput["data"][0]["marker"].addIDAttr("opacity", 0.8);
-
-    jsonOutput["data"][0]["marker"].addIDAttr("showscale", true);
-
-    jsonOutput["data"][0]["marker"].addDictAttr("colorbar");
-
-    jsonOutput["data"][0]["marker"]["colorbar"].addDictAttr("title");
-    jsonOutput["data"][0]["marker"]["colorbar"]["title"].addIDAttr("text", "\"Class \"");
-    jsonOutput["data"][0]["marker"]["colorbar"].addIDAttr("tickmode", "\"array\"");
-    jsonOutput["data"][0]["marker"]["colorbar"].addIDAttr("tickvals", classes.toString());*/
-
+    // Layout of the plot
     jsonOutput.addDictAttr("layout");
 
     jsonOutput["layout"].addDictAttr("title");
 
-    jsonOutput["layout"]["title"].addIDAttr("text", "\"Nearest Neighbors Graph\"");
+    jsonOutput["layout"]["title"].addIDAttr("text", "\"Hierarchichal Clustering\"");
     jsonOutput["layout"]["title"].addIDAttr("x", 0.5);
 
-    jsonOutput.serialize(currentDirectory + "/Graph.json");
+    jsonOutput["layout"].addListAttr("updatemenus");
+    jsonOutput["layout"]["updatemenus"].addDictValue();
+    jsonOutput["layout"]["updatemenus"][0].addIDAttr("type","\"buttons\"");
+
+    jsonOutput["layout"]["updatemenus"][0].addListAttr("buttons");
+    jsonOutput["layout"]["updatemenus"][0]["buttons"].addDictValue();
+    jsonOutput["layout"]["updatemenus"][0]["buttons"][0].addIDAttr("label","\"Play and try\"");
+    jsonOutput["layout"]["updatemenus"][0]["buttons"][0].addIDAttr("method","\"animate\"");
+
+    jsonOutput["layout"]["updatemenus"][0].addIDAttr("showactive", true);
+
+    // FRAMES THIS IS FOR THE ANIMATION
+    jsonOutput.addListAttr("frames");
+    processHierarchyTree(matrix, jsonOutput, *clusteringModel);
+    jsonOutput.serialize(currentDirectory + "/Hierarchy.json");
   }
+
+  void VisualizerClustering::processHierarchyTree(DataMatrix &matrix,
+    JSON &jsonOutput, ModelFittingClustering &model) {
+    auto tree = model.getHierarchyTree();
+
+    size_t frame = 0;
+
+    double stepIncrease =
+      ( model.getFitterConfiguration().getClusteringConfig().maxDensityThreshold -
+        model.getFitterConfiguration().getClusteringConfig().minDensityThreshold)
+      / model.getFitterConfiguration().getClusteringConfig().steps;
+
+    for (double step = model.getFitterConfiguration().getClusteringConfig().minDensityThreshold;
+         step <= model.getFitterConfiguration().getClusteringConfig().maxDensityThreshold;
+         step+=stepIncrease) {
+      std::cout << "Pocessing step "<<step<<std::endl;
+      DataMatrix framePoints(0, matrix.getNcols() + 1);
+      jsonOutput["frames"].addDictValue();
+      jsonOutput["frames"][frame].addListAttr("data");
+      jsonOutput["frames"][frame]["data"].addDictValue();
+      jsonOutput["frames"][frame]["data"][0].addIDAttr("mode", "\"markers\"");
+
+      processHierarchyNode(matrix, framePoints, (*(tree))->getRoot(), step);
+
+      DataVector xCol(framePoints.getNrows());
+      DataVector yCol(framePoints.getNrows());
+      DataVector zCol(framePoints.getNrows());
+
+      framePoints.getColumn(0, xCol);
+      framePoints.getColumn(1, yCol);
+      framePoints.getColumn(2, zCol);
+
+      jsonOutput["frames"][frame]["data"][0].addIDAttr("x", xCol.toString());
+      jsonOutput["frames"][frame]["data"][0].addIDAttr("y", yCol.toString());
+
+      jsonOutput["frames"][frame]["data"][0].addDictAttr("marker");
+      jsonOutput["frames"][frame]["data"][0]["marker"].addIDAttr("color", zCol.toString());
+
+      jsonOutput["frames"][frame]["data"][0]["marker"].addIDAttr("colorscale", "\"Viridis\"");
+
+
+      frame++;
+    }
+
+  }
+
+  void VisualizerClustering::processHierarchyNode(DataMatrix &fullMatrix,
+    DataMatrix &framePoints, ClusterNode* node, double step) {
+    if (node->getDensityThreshold() >= step) {
+      for (auto index: node->getVertexIndexes()) {
+        DataVector point(fullMatrix.getNcols());
+        fullMatrix.getRow(index, point);
+        if (node->getDensityThreshold() == step) {
+          point.append(node->getClusterLabel());
+        } else {
+          point.append(node->getParent()->getClusterLabel());
+        }
+        framePoints.appendRow(point);
+      }
+    } else {
+      for (auto child: node->getChildren()) {
+        processHierarchyNode(fullMatrix, framePoints, child, step);
+      }
+    }
+  }
+
 }  // namespace datadriven
 }  // namespace sgpp

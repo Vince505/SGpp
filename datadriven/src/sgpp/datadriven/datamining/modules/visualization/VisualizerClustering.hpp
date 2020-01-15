@@ -7,10 +7,12 @@
 
 #include <sgpp/datadriven/datamining/modules/visualization/VisualizerConfiguration.hpp>
 #include <sgpp/datadriven/datamining/modules/visualization/VisualizerClassification.hpp>
+#include <sgpp/datadriven/datamining/modules/fitting/ModelFittingClustering.hpp>
+#include <sgpp/datadriven/tools/hierarchyTree/ClusterNode.hpp>
 #include <vector>
 #include <string>
 
-
+#include <sgpp/base/tools/json/JSON.hpp>
 namespace sgpp {
 namespace datadriven {
 
@@ -24,7 +26,9 @@ class VisualizerClustering : public VisualizerClassification {
    */
   explicit VisualizerClustering(VisualizerConfiguration config);
 
-  ~VisualizerClustering() = default;
+  ~VisualizerClustering() override {
+    delete visualizerDensityEstimation;
+  }
   /**
    * Method to run the visualization process for a given batch and fold
    * @param model The model used to evaluate the visualization
@@ -46,7 +50,14 @@ class VisualizerClustering : public VisualizerClassification {
    */
   void storeTsneJson(DataMatrix &matrix, ModelFittingBase &model,
                        std::string currentDirectory);
+  VisualizerDensityEstimation* visualizerDensityEstimation;
 
+ private:
+  void processHierarchyTree(DataMatrix &fullPoints,
+    json::JSON &jsonoutput, ModelFittingClustering &model);
+
+  void processHierarchyNode(DataMatrix &fullPoints, DataMatrix &framePoints,
+    ClusterNode* node, double step);
 };
 }  // namespace datadriven
 }  // namespace sgpp

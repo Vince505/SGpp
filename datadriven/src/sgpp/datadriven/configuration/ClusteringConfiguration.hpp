@@ -17,7 +17,13 @@ struct ClusteringConfiguration {
     size_t noNearestNeighbors = 5;
 
     // density threshold minimum prune the graph
-    double densityThreshold = 0.1;
+    double minDensityThreshold = 0.1;
+
+    // density threshold minimum prune the graph
+    double maxDensityThreshold = 0.9;
+
+    // Number of steps to run the hierarchy
+    size_t steps = 0;
 };
 }  // namespace datadriven
 }  // namespace sgpp
