@@ -53,11 +53,11 @@ class VisualizerClustering : public VisualizerClassification {
   VisualizerDensityEstimation* visualizerDensityEstimation;
 
  private:
-  void processHierarchyTree(DataMatrix &fullPoints,
-    json::JSON &jsonoutput, ModelFittingClustering &model);
+  void getGraphPlot(DataMatrix &matrix,
+    ModelFittingClustering &model, std::string currentDirectory);
 
-  void processHierarchyNode(DataMatrix &fullPoints, DataMatrix &framePoints,
-    ClusterNode* node, double step);
+  void separateClustersIntoTraces(sgpp::base::DataMatrix &points,
+    sgpp::base::DataVector &labels, std::vector<sgpp::base::DataMatrix> &traces);
 };
 }  // namespace datadriven
 }  // namespace sgpp

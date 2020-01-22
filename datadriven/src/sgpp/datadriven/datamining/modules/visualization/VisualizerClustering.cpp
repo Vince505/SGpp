@@ -83,8 +83,12 @@ namespace datadriven {
     {
       #pragma omp section
       {
-        storeTsneJson(tsneCompressedData,
+       storeTsneJson(tsneCompressedData,
           model, currentDirectory+"/Clustering");
+
+        getGraphPlot(tsneCompressedData, *clusteringModel, currentDirectory+"/Clustering");
+
+
       }
       #pragma omp section
       {
@@ -147,38 +151,18 @@ namespace datadriven {
     ModelFittingClustering *clusteringModel =
         dynamic_cast<ModelFittingClustering *>(&model);
 
+    auto tree = clusteringModel->getHierarchyTree();
+
+    size_t numberClusters = (*tree)->getNumberClusters();
+
+    size_t maxLevel = (*tree)->getNumberLevels();
+
+    // Add empty data traces that can be identified by name in the frames. Otherwise animation
+    // won't work. Each cluster, including the noise, is considered as a data trace.
     jsonOutput.addListAttr("data");
+    for (size_t cluster = 0; cluster <= numberClusters; cluster++) {
 
-    // Trace for the data points
-    jsonOutput["data"].addDictValue();
-    jsonOutput["data"][0].addIDAttr("type", "\"scatter\"");
-    jsonOutput["data"][0].addIDAttr("mode", "\"markers\"");
-
-    DataVector xCol(matrix.getNrows());
-
-    matrix.getColumn(0, xCol);
-
-    jsonOutput["data"][0].addIDAttr("x", xCol.toString());
-
-    DataVector yCol(matrix.getNrows());
-
-    matrix.getColumn(1, yCol);
-    jsonOutput["data"][0].addIDAttr("y", yCol.toString());
-
-    /*// Trace for the edges
-    jsonOutput["data"].addDictValue();
-    jsonOutput["data"][1].addIDAttr("type", "\"scatter\"");
-    jsonOutput["data"][1].addIDAttr("mode", "\"lines\"");
-    jsonOutput["data"][1].addDictAttr("line");
-    jsonOutput["data"][1]["line"].addIDAttr("width", 0.5);
-
-
-    DataVector source(matrix.getNcols());
-    DataVector sink(matrix.getNcols());
-
-    jsonOutput["data"][1].addListAttr("x");
-    jsonOutput["data"][1].addListAttr("y");*/
-
+    }
     // Layout of the plot
     jsonOutput.addDictAttr("layout");
 
@@ -187,87 +171,204 @@ namespace datadriven {
     jsonOutput["layout"]["title"].addIDAttr("text", "\"Hierarchichal Clustering\"");
     jsonOutput["layout"]["title"].addIDAttr("x", 0.5);
 
-    jsonOutput["layout"].addListAttr("updatemenus");
-    jsonOutput["layout"]["updatemenus"].addDictValue();
-    jsonOutput["layout"]["updatemenus"][0].addIDAttr("type","\"buttons\"");
+    // ANIMATION SLIDERS
+    jsonOutput["layout"].addListAttr("sliders");
+    jsonOutput["layout"]["sliders"].addDictValue();
+    jsonOutput["layout"]["sliders"][0].addIDAttr("visible", true);
+    jsonOutput["layout"]["sliders"][0].addIDAttr("active", static_cast<size_t>(0));
+    jsonOutput["layout"]["sliders"][0].addIDAttr("x", 0.0);
+    jsonOutput["layout"]["sliders"][0].addIDAttr("y", static_cast<size_t>(0));
+    jsonOutput["layout"]["sliders"][0].addIDAttr("xanchor", "\"left\"");
+    jsonOutput["layout"]["sliders"][0].addIDAttr("yanchor", "\"top\"");
 
-    jsonOutput["layout"]["updatemenus"][0].addListAttr("buttons");
-    jsonOutput["layout"]["updatemenus"][0]["buttons"].addDictValue();
-    jsonOutput["layout"]["updatemenus"][0]["buttons"][0].addIDAttr("label","\"Play and try\"");
-    jsonOutput["layout"]["updatemenus"][0]["buttons"][0].addIDAttr("method","\"animate\"");
+    jsonOutput["layout"]["sliders"][0].addDictAttr("pad");
+    jsonOutput["layout"]["sliders"][0]["pad"].addIDAttr("t", static_cast<size_t>(50));
+    jsonOutput["layout"]["sliders"][0]["pad"].addIDAttr("r", static_cast<size_t>(0));
+    jsonOutput["layout"]["sliders"][0]["pad"].addIDAttr("b", static_cast<size_t>(10));
+    jsonOutput["layout"]["sliders"][0]["pad"].addIDAttr("l", static_cast<size_t>(0));
 
-    jsonOutput["layout"]["updatemenus"][0].addIDAttr("showactive", true);
+    jsonOutput["layout"]["sliders"][0].addListAttr("steps");
 
     // FRAMES THIS IS FOR THE ANIMATION
     jsonOutput.addListAttr("frames");
-    processHierarchyTree(matrix, jsonOutput, *clusteringModel);
+
+    std::vector<DataMatrix> traces(numberClusters+1);
+
+    // Each frame is a level
+    size_t traceIndex = 0;
+    for (size_t frame = 0; frame <= maxLevel; frame++) {
+      jsonOutput["layout"]["sliders"][0]["steps"].addDictValue();
+      jsonOutput["layout"]["sliders"][0]["steps"][frame].addIDAttr("visible", true);
+      jsonOutput["layout"]["sliders"][0]["steps"][frame].addIDAttr("method", "\"restyle\"");
+      jsonOutput["layout"]["sliders"][0]["steps"][frame].addIDAttr("label",
+                                                                   "\"Level: "+std::to_string(frame)+"\"");
+
+      jsonOutput["layout"]["sliders"][0]["steps"][frame].addListAttr("args");
+      jsonOutput["layout"]["sliders"][0]["steps"][frame]["args"].addIdValue(
+        "\"visible\"");
+
+      jsonOutput["layout"]["sliders"][0]["steps"][frame]["args"].addListValue();
+
+      // This is to indicate plotlyy in an array which traces are to be activated when
+      // we move the slider to a certain value, all of the previously processed traces of
+      // previous are set to false
+      for (size_t index = 0; index <traceIndex; index++) {
+        jsonOutput["layout"]["sliders"][0]["steps"][frame]["args"][1].addIdValue(false);
+      }
+
+      DataVector zCol(matrix.getNcols());
+
+      (*tree)->evaluateClusteringAtLevel(zCol, frame);
+      separateClustersIntoTraces(matrix, zCol, traces);
+
+      // Per frame Each cluster is processed as a separate component in a trace
+      for (size_t cluster = 0; cluster <= numberClusters; cluster++) {
+
+        jsonOutput["data"].addDictValue();
+        jsonOutput["data"][traceIndex].addIDAttr("mode", "\"markers\"");
+
+        // We only show at the beginning the first level of the tree
+        if (frame == 0) {
+          jsonOutput["data"][traceIndex].addIDAttr("visible", true);
+        } else {
+          jsonOutput["data"][traceIndex].addIDAttr("visible", false);
+        }
+
+        if(cluster == 0) {
+          if (frame == 0) {
+            jsonOutput["data"][traceIndex].addIDAttr("name", "\"Unclustered\"");
+          } else {
+            jsonOutput["data"][traceIndex].addIDAttr("name", "\"Noise\"");
+          }
+
+        } else {
+          jsonOutput["data"][traceIndex].addIDAttr("name", "\"Cluster: " +
+                                                           std::to_string(cluster - 1) +
+                                                           "\"");
+        }
+        jsonOutput["data"][traceIndex].addIDAttr("showlegend", true);
+        DataVector xCol(traces[cluster].getNrows());
+        traces[cluster].getColumn(0, xCol);
+        jsonOutput["data"][traceIndex].addIDAttr("x", xCol.toString());
+
+        DataVector yCol(traces[cluster].getNrows());
+        traces[cluster].getColumn(1, yCol);
+        jsonOutput["data"][traceIndex].addIDAttr("y", yCol.toString());
+
+        jsonOutput["layout"]["sliders"][0]["steps"][frame]["args"][1].addIdValue(true);
+        traceIndex++;
+      }
+
+
+      for (size_t index = traceIndex; index <(maxLevel+1)*(numberClusters+1); index++) {
+        jsonOutput["layout"]["sliders"][0]["steps"][frame]["args"][1].addIdValue(false);
+      }
+
+    }
+
     jsonOutput.serialize(currentDirectory + "/Hierarchy.json");
+    std::cout << "Writing file " << currentDirectory + "/Hierarchy.json" << std::endl;
   }
 
-  void VisualizerClustering::processHierarchyTree(DataMatrix &matrix,
-    JSON &jsonOutput, ModelFittingClustering &model) {
+  void VisualizerClustering::getGraphPlot(DataMatrix &matrix, ModelFittingClustering &model,
+    std::string currentDirectory) {
+    JSON jsonOutput;
+
+    jsonOutput.addListAttr("data");
+    // Layout of the plot
+    jsonOutput.addDictAttr("layout");
+
+    jsonOutput["layout"].addDictAttr("title");
+
+    jsonOutput["layout"]["title"].addIDAttr("text", "\"Graph and Clustering\"");
+    jsonOutput["layout"]["title"].addIDAttr("x", 0.5);
+
+    // Trace for the edges of the graph
+    jsonOutput["data"].addDictValue();
+    jsonOutput["data"][0].addIDAttr("type", "\"scatter\"");
+    jsonOutput["data"][0].addIDAttr("mode", "\"lines\"");
+    jsonOutput["data"][0].addIDAttr("name", "\"graph\"");
+    jsonOutput["data"][0].addDictAttr("line");
+    jsonOutput["data"][0]["line"].addIDAttr("width", 0.5);
+
+    DataVector source(matrix.getNcols());
+    DataVector sink(matrix.getNcols());
+
+    jsonOutput["data"][0].addListAttr("x");
+    jsonOutput["data"][0].addListAttr("y");
+
+    auto graph = model.getGraph();
+
+    for (size_t index = 0; index < matrix.getNrows(); index++) {
+
+      matrix.getRow(index, source);
+      if (graph->containsVertex(index)) {
+        auto neighbors = graph->getAdjacentVertices(index);
+        for(size_t neighbor: neighbors) {
+          jsonOutput["data"][0]["x"].addIdValue(source.get(0));
+          jsonOutput["data"][0]["y"].addIdValue(source.get(1));
+          matrix.getRow(neighbor, sink);
+          jsonOutput["data"][0]["x"].addIdValue(sink.get(0));
+          jsonOutput["data"][0]["y"].addIdValue(sink.get(1));
+          jsonOutput["data"][0]["x"].addIdValue("\"None\"\n");
+          jsonOutput["data"][0]["y"].addIdValue("\"None\"\n");
+        }
+
+     }
+   }
+    // Adding the data points
+
     auto tree = model.getHierarchyTree();
 
-    size_t frame = 0;
+    size_t numberClusters = (*tree)->getNumberClusters();
 
-    double stepIncrease =
-      ( model.getFitterConfiguration().getClusteringConfig().maxDensityThreshold -
-        model.getFitterConfiguration().getClusteringConfig().minDensityThreshold)
-      / model.getFitterConfiguration().getClusteringConfig().steps;
+    std::vector<DataMatrix> traces(numberClusters+1);
 
-    for (double step = model.getFitterConfiguration().getClusteringConfig().minDensityThreshold;
-         step <= model.getFitterConfiguration().getClusteringConfig().maxDensityThreshold;
-         step+=stepIncrease) {
-      std::cout << "Pocessing step "<<step<<std::endl;
-      DataMatrix framePoints(0, matrix.getNcols() + 1);
-      jsonOutput["frames"].addDictValue();
-      jsonOutput["frames"][frame].addListAttr("data");
-      jsonOutput["frames"][frame]["data"].addDictValue();
-      jsonOutput["frames"][frame]["data"][0].addIDAttr("mode", "\"markers\"");
+    DataVector zCol(matrix.getNcols());
+    model.evaluate(matrix, zCol);
 
-      processHierarchyNode(matrix, framePoints, (*(tree))->getRoot(), step);
+    separateClustersIntoTraces(matrix, zCol, traces);
 
-      DataVector xCol(framePoints.getNrows());
-      DataVector yCol(framePoints.getNrows());
-      DataVector zCol(framePoints.getNrows());
+    for(size_t clusterNumber = 0 ; clusterNumber <= numberClusters; clusterNumber++) {
+      jsonOutput["data"].addDictValue();
+      jsonOutput["data"][clusterNumber + 1].addIDAttr("type", "\"scatter\"");
+      jsonOutput["data"][clusterNumber + 1].addIDAttr("mode", "\"markers\"");
 
-      framePoints.getColumn(0, xCol);
-      framePoints.getColumn(1, yCol);
-      framePoints.getColumn(2, zCol);
+      if (clusterNumber == 0) {
+        jsonOutput["data"][clusterNumber + 1].addIDAttr("name", "\"Noise\"");
+      } else {
+        jsonOutput["data"][clusterNumber + 1].addIDAttr("name", "\"Cluster: " +
+                                                                std::to_string(clusterNumber - 1) +
+                                                                "\"");
+      }
 
-      jsonOutput["frames"][frame]["data"][0].addIDAttr("x", xCol.toString());
-      jsonOutput["frames"][frame]["data"][0].addIDAttr("y", yCol.toString());
+      DataVector xCol(traces[clusterNumber].getNrows());
+      traces[clusterNumber].getColumn(0, xCol);
+      jsonOutput["data"][clusterNumber + 1].addIDAttr("x", xCol.toString());
 
-      jsonOutput["frames"][frame]["data"][0].addDictAttr("marker");
-      jsonOutput["frames"][frame]["data"][0]["marker"].addIDAttr("color", zCol.toString());
+      DataVector yCol(traces[clusterNumber].getNrows());
+      traces[clusterNumber].getColumn(1, yCol);
+      jsonOutput["data"][clusterNumber + 1].addIDAttr("y", yCol.toString());
+    }
+    jsonOutput.serialize(currentDirectory + "/Graph.json");
 
-      jsonOutput["frames"][frame]["data"][0]["marker"].addIDAttr("colorscale", "\"Viridis\"");
+    std::cout << "Writing file " << currentDirectory + "/Graph.json" << std::endl;
+  }
 
 
-      frame++;
+void VisualizerClustering::separateClustersIntoTraces(DataMatrix &points,
+  DataVector &labels, std::vector<DataMatrix> &traces) {
+
+    for(size_t cluster = 0 ; cluster < traces.size(); cluster++) {
+      traces[cluster].resize(0, points.getNcols());
+    }
+
+    for(size_t index = 0 ; index<labels.size(); index++) {
+      DataVector traceRow(points.getNcols());
+      points.getRow(index, traceRow);
+      traces[static_cast<int>(labels.get(index))+1].appendRow(traceRow);
     }
 
   }
-
-  void VisualizerClustering::processHierarchyNode(DataMatrix &fullMatrix,
-    DataMatrix &framePoints, ClusterNode* node, double step) {
-    if (node->getDensityThreshold() >= step) {
-      for (auto index: node->getVertexIndexes()) {
-        DataVector point(fullMatrix.getNcols());
-        fullMatrix.getRow(index, point);
-        if (node->getDensityThreshold() == step) {
-          point.append(node->getClusterLabel());
-        } else {
-          point.append(node->getParent()->getClusterLabel());
-        }
-        framePoints.appendRow(point);
-      }
-    } else {
-      for (auto child: node->getChildren()) {
-        processHierarchyNode(fullMatrix, framePoints, child, step);
-      }
-    }
-  }
-
 }  // namespace datadriven
 }  // namespace sgpp

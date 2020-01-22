@@ -28,23 +28,22 @@ Graph::Graph(size_t vertices) {
     pointerToIndex[*vi] = cnt;
     cnt++;
   }
+  maxIndex = cnt;
 }
 
 void Graph::addVertex() {
   auto vertex = boost::add_vertex(*graph);
-  auto newIndex = indexToPointer.rbegin()->first + 1;
-  indexToPointer[newIndex] = vertex;
-  pointerToIndex[vertex] = newIndex;
+  indexToPointer[maxIndex] = vertex;
+  pointerToIndex[vertex] = maxIndex;
+  maxIndex++;
 }
 
 void Graph::removeVertex(size_t vertex) {
-  if (indexToPointer.find(vertex) != indexToPointer.end()) {
     boost::clear_vertex(indexToPointer[vertex], *graph);
     boost::remove_vertex(indexToPointer[vertex], *graph);
     pointerToIndex.erase(indexToPointer[vertex]);
     indexToPointer.erase(vertex);
     deletedVertices.push_back(vertex);
-  }
 }
 
 size_t Graph::getConnectedComponents(
@@ -88,13 +87,16 @@ void Graph::fillIndexMap() {
 }
 
 std::vector<size_t> Graph::getAdjacentVertices(size_t vertex) {
+  fillIndexMap();
   std::vector<size_t> indexes;
   boost::graph_traits<UndirectedGraph>::vertex_iterator begin, end;
   // Getting the Iterator
   auto neighborsIterator = boost::adjacent_vertices(indexToPointer[vertex], *graph);
   for (auto vd : boost::make_iterator_range(neighborsIterator)) {
     // Translating to the indexes
-    indexes.push_back(pointerToIndex[vd]);
+    if(pointerToIndex.find(vd) != pointerToIndex.end()) {
+      indexes.push_back(pointerToIndex[vd]);
+    }
   }
 
   return indexes;

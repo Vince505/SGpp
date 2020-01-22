@@ -46,9 +46,14 @@ public:
 
   double getDensityThreshold();
 
+  size_t getLevel();
+
+  void setLevel(size_t level);
+
 private:
   int clusterLabel;
   double density;
+  size_t level;
   std::vector<size_t> vertexIndexes;
   std::vector<ClusterNode*> children;
   ClusterNode* parent;

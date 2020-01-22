@@ -70,7 +70,6 @@ void ModelFittingClustering::update(Dataset &newDataset) {
 
   // Obtaining the cluster hierarchy for this batch
   std::map<UndirectedGraph::vertex_descriptor, size_t> clusterMap;
-  prunedGraphCurrentStep = std::make_shared<Graph>(*graph);
   double stepIncrease =
     (config->getClusteringConfig().maxDensityThreshold -
     config->getClusteringConfig().minDensityThreshold)
@@ -79,7 +78,7 @@ void ModelFittingClustering::update(Dataset &newDataset) {
   for (double step = config->getClusteringConfig().minDensityThreshold;
   step <= config->getClusteringConfig().maxDensityThreshold; step+=stepIncrease){
     std::cout << "============= Step " << step << " =============" << std::endl;
-    prunedGraphPreviousStep = std::make_shared<Graph>(*prunedGraphCurrentStep);
+    prunedGraphPreviousStep = std::make_shared<Graph>(*graph);
     clusterMap.clear();
     applyDensityThresholds(step);
     detectComponentsAndLabel(clusterMap);
@@ -88,19 +87,15 @@ void ModelFittingClustering::update(Dataset &newDataset) {
 
   hierarchy->postProcessing();
   hierarchy->printTree();
-  // Generates the classification model based on the last iteration
-  std::cout << "============= Training Classification Model =============" << std::endl;
-  generateClassificationModel(clusterMap);
-  prunedGraphCurrentStep = nullptr;
-  prunedGraphPreviousStep = nullptr;
 }
 
 double ModelFittingClustering::evaluate(const DataVector &sample) {
-  return classificationModel->evaluate(sample);
+  std::cout << "Method not defined for Clustering Models"<<std::endl;
+  return 0,0;
 }
 
 void ModelFittingClustering::evaluate(DataMatrix &samples, DataVector &results) {
-  classificationModel->evaluate(samples, results);
+  hierarchy->evaluateClustering(results);
 }
 
 bool ModelFittingClustering::refine() {
@@ -209,26 +204,21 @@ void ModelFittingClustering::applyDensityThresholds(double densityThreshold) {
 
   densityEstimationModel->evaluate((vpTree->getStoredItems()), evaluation);
 
+  double maxValue = evaluation.max();
   for (size_t index = 0; index < evaluation.size(); index++) {
-    if (evaluation.get(index) < 0) {
-      evaluation.set(index, 0);
-    }
-  }
-
-  evaluation.normalize();
-
-  for (size_t index = 0; index < evaluation.size(); index++) {
-    if (evaluation.get(index) < densityThreshold) {
-      prunedGraphCurrentStep->removeVertex(index);
+    if (graph->containsVertex(index)) {
+      if (evaluation.get(index) < densityThreshold * maxValue) {
+        graph->removeVertex(index);
+      }
     }
   }
   std::cout << "Remaining vertices: " <<
-  boost::num_vertices(*(prunedGraphCurrentStep->getGraph())) <<std::endl;
+  boost::num_vertices(*(graph->getGraph())) <<std::endl;
 }
 
 void ModelFittingClustering::detectComponentsAndLabel(
   std::map<UndirectedGraph::vertex_descriptor, size_t> &clusterMap) {
-  auto numberComponents = prunedGraphCurrentStep->getConnectedComponents(clusterMap);
+  auto numberComponents = graph->getConnectedComponents(clusterMap);
   std::cout << "Number of found components: "<< numberComponents <<std::endl;
 }
 
@@ -238,7 +228,7 @@ void ModelFittingClustering::getHierarchy(
   std::map<size_t, std::vector<size_t>> labelstoPointsMap;
 
   for (auto vertex:clusterMap) {
-    labelstoPointsMap[vertex.second].push_back(prunedGraphCurrentStep->getIndex(vertex.first));
+    labelstoPointsMap[vertex.second].push_back(graph->getIndex(vertex.first));
   }
 
   std::cout << "Building the hierarchy"<<std::endl;
@@ -248,6 +238,7 @@ void ModelFittingClustering::getHierarchy(
     ClusterNode* newChild = new ClusterNode(cluster.first, cluster.second, densityThreshold);
     ClusterNode* parentCluster = hierarchy->getMostSpecificCluster(cluster.second.at(0));
     parentCluster->addChild(newChild);
+    newChild->setLevel(parentCluster->getLevel()+1);
     if (std::find(visitedLabels.begin(), visitedLabels.end(),
       parentCluster->getClusterLabel()) == visitedLabels.end()) {
       updatedClusters.push_back(parentCluster);
@@ -260,7 +251,15 @@ void ModelFittingClustering::getHierarchy(
       if (parent->split(prunedGraphPreviousStep, densityThreshold)) {
         // Check if the node is the root. We cannot split the root
         if (parent->getParent() != nullptr) {
+          // Assigning the level of the node to its children
+          for (auto child: parent->getChildren()) {
+            child->setLevel(parent->getLevel());
+          }
+
+          // Linking the children to the parent of the node
           parent->getParent()->addChildren(parent->getChildren());
+
+          // Removing the node from the tree
           parent->getParent()->removeChild(parent);
         }
       }
@@ -283,10 +282,10 @@ void ModelFittingClustering::generateClassificationModel(
   samples.copyFrom(vpTree->getStoredItems());
 
   for (size_t index = 0; index < vpTree->getStoredItems().getNrows(); index++) {
-    if (!prunedGraphCurrentStep->containsVertex(index)) {
+    if (!graph->containsVertex(index)) {
       componentLabels.set(index, static_cast<double>(-1));
     } else {
-      componentLabels.set(index, clusterMap[prunedGraphCurrentStep->getVertexDescriptor(index)]);
+      componentLabels.set(index, clusterMap[graph->getVertexDescriptor(index)]);
     }
   }
 
@@ -317,6 +316,10 @@ DataVector ModelFittingClustering::getLabels() const{
 
 std::unique_ptr<HierarchyTree>* ModelFittingClustering::getHierarchyTree() {
   return &hierarchy;
+}
+
+std::shared_ptr<Graph> ModelFittingClustering::getGraph() {
+  return graph;
 }
 }  // namespace datadriven
 }  // namespace sgpp

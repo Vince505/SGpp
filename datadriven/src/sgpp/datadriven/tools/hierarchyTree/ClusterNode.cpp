@@ -44,14 +44,14 @@ void ClusterNode::addChildren(std::vector<ClusterNode*> children) {
 bool ClusterNode::splitChild(ClusterNode* child, std::shared_ptr<Graph> graph,
   double densityThreshold) {
 
-  std::cout << "Processing Node: " << this->getClusterLabel() << std::endl;
-  std::cout << "Processing Child: " << child->getClusterLabel() << std::endl;
+  //std::cout << "Processing Node: " << this->getClusterLabel() << std::endl;
+  //std::cout << "Processing Child: " << child->getClusterLabel() << std::endl;
 
   std::vector<size_t> parentVertexIndexes = this->getVertexIndexes();
   std::vector<size_t> childVertexIndexes = child->getVertexIndexes();
 
-  std::cout <<"Parent size: "<< parentVertexIndexes.size()<<std::endl;
-  std::cout <<"Child size: "<< childVertexIndexes.size()<<std::endl;
+  //std::cout <<"Parent size: "<< parentVertexIndexes.size()<<std::endl;
+  //std::cout <<"Child size: "<< childVertexIndexes.size()<<std::endl;
   size_t maxConnectionsParent = (parentVertexIndexes.size()*(parentVertexIndexes.size()-1)/2);
   size_t maxConnectionsChildParent =
     childVertexIndexes.size() *(parentVertexIndexes.size() - childVertexIndexes.size());
@@ -78,7 +78,8 @@ bool ClusterNode::splitChild(ClusterNode* child, std::shared_ptr<Graph> graph,
       visitedVertex.push_back(vertex);
     }
   }
-
+ // std::cout << "Connections in parent " << connectionsParent << std::endl;
+ // std::cout <<" Max connections parent " << maxConnectionsParent << std::endl;
   visitedVertex.clear();
   for(auto vertex: childVertexIndexes) {
     if (graph->containsVertex(vertex)) {
@@ -97,20 +98,19 @@ bool ClusterNode::splitChild(ClusterNode* child, std::shared_ptr<Graph> graph,
       visitedVertex.push_back(vertex);
     }
   }
-  std::cout << "Connections in parent " << connectionsParent << std::endl;
-  std::cout <<" Max connections parent " << maxConnectionsParent << std::endl;
-  std::cout << "Connections child parent " << connectionsChildParent << std::endl;
-  std::cout <<" Max connections child parent " << maxConnectionsChildParent << std::endl;
+
+  //std::cout << "Connections child parent " << connectionsChildParent << std::endl;
+  //std::cout <<" Max connections child parent " << maxConnectionsChildParent << std::endl;
 
   double connectivityParent = connectionsParent/ static_cast<double>(maxConnectionsParent);
   double connectivityChildParent = connectionsChildParent/static_cast<double>(maxConnectionsChildParent);
 
-  std::cout << "Connectivty Parent" << connectivityParent << std::endl;
-  std::cout << "Connectiviy Child Parent" << connectivityChildParent << std::endl;
+  //std::cout << "Connectivty Parent" << connectivityParent << std::endl;
+  //std::cout << "Connectiviy Child Parent " << connectivityChildParent << std::endl;
 
   double compare = connectivityChildParent/connectivityParent;
 
-  std::cout << "Final value " << compare << std::endl;
+  //std::cout << "Final value " << compare << std::endl;
   return compare <= densityThreshold;
 }
 
@@ -151,6 +151,14 @@ std::vector<ClusterNode*> ClusterNode::getChildren() {
 
 double ClusterNode::getDensityThreshold() {
   return this->density;
+}
+
+size_t ClusterNode::getLevel() {
+  return this->level;
+}
+
+void ClusterNode::setLevel(size_t level) {
+  this->level = level;
 }
 
 }  // namespace datadriven

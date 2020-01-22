@@ -111,6 +111,8 @@ class ModelFittingClustering : public ModelFittingBase {
    */
   std::unique_ptr<ModelFittingClassification>* getClassificationModel();
 
+  std::shared_ptr<Graph> getGraph();
+
   std::unique_ptr<HierarchyTree>* getHierarchyTree();
 
   DataMatrix getPoints() const;
@@ -145,7 +147,6 @@ class ModelFittingClustering : public ModelFittingBase {
    */
   std::shared_ptr<Graph> prunedGraphPreviousStep;
 
-  std::shared_ptr<Graph> prunedGraphCurrentStep;
 
   std::unique_ptr<HierarchyTree> hierarchy;
 

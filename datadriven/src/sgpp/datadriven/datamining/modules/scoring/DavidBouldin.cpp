@@ -23,20 +23,8 @@ Metric *DavidBouldin::clone() const { return new DavidBouldin(*this);}
 double DavidBouldin::measure(const DataVector &predictedValues, const DataVector &trueValues,
   const ModelFittingBase &model, Dataset &testDataset) const {
   auto clusteringModel = dynamic_cast<const ModelFittingClustering*>(&model);
+
   DataMatrix samples = clusteringModel->getPoints();
-
-  DataVector values = clusteringModel->getLabels();
-
-  if (predictedValues.size() != 0) {
-    if (samples.getNrows() % testDataset.getData().getNrows() != 0) {
-      for (size_t index = 0; index < predictedValues.size(); index++) {
-        DataVector tempRow(testDataset.getData().getNcols());
-        testDataset.getData().getRow(index, tempRow);
-        samples.appendRow(tempRow);
-        values.append(predictedValues.get(index));
-      }
-    }
-  }
 
   std::vector<size_t> clusterLabels;
   std::map<size_t, size_t> pointsPerLabel;
@@ -45,10 +33,9 @@ double DavidBouldin::measure(const DataVector &predictedValues, const DataVector
 
   size_t numberNoise = 0;
 
-
   // Getting the number of labels and the centroids
-  for (size_t index = 0; index < values.size() ; index++) {
-    auto value = values.get(index);
+  for (size_t index = 0; index < predictedValues.size() ; index++) {
+    auto value = predictedValues.get(index);
     if (value != -1) {  // Skipping all noisy data
       if (std::find(clusterLabels.begin(), clusterLabels.end(), value) == clusterLabels.end()) {
         clusterLabels.push_back(value);
@@ -63,14 +50,13 @@ double DavidBouldin::measure(const DataVector &predictedValues, const DataVector
       numberNoise++;
     }
   }
-
   for (auto &label: clusterLabels) {
     clusterCentroids[label].mult(1/ static_cast<double>(pointsPerLabel[label]));
   }
 
   // Calculating the average distances to the cluster centroids
-  for (size_t index = 0; index < values.size() ; index++) {
-    auto value = values.get(index);
+  for (size_t index = 0; index < predictedValues.size() ; index++) {
+    auto value = predictedValues.get(index);
     if (value != -1) {  // Skipping all noisy data
       DataVector row(samples.getNcols());
       samples.getRow(index, row);
@@ -80,7 +66,6 @@ double DavidBouldin::measure(const DataVector &predictedValues, const DataVector
       averageDistances[value] = averageDistances[value] + row.l2Norm();
     }
   }
-
   for (auto &label: clusterLabels) {
     averageDistances[label] = averageDistances[label]/static_cast<double>(pointsPerLabel[label]);
   }
@@ -106,9 +91,7 @@ double DavidBouldin::measure(const DataVector &predictedValues, const DataVector
     }
     davidBouldinIndex+=maxIndex;
   }
-  
   davidBouldinIndex = davidBouldinIndex/clusterLabels.size()+numberNoise/4.0;
-
   return davidBouldinIndex;
 }
 

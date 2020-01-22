@@ -39,15 +39,19 @@ class Graph {
   Graph(const Graph &rhs) {
     this->graph = new UndirectedGraph(*(rhs.graph));
     this->deletedVertices = rhs.deletedVertices;
-    size_t cnt = 0;
+    this->maxIndex = rhs.maxIndex;
     boost::graph_traits<UndirectedGraph>::vertex_iterator vi, vend;
-    for (boost::tie(vi, vend) = boost::vertices(*graph); vi != vend; ++vi) {
+    boost::tie(vi, vend) = boost::vertices(*(this->graph));
+
+    for (size_t cnt = 0; cnt <= this->maxIndex; cnt++) {
       if (std::find(this->deletedVertices.begin(), this->deletedVertices.end(), cnt)
-      == this->deletedVertices.end()) {
+          == this->deletedVertices.end()) {
         this->indexToPointer[cnt] = *vi;
         this->pointerToIndex[*vi] = cnt;
+        ++vi;
+      } else {
+        cnt++;
       }
-      cnt++;
     }
   }
 
@@ -130,6 +134,8 @@ class Graph {
     std::map<size_t, UndirectedGraph::vertex_descriptor> indexToPointer;
 
     std::vector<size_t> deletedVertices;
+
+    size_t maxIndex;
 
 };
 }  // namespace datadriven

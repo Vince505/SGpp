@@ -31,7 +31,6 @@ double VMeasure::measure(const DataVector &predictedValues, const DataVector &tr
   std::map<int, size_t> trueLabelsMap;
   std::map<int, size_t> predLabelsMap;
 
-
   for (size_t index = 0; index < predictedValues.size() ; index++) {
     auto trueValue = trueValues.get(index);
     auto predictedValue = predictedValues.get(index);
@@ -49,7 +48,6 @@ double VMeasure::measure(const DataVector &predictedValues, const DataVector &tr
     countMatrix.set(trueLabelsMap[trueValue], predLabelsMap[predictedValue],
                     countMatrix.get(trueLabelsMap[trueValue], predLabelsMap[predictedValue])+1);
   }
-
   // CALCULATING HOMOGENEITY
   //  Entropy of classes
 
@@ -75,7 +73,7 @@ double VMeasure::measure(const DataVector &predictedValues, const DataVector &tr
 
       if (nck != 0) {
         classConditionalEntropy = classConditionalEntropy +
-                                  (nck / n) * log2(nck / nk);
+                                  (nck / n) * log(nck / nk);
       }
     }
 
@@ -84,7 +82,7 @@ double VMeasure::measure(const DataVector &predictedValues, const DataVector &tr
     double nc = trueVector.sum();
 
     // Calculating class entropy
-    classEntropy = classEntropy + (nc/n) * log2(nc/n);
+    classEntropy = classEntropy + (nc/n) * log(nc/n);
   }
 
   classConditionalEntropy = -1*classConditionalEntropy;
@@ -115,7 +113,7 @@ double VMeasure::measure(const DataVector &predictedValues, const DataVector &tr
       double nc = trueVector.sum();
       if (nck != 0) {
         clusterConditionalEntropy = clusterConditionalEntropy +
-                                    (nck / n) * log2(nck / nc);
+                                    (nck / n) * log(nck / nc);
       }
     }
 
