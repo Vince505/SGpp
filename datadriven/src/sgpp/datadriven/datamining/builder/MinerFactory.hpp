@@ -10,6 +10,7 @@
 #include <sgpp/datadriven/datamining/modules/dataSource/DataSourceSplitting.hpp>
 #include <sgpp/datadriven/datamining/modules/dataSource/DataSourceCrossValidation.hpp>
 #include <sgpp/datadriven/datamining/modules/visualization/Visualizer.hpp>
+#include <sgpp/datadriven/datamining/modules/postProcessing/PostProcessingBase.hpp>
 
 #include <string>
 
@@ -81,10 +82,17 @@ class MinerFactory {
 
   /**
    * Factory method to build a visualizer instance base on a configuration file.
-   * @param parser the datamining configuration parser instance to create the scorer from
-   * @return the scorer instance
+   * @param parser the datamining configuration parser instance to create the visualizer from
+   * @return the visualizer instance
    */
   virtual Visualizer* createVisualizer(const DataMiningConfigParser& parser) const = 0;
+
+  /**
+   * Factory method to build a postProcesser instance base on a configuration file.
+   * @param parser the datamining configuration parser instance to create the postProcesser from
+   * @return the postProcesser instance
+   */
+  virtual PostProcessingBase* createPostProcesser(const DataMiningConfigParser &parser) const = 0;
 };
 } /* namespace datadriven */
 } /* namespace sgpp */

@@ -44,7 +44,8 @@
     },
     "visualization": {
         "generalConfig": {
-            "algorithm":["tsne", "heatmaps"],
+            "algorithm": "tsne",
+            "plots": ["scatterplots", "heatmaps"],
             "targetFile":"./output",
             "targetFileType":"csv",
             "numBatches":1

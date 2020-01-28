@@ -19,8 +19,8 @@ namespace datadriven {
 
 Metric *VMeasure::clone() const { return new VMeasure(*this); }
 
-double VMeasure::measure(const DataVector &predictedValues, const DataVector &trueValues,
-                         const ModelFittingBase &model, Dataset &testDataset) const {
+double VMeasure::measurePostProcessing(const DataVector &predictedValues,
+  const DataVector &trueValues, const ModelFittingBase &model, Dataset &testDataset) const {
   // Obtaining the count of points belonging to a pair of classes
 
   DataMatrix countMatrix(0,0,0.0);
@@ -142,11 +142,6 @@ double VMeasure::measure(const DataVector &predictedValues, const DataVector &tr
   std::cout << "Homogeneity: " << h << std::endl;
   std::cout << "Completeness: " << c << std::endl;
   return vMeasure;
-}
-
-double VMeasure::measureLowerIsBetter(const DataVector &predictedValues,
-  const DataVector &trueValues, const ModelFittingBase &model, Dataset &testDataset) const{
-  return measure(predictedValues, trueValues, model, testDataset);
 }
 
 } //  namespace datadriven

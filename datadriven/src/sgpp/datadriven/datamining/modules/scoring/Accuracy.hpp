@@ -40,6 +40,19 @@ class Accuracy : public Metric {
    */
   double measureLowerIsBetter(const DataVector& predictedValues, const DataVector& trueValues,
                               const ModelFittingBase& model, Dataset& testDataset) const override;
+
+  /**
+   * Quantify the difference between predicted values and actual values in terms of accuracy.
+   * After postProcessing
+   *
+   * @param predictedValues values calculated by the model for testing data
+   * @param trueValues actual values as taken from the dataset.
+   * @param model reference to the model
+   * @param testDataset dataset with test data
+   * @return Accuracy - larger values are better.
+   */
+  double measurePostProcessing(const DataVector &predictedValues, const DataVector &trueValues,
+                               const ModelFittingBase &model, Dataset &testDataset) const override;
 };
 
 } /* namespace datadriven */

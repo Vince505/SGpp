@@ -21,7 +21,8 @@ void VisualizerConfiguration::setupDefaults() {
   srand(static_cast<unsigned int>(time(nullptr)));
 
   std::cout << "Setting up defaults parameters for Visualizer" << std::endl;
-  generalConfig.algorithm = std::vector<std::string>({"tsne", "heatmaps", "linearcuts"});
+  generalConfig.algorithm = "tsne";
+  generalConfig.plots = std::vector<std::string>({"scatterplots", "heatmaps", "linearcuts"});
   generalConfig.targetDirectory = "./output";
   generalConfig.targetFileType = VisualizationFileType::CSV;
   generalConfig.numBatches = 1;
@@ -30,7 +31,6 @@ void VisualizerConfiguration::setupDefaults() {
   visualizationParameters.theta = 0.5;
   visualizationParameters.maxNumberIterations = 1000;
   visualizationParameters.seed = rand();
-  visualizationParameters.targetDimension = 2;
   visualizationParameters.numberCores = 1;
   std::cout << "Setting up defaults done" << std::endl;
 }

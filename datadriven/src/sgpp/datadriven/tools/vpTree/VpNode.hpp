@@ -7,7 +7,7 @@
 
 #include <sgpp/base/datatypes/DataVector.hpp>
 #include <sgpp/base/datatypes/DataMatrix.hpp>
-
+#include <iostream>
 namespace sgpp {
 namespace datadriven {
 /**

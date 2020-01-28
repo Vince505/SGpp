@@ -11,6 +11,7 @@
 #include <vector>
 #include<utility>
 #include <queue>
+#include <iostream>
 namespace sgpp {
 namespace datadriven {
 /**

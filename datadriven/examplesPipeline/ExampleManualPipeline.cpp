@@ -8,6 +8,7 @@
 #include <sgpp/datadriven/datamining/modules/dataSource/DataSourceCrossValidation.hpp>
 #include <sgpp/datadriven/datamining/modules/fitting/FitterConfigurationLeastSquares.hpp>
 #include <sgpp/datadriven/datamining/modules/fitting/ModelFittingLeastSquares.hpp>
+#include <sgpp/datadriven/datamining/modules/postProcessing/PostProcessingLeastSquares.hpp>
 #include <sgpp/datadriven/datamining/modules/scoring/MSE.hpp>
 #include <sgpp/datadriven/datamining/base/SparseGridMinerCrossValidation.hpp>
 #include <sgpp/datadriven/datamining/modules/visualization/VisualizerDummy.hpp>
@@ -27,6 +28,7 @@ using sgpp::datadriven::Scorer;
 using sgpp::datadriven::SparseGridMinerCrossValidation;
 using sgpp::base::GridType;
 using sgpp::datadriven::VisualizerDummy;
+using sgpp::datadriven::PostProcessingLeastSquares;
 
 int main(int argc, char** argv) {
   /**
@@ -85,11 +87,12 @@ int main(int argc, char** argv) {
 
   VisualizerDummy *visualizer = new VisualizerDummy();
 
+  PostProcessingLeastSquares *postProcesser = new PostProcessingLeastSquares();
   /**
    * Create a sparse grid miner that performs cross validation. The number of folds is 5 per
    * default.
    */
-  SparseGridMinerCrossValidation miner(dataSource, model, scorer, visualizer);
+  SparseGridMinerCrossValidation miner(dataSource, model, scorer, visualizer, postProcesser);
   /**
    * Here the actual learning process is launched. The miner will perform k-fold cross validation
    * and print the mean score as well as the standard deviation.

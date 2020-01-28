@@ -14,6 +14,7 @@
 #include <sgpp/datadriven/datamining/modules/hpo/ClassificationFitterFactory.hpp>
 
 #include <sgpp/datadriven/datamining/modules/visualization/VisualizerClassification.hpp>
+#include <sgpp/datadriven/datamining/modules/postProcessing/PostProcessingClassification.hpp>
 
 #include <string>
 
@@ -39,6 +40,11 @@ const {
   config.readParams(parser);
 
   return new VisualizerClassification(config);
+}
+
+PostProcessingBase* ClassificationMinerFactory::createPostProcesser(
+  const DataMiningConfigParser& parser) const {
+  return new PostProcessingClassification();
 }
 
 } /* namespace datadriven */

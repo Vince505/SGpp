@@ -33,12 +33,6 @@ struct VisualizationParameters {
   std::size_t maxNumberIterations = 1000;
 
   /*
-   * The dimentionality to which we want to reduce the data for visualization
-   * purposes
-   */
-  std::size_t targetDimension = 2;
-
-  /*
    * Number of cores to run the algorithm in parallel
    */
   std::size_t numberCores = 1;

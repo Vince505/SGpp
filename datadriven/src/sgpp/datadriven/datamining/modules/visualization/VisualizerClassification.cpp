@@ -88,40 +88,14 @@ void VisualizerClassification::runVisualization(ModelFittingBase &model, DataSou
   {
     #pragma omp section
     {
-      if (std::find(config.getGeneralConfig().algorithm.begin(),
-                   config.getGeneralConfig().algorithm.end(), "heatmaps") !=
-                   config.getGeneralConfig().algorithm.end()) {
+      if (std::find(config.getGeneralConfig().plots.begin(),
+                   config.getGeneralConfig().plots.end(), "heatmaps") !=
+                   config.getGeneralConfig().plots.end()) {
         DataMatrix heatMapClassificationMatrix;
         getHeatmap(model, currentDirectory+"/Classification", heatMapClassificationMatrix,
                    nDimensions);
       }
     }
-    /* To be added after tsne is functioning again
-     * #pragma omp section
-    {
-      if (config.getGeneralConfig().algorithm == "tsne") {
-        if (fold == 0 && batch == 0) {
-          runTsne(model);
-        }
-        if (originalData.getNcols() >= 1) {
-          DataVector evaluation(originalData.getNrows());
-          model.evaluate(originalData, evaluation);
-          tsneCompressedData.setColumn(tsneCompressedData.getNcols()-1, evaluation);
-          if (config.getGeneralConfig().targetFileType == VisualizationFileType::CSV) {
-            CSVTools::writeMatrixToCSVFile(currentDirectory +
-              "/tsneCompression", tsneCompressedData);
-          } else if (config.getGeneralConfig().targetFileType == VisualizationFileType::json) {
-            if (config.getVisualizationParameters().targetDimension != 2) {
-              std::cout << "A json output is only available for compressions in 2 dimensions"
-              "Storing the CSV instead" << std::endl;
-              CSVTools::writeMatrixToCSVFile(currentDirectory +
-                "/tsneCompression", tsneCompressedData);
-            }
-              storeTsneJson(tsneCompressedData, model, currentDirectory);
-          }
-        }
-      }
-    }*/
     #pragma omp section
     {
       // Running the density estimation visualization for each model
@@ -151,18 +125,18 @@ void VisualizerClassification::runVisualization(ModelFittingBase &model, DataSou
         {
           #pragma omp section
           {
-            if (std::find(config.getGeneralConfig().algorithm.begin(),
-                         config.getGeneralConfig().algorithm.end(), "linearcuts")
-                         != config.getGeneralConfig().algorithm.end()) {
+            if (std::find(config.getGeneralConfig().plots.begin(),
+                         config.getGeneralConfig().plots.end(), "linearcuts")
+                         != config.getGeneralConfig().plots.end()) {
               visualizerDensityEstimation->getLinearCuts
               (**currentModel, currentDirectory, cutMatrixThread, nDimensions);
             }
           }
           #pragma omp section
           {
-            if (std::find(config.getGeneralConfig().algorithm.begin(),
-                         config.getGeneralConfig().algorithm.end(), "heatmaps")
-                         != config.getGeneralConfig().algorithm.end()) {
+            if (std::find(config.getGeneralConfig().plots.begin(),
+                         config.getGeneralConfig().plots.end(), "heatmaps")
+                         != config.getGeneralConfig().plots.end()) {
               visualizerDensityEstimation->getHeatmap
               (**currentModel, currentDirectory, heatMapMatrixThread, nDimensions);
             }
@@ -173,7 +147,39 @@ void VisualizerClassification::runVisualization(ModelFittingBase &model, DataSou
   }
 }
 
-void VisualizerClassification::storeTsneJson(DataMatrix &matrix, ModelFittingBase &model,
+void VisualizerClassification::runPostProcessingVisualization(ModelFittingBase &model,
+                                                                 DataSource &dataSource) {
+  if (std::find(config.getGeneralConfig().plots.begin(),
+                config.getGeneralConfig().plots.end(), "scatterplots")
+      != config.getGeneralConfig().plots.end() && config.getGeneralConfig().execute) {
+
+    createFolder(config.getGeneralConfig().targetDirectory);
+
+    if (config.getGeneralConfig().algorithm == "tsne") {
+      runTsne(originalData, compressedData);
+    }
+
+    DataVector predictedLabels(compressedData.getNrows());
+
+    model.evaluate(originalData, predictedLabels);
+
+    if (config.getGeneralConfig().targetFileType == VisualizationFileType::json) {
+      compressedData.appendCol(predictedLabels);
+      storeScatterPlotJson(compressedData,
+                    model, config.getGeneralConfig().targetDirectory);
+    } else {
+
+      DataMatrix toCsvMatrix(compressedData);
+
+      toCsvMatrix.appendCol(predictedLabels);
+
+      CSVTools::writeMatrixToCSVFile(config.getGeneralConfig().targetDirectory +
+                                     "scatterplot", toCsvMatrix);
+    }
+  }
+}
+
+void VisualizerClassification::storeScatterPlotJson(DataMatrix &matrix, ModelFittingBase &model,
   std::string currentDirectory) {
   json::JSON jsonOutput;
 
@@ -222,7 +228,7 @@ void VisualizerClassification::storeTsneJson(DataMatrix &matrix, ModelFittingBas
   jsonOutput["layout"]["title"].addIDAttr("text", "\"TSNE Compression\"");
   jsonOutput["layout"]["title"].addIDAttr("x", 0.5);
 
-  jsonOutput.serialize(currentDirectory + "/tsneCompression.json");
+  jsonOutput.serialize(currentDirectory + "/scatterPlot.json");
 }
 
 void VisualizerClassification::storeCutJson(DataMatrix &matrix, std::vector<size_t> indexes,

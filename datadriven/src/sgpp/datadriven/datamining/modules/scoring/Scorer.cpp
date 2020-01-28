@@ -64,5 +64,13 @@ double Scorer::testDistributed(ModelFittingBase& model, Dataset& testDataset, bo
 #endif /* USE_SCALAPACK */
 }
 
+double Scorer::testPostProcessing(ModelFittingBase& model,
+  Dataset& testDataset) {
+  DataVector predictedValues(testDataset.getNumberInstances());
+  model.evaluate(testDataset.getData(), predictedValues);
+  return metric->measurePostProcessing(predictedValues, testDataset.getTargets(),
+    model, testDataset);
+}
+
 } /* namespace datadriven */
 }  // namespace sgpp

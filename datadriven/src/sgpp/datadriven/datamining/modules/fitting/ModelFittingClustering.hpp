@@ -51,6 +51,8 @@ class ModelFittingClustering : public ModelFittingBase {
    */
   void update(Dataset& newDataset) override;
 
+  ~ModelFittingClustering() = default;
+
   double evaluate(const DataVector& sample) override;
 
   /**
@@ -105,19 +107,39 @@ class ModelFittingClustering : public ModelFittingBase {
    */
   std::unique_ptr<ModelFittingDensityEstimation>* getDensityEstimationModel();
 
-    /**
-   * Returns the pointer to the pointer pointing to the classification estimation model
-   * @return Pointer of the unique pointer of the classification estimation model
-   */
-  std::unique_ptr<ModelFittingClassification>* getClassificationModel();
-
   std::shared_ptr<Graph> getGraph();
 
   std::unique_ptr<HierarchyTree>* getHierarchyTree();
 
-  DataMatrix getPoints() const;
+  void intializeHierarchyTree();
 
-  DataVector getLabels() const;
+  void copyPreviousGraphStep();
+
+  /**
+ * Method that generates the similarity graph of a given dataset based on the nearest
+ * neighbors hyperparameter given in the configuration
+ * @params dataset the training dataset that is used to generate the graph
+ */
+  void generateSimilarityGraph();
+
+  /**
+   * Method that deletes from the graphs all of the points that do not have the minimun
+   * density given by the user as an hyperparameter in the configuration
+   * @params deletedNodes Matrix to store all of the indexes of the
+   * deleted points for further labelling
+   */
+  void applyDensityThresholds(double densityThreshold);
+
+  /**
+   * Method that detects all of the disconected components from the graph and assigns a label
+   * to each of its corresponding points
+   * @params deletedNodes List of nodes which were deleted from the graph
+   */
+  void detectComponentsAndLabel(std::map<UndirectedGraph::vertex_descriptor, size_t> &clusterMap);
+
+  void getHierarchy(std::map<UndirectedGraph::vertex_descriptor, size_t> &clusterMap, double densityThreshold);
+
+  DataMatrix getPoints() const;
 
 
  protected:
@@ -150,18 +172,11 @@ class ModelFittingClustering : public ModelFittingBase {
 
   std::unique_ptr<HierarchyTree> hierarchy;
 
-
-  /**
-   * Classification Model
-   */
-  std::unique_ptr<ModelFittingClassification> classificationModel;
-
-  DataVector labels;
   /**
    * Method which updates the nearest neighbors graph.
    * @param newDataset New dataset to be added
    */
-  void updateGraph(DataMatrix &newDataset);
+  void updateVpTree(DataMatrix &newDataset);
 
   /**
    * Method that generates the density estimation model of the unlabeled dataset
@@ -169,34 +184,6 @@ class ModelFittingClustering : public ModelFittingBase {
    */
   void generateDensityEstimationModel(Dataset &dataset);
 
-  /**
-   * Method that generates the similarity graph of a given dataset based on the nearest
-   * neighbors hyperparameter given in the configuration
-   * @params dataset the training dataset that is used to generate the graph
-   */
-  void generateSimilarityGraph(Dataset &dataset);
-
-  /**
-   * Method that deletes from the graphs all of the points that do not have the minimun
-   * density given by the user as an hyperparameter in the configuration
-   * @params deletedNodes Matrix to store all of the indexes of the
-   * deleted points for further labelling
-   */
-  void applyDensityThresholds(double densityThreshold);
-
-  /**
-   * Method that detects all of the disconected components from the graph and assigns a label
-   * to each of its corresponding points
-   * @params deletedNodes List of nodes which were deleted from the graph
-   */
-  void detectComponentsAndLabel(std::map<UndirectedGraph::vertex_descriptor, size_t> &clusterMap);
-
-  void getHierarchy(std::map<UndirectedGraph::vertex_descriptor, size_t> &clusterMap, double densityThreshold);
-  /**
-   * Method that generates a classification model to cluster out of sample points based
-   * on the cluster obtained by the training data.
-   */
-  void generateClassificationModel(std::map<UndirectedGraph::vertex_descriptor, size_t> &clusterMapp);
 
   /**
    * Creates a density estimation model that fits the model settings.

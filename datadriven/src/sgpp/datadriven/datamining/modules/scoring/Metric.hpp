@@ -79,6 +79,18 @@ class Metric {
                          const ModelFittingBase &model, Dataset &testDataset) const = 0;
 
   /**
+   * Quantify the difference between predicted values and actual values after PostProcessing.
+   * Does not have an inner state.
+   *
+   * @param predictedValues values calculated by the model for testing data
+   * @param trueValues actual values as taken from the dataset.
+   * @param model reference to the model
+   * @param testDataset dataset with test data
+   * @return Quantification of the difference.
+   */
+  virtual double measurePostProcessing(const DataVector &predictedValues, const DataVector &trueValues,
+                         const ModelFittingBase &model, Dataset &testDataset) const = 0;
+  /**
    * Quantify the difference between predicted values and actual values, where lower values indicate
    * a better result. Does not have an inner state.
    *

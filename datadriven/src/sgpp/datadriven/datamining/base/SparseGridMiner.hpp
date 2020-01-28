@@ -7,6 +7,7 @@
 
 #include <sgpp/datadriven/datamining/modules/dataSource/DataSource.hpp>
 #include <sgpp/datadriven/datamining/modules/fitting/ModelFittingBase.hpp>
+#include <sgpp/datadriven/datamining/modules/postProcessing/PostProcessingBase.hpp>
 #include <sgpp/datadriven/datamining/modules/visualization/Visualizer.hpp>
 #include <sgpp/datadriven/datamining/modules/scoring/Scorer.hpp>
 #include <sgpp/datadriven/scalapack/BlacsProcessGrid.hpp>
@@ -34,9 +35,12 @@ class SparseGridMiner {
    * of the passed object.
    * @param visualizer configured instance of the visualizer object that will execute the
    * visualization module of the model.
+   * @param postProcesser configured instance of the post Processer object which will execute
+   * some post processing after training the model
    * The miner instance will take ownership of the passed object
    */
-  SparseGridMiner(ModelFittingBase *fitter, Scorer *scorer, Visualizer *visualizer);
+  SparseGridMiner(ModelFittingBase *fitter, Scorer *scorer, Visualizer *visualizer,
+                  PostProcessingBase *postProcesser);
 
   /**
    * Copy constructor deleted - not all members can be copied or cloned .
@@ -125,6 +129,12 @@ class SparseGridMiner {
   * an input of graphic libraries to visualize the models
   */
   std::unique_ptr<Visualizer> visualizer;
+
+  /*
+   * Visualizer which generates files as
+   * an input of graphic libraries to visualize the models
+   */
+  std::unique_ptr<PostProcessingBase> postProcesser;
 };
 }  // namespace datadriven
 }  // namespace sgpp

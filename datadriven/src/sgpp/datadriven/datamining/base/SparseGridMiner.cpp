@@ -13,8 +13,9 @@
 
 namespace sgpp {
 namespace datadriven {
-SparseGridMiner::SparseGridMiner(ModelFittingBase* fitter, Scorer* scorer, Visualizer *visualizer)
-    : fitter(fitter), scorer(scorer), visualizer(visualizer) {}
+SparseGridMiner::SparseGridMiner(ModelFittingBase* fitter, Scorer* scorer, Visualizer *visualizer,
+                                 PostProcessingBase *postProcesser)
+    : fitter(fitter), scorer(scorer), visualizer(visualizer) , postProcesser(postProcesser){}
 
 double SparseGridMiner::test(Dataset& testDataset) { return scorer->test(*fitter, testDataset); }
 

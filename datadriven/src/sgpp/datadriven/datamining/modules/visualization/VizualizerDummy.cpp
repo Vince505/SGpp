@@ -17,6 +17,16 @@ void VisualizerDummy::runVisualization(ModelFittingBase &model, DataSource &data
   return;
 }
 
+void VisualizerDummy::runPostProcessingVisualization(ModelFittingBase &model,
+  DataSource &dataSource) {
+  return;
+}
+
+void VisualizerDummy::storeScatterPlotJson(DataMatrix &matrix, ModelFittingBase &model,
+                          std::string currentDirectory) {
+  return;
+}
+
 void VisualizerDummy::storeHeatmapJson(DataMatrix &matrix, ModelFittingBase &model,
   std::vector<size_t> indexes, size_t &varDim1, size_t &varDim2, std::string filepath) {
   return;

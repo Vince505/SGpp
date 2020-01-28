@@ -32,9 +32,11 @@ class SparseGridMinerCrossValidation : public SparseGridMiner {
    * of the passed object.
    * @param visualizer configured instance of viusalizer object that will produce the output
    * to visualize the model and its results
+   * @param postProcesser configured instance of postProcesser object that will execute some post
+   * processing after the training of the model
    */
   SparseGridMinerCrossValidation(DataSourceCrossValidation* dataSource, ModelFittingBase* fitter,
-      Scorer* scorer, Visualizer* visualizer);
+      Scorer* scorer, Visualizer* visualizer, PostProcessingBase* postProcesser);
 
   /**
    * Copy constructor deleted - not all members can be copied or cloned .

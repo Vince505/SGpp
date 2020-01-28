@@ -41,6 +41,13 @@ class VisualizerDensityEstimation:public Visualizer {
   void runVisualization(ModelFittingBase &model, DataSource &dataSource, size_t epoch,
     size_t fold, size_t batch) override;
 
+  /**
+   * Method to run the visualization process when executing a post Process
+   * @param model The model used to evaluate the visualization
+   * @param dataSource The datasource from where the data points are obtained
+   */
+  void runPostProcessingVisualization(ModelFittingBase &model, DataSource &dataSource) override;
+
  protected:
 
   /**
@@ -54,12 +61,13 @@ class VisualizerDensityEstimation:public Visualizer {
 
   /**
    * Method to generate and store in json  format for the
-   * plotly library the output of the tsne algorithm
+   * plotly library the output of the data with its density values in a scatterplot.
    * @param matrix Matrix with the content to be stored
    * @param model Model used in the evaluation
    * @param currentDirectory The current directory to store the json file
    */
-  void storeTsneJson(DataMatrix &matrix, ModelFittingBase &model, std::string currentDirectory);
+  void storeScatterPlotJson(DataMatrix &matrix, ModelFittingBase &model,
+    std::string currentDirectory) override;
 
   /**
    * Method to generate and store in json  format for the

@@ -37,18 +37,31 @@ class NegativeLogLikelihood : public Metric {
                  const ModelFittingBase &model, Dataset &testDataset) const override;
 
   /**
- * Quantify the NLL of the predicted values (i.e. adding the logs of the predicted values
- * and ignorign the true values).
- * Note that probabilities <= 0 are simply ignored (the model can provide those)
- *
- * @param predictedValues probabilites calculated by the model for testing data
- * @param trueValues ignored
- * @param model reference to the model
- * @param testDataset dataset with test data
- * @return the negative log likelihood of the predicted probabilities
- */
+   * Quantify the NLL of the predicted values (i.e. adding the logs of the predicted values
+   * and ignoring the true values).
+   * Note that probabilities <= 0 are simply ignored (the model can provide those)
+   *
+   * @param predictedValues probabilites calculated by the model for testing data
+   * @param trueValues ignored
+   * @param model reference to the model
+   * @param testDataset dataset with test data
+   * @return the negative log likelihood of the predicted probabilities
+   */
   double measureLowerIsBetter(const DataVector &predictedValues, const DataVector &trueValues,
                               const ModelFittingBase &model, Dataset &testDataset) const override;
+
+  /**
+   * Quantify the NLL of the predicted values after post processing
+   * (i.e. adding the logs of the predicted values
+   * and ignoring the true values).
+   * @param predictedValues probabilites calculated by the model for testing data
+   * @param trueValues ignored
+   * @param model reference to the model
+   * @param testDataset dataset with test data
+   * @return the negative log likelihood of the predicted probabilities
+   */
+  double measurePostProcessing(const DataVector &predictedValues, const DataVector &trueValues,
+                               const ModelFittingBase &model, Dataset &testDataset) const override;
 };
 } /* namespace datadriven */
 } /* namespace sgpp */

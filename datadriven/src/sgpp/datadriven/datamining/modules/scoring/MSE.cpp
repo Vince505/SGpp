@@ -28,5 +28,10 @@ double MSE::measureLowerIsBetter(const DataVector &predictedValues, const DataVe
   return measure(predictedValues, trueValues, model, testDataset);
 }
 
+double MSE::measurePostProcessing(const DataVector &predictedValues, const DataVector &trueValues,
+                                 const ModelFittingBase &model, Dataset &testDataset) const {
+  return measure(predictedValues, trueValues, model, testDataset);
+}
+
 } /* namespace datadriven */
 } /* namespace sgpp */

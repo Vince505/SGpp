@@ -37,7 +37,6 @@ namespace datadriven {
 
     size_t nDimensions = model.getDataset()->getDimension();
     if (epoch == 0 && fold == 0 && batch == 0) {
-      //originalData = dataSource.getAllSamples()->getData();
       resolution = static_cast<size_t>(pow(2,
                                            model.getFitterConfiguration().getGridConfig().level_+2));
       visualizerDensityEstimation->setResolution(resolution);
@@ -71,30 +70,20 @@ namespace datadriven {
     std::cout << "Creating output directory " << config.getGeneralConfig().targetDirectory
               << std::endl;
 
-    createFolder(currentDirectory+"/Clustering");
 
     omp_set_num_threads(static_cast<int> (config.getVisualizationParameters().numberCores));
 
     ModelFittingClustering *clusteringModel =
       dynamic_cast<ModelFittingClustering *>(&model);
 
-    tsneCompressedData = clusteringModel->getPoints();
+    //tsneCompressedData = clusteringModel->getPoints();
     #pragma omp parallel sections
     {
       #pragma omp section
       {
-       storeTsneJson(tsneCompressedData,
-          model, currentDirectory+"/Clustering");
-
-        getGraphPlot(tsneCompressedData, *clusteringModel, currentDirectory+"/Clustering");
-
-
-      }
-      #pragma omp section
-      {
-        if (std::find(config.getGeneralConfig().algorithm.begin(),
-                      config.getGeneralConfig().algorithm.end(), "linearcuts")
-            != config.getGeneralConfig().algorithm.end()) {
+        if (std::find(config.getGeneralConfig().plots.begin(),
+                      config.getGeneralConfig().plots.end(), "linearcuts")
+            != config.getGeneralConfig().plots.end()) {
           createFolder(currentDirectory+"/DensityEstimation");
           DataMatrix cutMatrix;
           visualizerDensityEstimation->getLinearCuts
@@ -104,9 +93,9 @@ namespace datadriven {
       }
       #pragma omp section
       {
-        if (std::find(config.getGeneralConfig().algorithm.begin(),
-                      config.getGeneralConfig().algorithm.end(), "heatmaps")
-            != config.getGeneralConfig().algorithm.end()) {
+        if (std::find(config.getGeneralConfig().plots.begin(),
+                      config.getGeneralConfig().plots.end(), "heatmaps")
+            != config.getGeneralConfig().plots.end()) {
           createFolder(currentDirectory+"/DensityEstimation");
           DataMatrix heatMapMatrix;
           visualizerDensityEstimation->getHeatmap
@@ -115,43 +104,66 @@ namespace datadriven {
         }
       }
     }
-      /* To be added after tsne is functioning again
-       * #pragma omp section
-      {
-        if (config.getGeneralConfig().algorithm == "tsne") {
-          if (fold == 0 && batch == 0) {
-            runTsne(model);
-          }
-          if (originalData.getNcols() >= 1) {
-            DataVector evaluation(originalData.getNrows());
-            model.evaluate(originalData, evaluation);
-            tsneCompressedData.setColumn(tsneCompressedData.getNcols()-1, evaluation);
-            if (config.getGeneralConfig().targetFileType == VisualizationFileType::CSV) {
-              CSVTools::writeMatrixToCSVFile(currentDirectory +
-                "/tsneCompression", tsneCompressedData);
-            } else if (config.getGeneralConfig().targetFileType == VisualizationFileType::json) {
-              if (config.getVisualizationParameters().targetDimension != 2) {
-                std::cout << "A json output is only available for compressions in 2 dimensions"
-                "Storing the CSV instead" << std::endl;
-                CSVTools::writeMatrixToCSVFile(currentDirectory +
-                  "/tsneCompression", tsneCompressedData);
-              }
-                storeTsneJson(tsneCompressedData, model, currentDirectory);
-            }
-          }
-        }
-      }
-    } */
   }
 
-  void VisualizerClustering::storeTsneJson(DataMatrix &matrix, ModelFittingBase &model,
+  void VisualizerClustering::runPostProcessingVisualization(ModelFittingBase &model,
+                                                                   DataSource &dataSource) {
+
+
+    if (std::find(config.getGeneralConfig().plots.begin(),
+                  config.getGeneralConfig().plots.end(), "scatterplots")
+        != config.getGeneralConfig().plots.end() && config.getGeneralConfig().execute ) {
+
+      createFolder(config.getGeneralConfig().targetDirectory+"/Clustering");
+      ModelFittingClustering *clusteringModel =
+        dynamic_cast<ModelFittingClustering *>(&model);
+
+      DataMatrix originalData = clusteringModel->getPoints();
+      if (config.getGeneralConfig().algorithm == "tsne") {
+        runTsne(originalData, compressedData);
+      }
+      if (config.getGeneralConfig().targetFileType == VisualizationFileType::json) {
+        storeScatterPlotJson(compressedData,
+                      model, config.getGeneralConfig().targetDirectory + "/Clustering");
+      } else {
+        DataVector clusterLabels(compressedData.getNrows());
+
+        clusteringModel->evaluate(originalData, clusterLabels);
+
+        DataMatrix toCsvMatrix(compressedData);
+
+        toCsvMatrix.appendCol(clusterLabels);
+
+        CSVTools::writeMatrixToCSVFile(config.getGeneralConfig().targetDirectory +
+                                       "/Clustering/clustering", toCsvMatrix);
+      }
+    }
+  }
+
+  void VisualizerClustering::storeScatterPlotJson(DataMatrix &matrix, ModelFittingBase &model,
+                                                 std::string currentDirectory) {
+
+    ModelFittingClustering *clusteringModel =
+      dynamic_cast<ModelFittingClustering *>(&model);
+    #pragma omp parallel sections
+    {
+      #pragma omp section
+      {
+        getHierarchyAnimation(matrix,
+                              *clusteringModel, currentDirectory);
+      }
+      #pragma omp section
+      {
+        getGraphPlot(matrix, *clusteringModel, currentDirectory);
+      }
+    }
+  }
+
+  void VisualizerClustering::getHierarchyAnimation(DataMatrix &matrix, ModelFittingClustering &model,
       std::string currentDirectory) {
     JSON jsonOutput;
 
-    ModelFittingClustering *clusteringModel =
-        dynamic_cast<ModelFittingClustering *>(&model);
-
-    auto tree = clusteringModel->getHierarchyTree();
+    auto tree = model.getHierarchyTree();
 
     size_t numberClusters = (*tree)->getNumberClusters();
 
@@ -219,6 +231,7 @@ namespace datadriven {
       DataVector zCol(matrix.getNcols());
 
       (*tree)->evaluateClusteringAtLevel(zCol, frame);
+
       separateClustersIntoTraces(matrix, zCol, traces);
 
       // Per frame Each cluster is processed as a separate component in a trace
@@ -265,9 +278,9 @@ namespace datadriven {
       }
 
     }
-
-    jsonOutput.serialize(currentDirectory + "/Hierarchy.json");
     std::cout << "Writing file " << currentDirectory + "/Hierarchy.json" << std::endl;
+    jsonOutput.serialize(currentDirectory + "/Hierarchy.json");
+
   }
 
   void VisualizerClustering::getGraphPlot(DataMatrix &matrix, ModelFittingClustering &model,
@@ -350,9 +363,10 @@ namespace datadriven {
       traces[clusterNumber].getColumn(1, yCol);
       jsonOutput["data"][clusterNumber + 1].addIDAttr("y", yCol.toString());
     }
+    std::cout << "Writing file " << currentDirectory + "/Graph.json" << std::endl;
     jsonOutput.serialize(currentDirectory + "/Graph.json");
 
-    std::cout << "Writing file " << currentDirectory + "/Graph.json" << std::endl;
+
   }
 
 

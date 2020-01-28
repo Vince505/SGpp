@@ -35,16 +35,32 @@ class VisualizerDummy:public Visualizer {
     size_t fold, size_t batch) override;
 
   /**
- * Method to generate and store in json  format for the
- * plotly library the output of the hetamaps for models of 3 or more dimensions
- * @param matrix Matrix with the content to be stored
- * @param model The model used when evaluating the heatmaps
- * @param indexes Vectors containing the dimensions used when generating these heatmaps
- * @param varDim1 The first dimension number varying and whose evaluation
- * is shown in the model
- * @param varDim2 The second dimension number varying and whose evaluation
- * is shown in the model
- * @param filepath The current directory to store the json file
+  * Method to run the visualization process when executing a post Process
+  * @param model The model used to evaluate the visualization
+  * @param dataSource The datasource from where the data points are obtained
+  */
+  void runPostProcessingVisualization(ModelFittingBase &model, DataSource &dataSource) override;
+
+  /**
+   * Method to generate and store in json  format for the
+   * plotly library the output of the data with its predicted labels in a scatterplot.
+   * @param matrix Matrix with the content to be stored
+   * @param model Model used in the evaluation
+   * @param currentDirectory The current directory to store the json file
+   */
+  void storeScatterPlotJson(DataMatrix &matrix, ModelFittingBase &model,
+                            std::string currentDirectory) override;
+  /**
+   * Method to generate and store in json  format for the
+   * plotly library the output of the hetamaps for models of 3 or more dimensions
+   * @param matrix Matrix with the content to be stored
+   * @param model The model used when evaluating the heatmaps
+   * @param indexes Vectors containing the dimensions used when generating these heatmaps
+   * @param varDim1 The first dimension number varying and whose evaluation
+   * is shown in the model
+   * @param varDim2 The second dimension number varying and whose evaluation
+   * is shown in the model
+   * @param filepath The current directory to store the json file
  */
   void storeHeatmapJson(DataMatrix &matrix, ModelFittingBase &model,
                         std::vector<size_t> indexes, size_t &varDim1, size_t &varDim2,

@@ -603,8 +603,11 @@ bool DataMiningConfigParser::getVisualizationGeneralConfig(
         static_cast<DictNode *>(&(*configFile)[visualization]["generalConfig"]);
 
     std::cout << "Starting reading visualization " << std::endl;
-    config.algorithm = parseStringArray(*visualizationGeneralConfig, "algorithm",
-                                        defaults.algorithm, "visualization");
+    config.plots = parseStringArray(*visualizationGeneralConfig, "plots",
+                                        defaults.plots, "visualization");
+
+    config.algorithm = parseString(*visualizationGeneralConfig, "algorithm",
+                                         defaults.algorithm, "visualization");
 
     config.targetDirectory = parseString(*visualizationGeneralConfig, "targetDirectory",
                                          defaults.targetDirectory, "visualization");
@@ -658,9 +661,6 @@ bool DataMiningConfigParser::getVisualizationParameters(
 
     config.maxNumberIterations = parseUInt(*visualizationParameters, "maxNumberIterations",
                                            defaults.maxNumberIterations, "visualization");
-
-    config.targetDimension = parseUInt(*visualizationParameters, "targetDimension",
-                                       defaults.targetDimension, "visualization");
 
     config.numberCores =
         parseUInt(*visualizationParameters, "numberCores", defaults.numberCores, "visualization");

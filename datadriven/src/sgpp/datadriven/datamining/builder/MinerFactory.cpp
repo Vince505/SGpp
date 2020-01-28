@@ -27,11 +27,13 @@ SparseGridMiner* MinerFactory::buildMiner(const std::string& path) const {
   if (parser.hasFitterConfigCrossValidation()) {
      return new SparseGridMinerCrossValidation(createDataSourceCrossValidation(parser),
                                                createFitter(parser), createScorer(parser),
-                                               createVisualizer(parser));
+                                               createVisualizer(parser),
+                                               createPostProcesser(parser));
   } else {
      return new SparseGridMinerSplitting(createDataSourceSplitting(parser), createFitter(parser),
                                          createScorer(parser),
-                                         createVisualizer(parser));
+                                         createVisualizer(parser),
+                                         createPostProcesser(parser));
   }
 }
 

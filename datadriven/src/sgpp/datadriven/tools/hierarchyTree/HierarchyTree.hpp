@@ -16,7 +16,7 @@ class HierarchyTree {
 
 public:
 
-  explicit HierarchyTree(std::vector<size_t> vertexIndexes);
+  explicit HierarchyTree(size_t numberPoints);
 
   ~HierarchyTree() {
     delete root;

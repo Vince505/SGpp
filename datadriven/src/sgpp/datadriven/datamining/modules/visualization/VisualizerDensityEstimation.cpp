@@ -56,7 +56,6 @@ void VisualizerDensityEstimation::runVisualization(ModelFittingBase &model, Data
   // If it's the first time executing obtaining the data from the datasource and
   // assign the resolution
   if (epoch == 0 && fold == 0 && batch == 0) {
-    originalData = dataSource.getAllSamples()->getData();
     resolution = static_cast<size_t>(pow(2,
       model.getFitterConfiguration().getGridConfig().level_+2));
   }
@@ -68,9 +67,9 @@ void VisualizerDensityEstimation::runVisualization(ModelFittingBase &model, Data
   {
     #pragma omp section
     {
-      if (std::find(config.getGeneralConfig().algorithm.begin(),
-          config.getGeneralConfig().algorithm.end(), "linearcuts") !=
-          config.getGeneralConfig().algorithm.end()) {
+      if (std::find(config.getGeneralConfig().plots.begin(),
+          config.getGeneralConfig().plots.end(), "linearcuts") !=
+          config.getGeneralConfig().plots.end()) {
         DataMatrix cutMatrix;
         getLinearCuts(model, currentDirectory, cutMatrix, nDimensions);
       }
@@ -78,49 +77,51 @@ void VisualizerDensityEstimation::runVisualization(ModelFittingBase &model, Data
 
     #pragma omp section
     {
-      if (std::find(config.getGeneralConfig().algorithm.begin(),
-                   config.getGeneralConfig().algorithm.end(), "heatmaps") !=
-                   config.getGeneralConfig().algorithm.end()) {
+      if (std::find(config.getGeneralConfig().plots.begin(),
+                   config.getGeneralConfig().plots.end(), "heatmaps") !=
+                   config.getGeneralConfig().plots.end()) {
         DataMatrix heatMapMatrix;
         getHeatmap(model, currentDirectory, heatMapMatrix, nDimensions);
       }
     }
-
-    /*#pragma omp section
-    {
-      if (config.getGeneralConfig().algorithm == "tsne") {
-        // Just run tsne if it's the first time the visualization module is executed
-        if (fold == 0 && batch == 0) {
-          runTsne(model);
-        }
-        // Evaluate the model on the original data and append the vector to the
-        // compressed data.
-        if (originalData.getNcols() > 1) {
-          DataVector evaluation(originalData.getNrows());
-          model.evaluate(originalData, evaluation);
-          tsneCompressedData.setColumn(tsneCompressedData.getNcols()-1, evaluation);
-          if ( config.getGeneralConfig().targetFileType == VisualizationFileType::CSV ) {
-            CSVTools::writeMatrixToCSVFile(currentDirectory +
-              "/tsneCompression", tsneCompressedData);
-          } else if (config.getGeneralConfig().targetFileType == VisualizationFileType::json) {
-            if (config.getVisualizationParameters().targetDimension != 2) {
-            std::cout << "A json output is only available for compressions in 2 dimensions"
-            "Storing the CSV instead" << std::endl;
-            CSVTools::writeMatrixToCSVFile(currentDirectory +
-              "/tsneCompression", tsneCompressedData);
-            }
-            storeTsneJson(tsneCompressedData, model, currentDirectory);
-          }
-        }
-      }
-    }*/
-
     #pragma omp section
     {
       // Just store the grid if the output is CSV.
       if (config.getGeneralConfig().targetFileType == VisualizationFileType::CSV) {
         storeGrid(model, currentDirectory);
       }
+    }
+  }
+}
+
+void VisualizerDensityEstimation::runPostProcessingVisualization(ModelFittingBase &model,
+                                                     DataSource &dataSource) {
+  if (std::find(config.getGeneralConfig().plots.begin(),
+                config.getGeneralConfig().plots.end(), "scatterplots")
+      != config.getGeneralConfig().plots.end() && config.getGeneralConfig().execute) {
+
+    createFolder(config.getGeneralConfig().targetDirectory);
+    DataMatrix originalData = dataSource.getAllSamples()->getData();
+    if (config.getGeneralConfig().algorithm == "tsne") {
+      runTsne(originalData, compressedData);
+    }
+
+    DataVector densityValues(compressedData.getNrows());
+
+    model.evaluate(originalData, densityValues);
+
+    if (config.getGeneralConfig().targetFileType == VisualizationFileType::json) {
+      compressedData.appendCol(densityValues);
+      storeScatterPlotJson(compressedData,
+                    model, config.getGeneralConfig().targetDirectory);
+    } else {
+
+      DataMatrix toCsvMatrix(compressedData);
+
+      toCsvMatrix.appendCol(densityValues);
+
+      CSVTools::writeMatrixToCSVFile(config.getGeneralConfig().targetDirectory +
+                                     "scatterplot", toCsvMatrix);
     }
   }
 }
@@ -138,58 +139,9 @@ void VisualizerDensityEstimation::storeGrid(ModelFittingBase &model,
   CSVTools::writeMatrixToCSVFile(currentDirectory + "/grid", gridMatrix);
 }
 
-/*void VisualizerDensityEstimation::runTsne(ModelFittingBase &model) {
-    if ( originalData.getNcols() == 1 ) {
-      std::cout << "The tsne algorithm can only be applied if "
-      "the dimension is greater than 1" << std::endl;
-      return;
-    }
-
-    size_t N = originalData.getNrows();
-    size_t D = originalData.getNcols();
-
-    std::cout << "Rows: "<< std::to_string(N) << std::endl;
-    std::cout << "Columns: " << std::to_string(D) << std::endl;
-
-    // For the weird case in which no data can be found TSNE won't run
-    if (N == 0 || D == 0) {
-      std::cout << "No data found. TSNE wo't run" << std::endl;
-      return;
-    }
-    std::unique_ptr<double[]> input (new double[N*D]);
-
-    std::copy(originalData.data(), originalData.data()+N*D,
-      input.get());
-
-    std::unique_ptr<double[]> output(new double[N* config.getVisualizationParameters().
-                                 targetDimension]);
-
-    if ( D > config.getVisualizationParameters().targetDimension ) {
-      std::cout << "Compressing with tsne to " <<
-      std::to_string(config.getVisualizationParameters().targetDimension)
-      << " dimensions" << std::endl;
-
-      TSNE tsne;
-      tsne.run(input, N, D , output, config.getVisualizationParameters().targetDimension,
-      config.getVisualizationParameters().perplexity, config.getVisualizationParameters().theta,
-      config.getVisualizationParameters().seed, false,
-      config.getVisualizationParameters().maxNumberIterations);
-      D = config.getVisualizationParameters().targetDimension;
-    } else {
-     std::copy(output.get(), output.get()+N*D,
-           input.get());
-    }
-    DataVector evaluation(originalData.getNrows());
-    model.evaluate(originalData, evaluation);
-    tsneCompressedData = DataMatrix(output.get(), N, D);
-    tsneCompressedData.appendCol(evaluation);
-
-}*/
 
 
-
-
-void VisualizerDensityEstimation::storeTsneJson(DataMatrix &matrix, ModelFittingBase &model,
+void VisualizerDensityEstimation::storeScatterPlotJson(DataMatrix &matrix, ModelFittingBase &model,
   std::string currentDirectory) {
   json::JSON jsonOutput;
 
@@ -236,7 +188,7 @@ void VisualizerDensityEstimation::storeTsneJson(DataMatrix &matrix, ModelFitting
   jsonOutput["layout"]["title"].addIDAttr("text", "\"TSNE Compression\"");
   jsonOutput["layout"]["title"].addIDAttr("x", 0.5);
 
-  jsonOutput.serialize(currentDirectory + "/tsneCompression.json");
+  jsonOutput.serialize(currentDirectory + "/scatterPlot.json");
 }
 
 void VisualizerDensityEstimation::storeCutJson(DataMatrix &matrix, std::vector<size_t> indexes,

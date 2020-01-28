@@ -35,6 +35,21 @@ class Visualizer{
     size_t fold, size_t batch) = 0;
 
   /**
+  * Method to run the visualization process when executing a post Process
+  * @param model The model used to evaluate the visualization
+  * @param dataSource The datasource from where the data points are obtained
+  */
+  virtual void runPostProcessingVisualization(ModelFittingBase &model, DataSource &dataSource)= 0;
+
+  /**
+   * Runs the tsne algorithm to visualize high dimensional data in 2 dimensions
+   * @param originalData Matrix with the original points in high dimensional space
+   * @param compressedData Matrix which will contain the compressed points
+   * @param model The fitted model
+   */
+  void runTsne(DataMatrix &originalData, DataMatrix &compressedData);
+
+  /**
    * Get the configuration of the visualizer object.
    * @return configuration of the visualizer object
    */
@@ -182,6 +197,17 @@ class Visualizer{
    */
   void swapColumns(DataMatrix &matrix, size_t col1, size_t col2);
 
+
+  /**
+   * Method to generate and store in json  format for the
+   * plotly library the output of the data in a scatterplot.
+   * @param matrix Matrix with the content to be stored
+   * @param model Model used in the evaluation
+   * @param currentDirectory The current directory to store the json file
+   */
+  virtual void storeScatterPlotJson(DataMatrix &matrix, ModelFittingBase &model,
+                            std::string currentDirectory) = 0;
+
   /**
    * Method to generate and store in json  format for the
    * plotly library the output of the linear cuts for models of 2 or more dimensions
@@ -246,14 +272,9 @@ class Visualizer{
   VisualizerConfiguration config;
 
   /**
-   * Matrix to store the data from the datasource
+   * Matrix with reduced dimensional data
    */
-  DataMatrix originalData;
-  /**
-   * Matrix to store the data provided by the tsne algorithm
-   */
-  DataMatrix tsneCompressedData;
-
+  DataMatrix compressedData;
   /**
    * Resolution used in the graphs
    */

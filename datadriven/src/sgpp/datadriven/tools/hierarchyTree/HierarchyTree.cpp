@@ -12,8 +12,12 @@ using sgpp::base::DataVector;
 namespace sgpp {
 namespace datadriven {
 
-HierarchyTree::HierarchyTree(std::vector<size_t> vertexIndexes) {
-  this->root = new ClusterNode(-1, vertexIndexes, 0.0);
+HierarchyTree::HierarchyTree(size_t numberPoints) {
+  std::vector<size_t> allVertexIndexes;
+  for (size_t index = 0; index < numberPoints; index++) {
+    allVertexIndexes.push_back(index);
+  }
+  this->root = new ClusterNode(-1, allVertexIndexes, 0.0);
 }
 
 void HierarchyTree::printTree() {

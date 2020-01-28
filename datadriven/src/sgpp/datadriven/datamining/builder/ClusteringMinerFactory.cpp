@@ -14,7 +14,7 @@
 #include <sgpp/datadriven/datamining/modules/hpo/ClusteringFitterFactory.hpp>
 
 #include <sgpp/datadriven/datamining/modules/visualization/VisualizerClustering.hpp>
-
+#include <sgpp/datadriven/datamining/modules/postProcessing/PostProcessingClustering.hpp>
 #include <string>
 
 namespace sgpp {
@@ -32,14 +32,18 @@ FitterFactory *ClusteringMinerFactory::createFitterFactory(
   return new ClusteringFitterFactory(parser);
 }
 
-Visualizer* ClusteringMinerFactory::createVisualizer(const DataMiningConfigParser& parser)
-const {
+Visualizer* ClusteringMinerFactory::createVisualizer(const DataMiningConfigParser& parser) const {
   VisualizerConfiguration config;
 
   config.readParams(parser);
 
-      return new VisualizerClustering(config);
-    }
+  return new VisualizerClustering(config);
+}
+
+PostProcessingBase* ClusteringMinerFactory::createPostProcesser(
+  const DataMiningConfigParser& parser) const {
+  return new PostProcessingClustering();
+}
 
 } /* namespace datadriven */
 } /* namespace sgpp */

@@ -20,9 +20,14 @@ struct VisualizationGeneralConfig {
   bool execute = false;
 
   /**
-  * The list of algorithms to use in the visualization Module
+  * The dimensionality reduction alforithm to use to compress data
   */
-  std::vector<std::string> algorithm = std::vector<std::string>();
+  std::string algorithm = "";
+
+  /**
+  * The list of plots to use in the visualization Module
+  */
+  std::vector<std::string> plots = std::vector<std::string>();
 
   /**
   * The filetype in which to store the output of the visualization module

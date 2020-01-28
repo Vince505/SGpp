@@ -19,6 +19,10 @@
 #include <sgpp/datadriven/datamining/modules/fitting/ModelFittingDensityEstimationOnOffParallel.hpp>
 #include <sgpp/datadriven/datamining/modules/fitting/ModelFittingClassification.hpp>
 #include <sgpp/datadriven/datamining/modules/fitting/ModelFittingClustering.hpp>
+#include <sgpp/datadriven/datamining/modules/postProcessing/PostProcessingDensityEstimation.hpp>
+#include <sgpp/datadriven/datamining/modules/postProcessing/PostProcessingClassification.hpp>
+#include <sgpp/datadriven/datamining/modules/postProcessing/PostProcessingClustering.hpp>
+#include <sgpp/datadriven/datamining/modules/postProcessing/PostProcessingLeastSquares.hpp>
 #include <sgpp/datadriven/datamining/modules/visualization/VisualizerDensityEstimation.hpp>
 #include <sgpp/datadriven/datamining/modules/visualization/VisualizerClassification.hpp>
 #include <sgpp/datadriven/datamining/modules/visualization/VisualizerClustering.hpp>
@@ -100,5 +104,21 @@ Visualizer *UniversalMinerFactory::createVisualizer(const DataMiningConfigParser
   return visualizer;
 }
 
+PostProcessingBase *UniversalMinerFactory::createPostProcesser(const DataMiningConfigParser &parser)
+  const {
+  PostProcessingBase* postProcesser = nullptr;
+  FitterType fType = FitterType::RegressionLeastSquares;
+  parser.getFitterConfigType(fType, fType);
+  if (fType == FitterType::DensityEstimation) {
+    postProcesser = new PostProcessingDensityEstimation();
+  } else if (fType == FitterType::RegressionLeastSquares) {
+    postProcesser = new PostProcessingLeastSquares();
+  } else if (fType == FitterType::Classification) {
+    postProcesser = new PostProcessingClassification();
+  } else if (fType == FitterType::Clustering) {
+    postProcesser = new PostProcessingClustering();
+  }
+  return postProcesser;
+}
 } /* namespace datadriven */
 } /* namespace sgpp */

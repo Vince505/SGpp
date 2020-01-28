@@ -16,6 +16,7 @@ ClusterNode::ClusterNode(int clusterLabel, std::vector<size_t> vertexIndexes, do
   this->vertexIndexes = vertexIndexes;
   this->parent = nullptr;
   this->density = density;
+  this->level = 0;
 }
 
 void ClusterNode::removeChild(ClusterNode* child) {

@@ -18,8 +18,9 @@ namespace datadriven {
 
 SparseGridMinerSplitting::SparseGridMinerSplitting(DataSourceSplitting* dataSource,
                                                    ModelFittingBase* fitter, Scorer* scorer,
-                                                   Visualizer* visualizer)
-    : SparseGridMiner(fitter, scorer, visualizer), dataSource{dataSource} {}
+                                                   Visualizer* visualizer,
+                                                   PostProcessingBase* postProcesser)
+    : SparseGridMiner(fitter, scorer, visualizer, postProcesser), dataSource{dataSource} {}
 
 double SparseGridMinerSplitting::learn(bool verbose) {
 #ifdef USE_SCALAPACK
@@ -107,11 +108,10 @@ double SparseGridMinerSplitting::learn(bool verbose) {
       }
       iteration++;
     }
-    if (epoch == 0) {
-      fitter->switchFirstEpochFlag();
-    }
   }
-  return scorer->test(*fitter, *(dataSource->getValidationData()));
+
+  postProcesser->postProcessing(*dataSource, *fitter, *visualizer);
+  return scorer->testPostProcessing(*fitter, *(dataSource->getValidationData()));
 }
 
 double SparseGridMinerSplitting::optimizeLambda(bool verbose) {

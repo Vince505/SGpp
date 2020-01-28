@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include <sgpp/datadriven/datamining/modules/scoring/Metric.hpp>
+#include <sgpp/datadriven/datamining/modules/scoring/ClusteringMetric.hpp>
 #include <sgpp/base/datatypes/DataVector.hpp>
 #include <sgpp/base/datatypes/DataMatrix.hpp>
 
@@ -16,35 +16,23 @@ namespace datadriven {
  * that determine the quality of a clustering if the data doesn't contain labels
  * to compare against
  */
-class DavidBouldin: public Metric {
+class DavidBouldin: public ClusteringMetric {
 public:
   Metric *clone() const override;
   /**
-    * Quantify the David-Bouldin score
-    * of a clustering
-    *
-    * @param predictedValues ignored
-    * @param trueValues ignored
-    * @param model reference to the model
-    * @param testDataset ignored
-    * @return the David-Bouldin score of a clustering
-    */
-  double measure(const DataVector &predictedValues, const DataVector &trueValues,
-                 const ModelFittingBase &model, Dataset &testDataset) const override;
+   * Quantify the David-Bouldin score
+   * of a clustering after postprocessing
+   *
+   * @param predictedValues ignored
+   * @param trueValues ignored
+   * @param model reference to the model
+   * @param testDataset ignored
+   * @return the David-Bouldin score of a clustering
+   */
+  double measurePostProcessing(const DataVector &predictedValues, const DataVector &trueValues,
+                               const ModelFittingBase &model, Dataset &testDataset) const override;
 
 
-  /**
-    * Quantify the Fowlkes-Mallows score
-    * of a clustering
-    *
-    * @param predictedValues ignored
-    * @param trueValues ignored
-    * @param model reference to the model
-    * @param testDataset ignored
-    * @return the David-Bouldin score of a clustering
-    */
-  double measureLowerIsBetter(const DataVector &predictedValues, const DataVector &trueValues,
-                              const ModelFittingBase &model, Dataset &testDataset) const override;
 };
 
 } //  namespace datadriven

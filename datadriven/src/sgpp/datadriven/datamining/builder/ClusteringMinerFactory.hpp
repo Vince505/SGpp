@@ -43,10 +43,16 @@ class ClusteringMinerFactory : public MinerFactory {
   FitterFactory* createFitterFactory(const DataMiningConfigParser& parser) const override;
 
   /* Factory method to build a visualizer instance base on a configuration file.
-   * @param parser the datamining configuration parser instance to create the scorer from
-   * @return the scorer instance
+   * @param parser the datamining configuration parser instance to create the visualizer from
+   * @return the visualizer instance
    */
   Visualizer* createVisualizer(const DataMiningConfigParser& parser) const override;
+
+  /**
+   * Factory method to build a postProcesser instance base on a configuration file.
+   * @return the postProcesser instance
+   */
+  PostProcessingBase* createPostProcesser(const DataMiningConfigParser& parser) const override;
 };
 } /* namespace datadriven */
 } /* namespace sgpp */

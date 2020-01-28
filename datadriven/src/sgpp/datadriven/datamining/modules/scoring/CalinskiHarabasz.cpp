@@ -20,8 +20,8 @@ namespace datadriven {
 
 Metric *CalinskiHarabasz::clone() const { return new CalinskiHarabasz(*this);}
 
-double CalinskiHarabasz::measure(const DataVector &predictedValues, const DataVector &trueValues,
-                                 const ModelFittingBase &model, Dataset &testDataset) const {
+double CalinskiHarabasz::measurePostProcessing(const DataVector &predictedValues,
+  const DataVector &trueValues, const ModelFittingBase &model, Dataset &testDataset) const {
   auto clusteringModel = dynamic_cast<const ModelFittingClustering*>(&model);
 
   DataMatrix samples = clusteringModel->getPoints();
@@ -87,10 +87,5 @@ double CalinskiHarabasz::measure(const DataVector &predictedValues, const DataVe
   return score;
 }
 
-double CalinskiHarabasz::measureLowerIsBetter(const DataVector &predictedValues,
-  const DataVector &trueValues,
-  const ModelFittingBase &model, Dataset &testDataset) const {
-  return measure(predictedValues, trueValues, model, testDataset);
-}
 }//  namespace datadriven
 } //  namespace sgpp

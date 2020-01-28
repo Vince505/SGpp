@@ -34,12 +34,11 @@ ModelFittingClustering::ModelFittingClustering(
 
   this->densityEstimationModel = createNewDensityModel(
     dynamic_cast<sgpp::datadriven::FitterConfigurationDensityEstimation &>(*(this->config)));
-  this->classificationModel = std::make_unique<ModelFittingClassification>(
-    dynamic_cast<sgpp::datadriven::FitterConfigurationClassification &>(*(this->config)));
+
   this->graph = nullptr;
   this->vpTree = nullptr;
   this->hierarchy = nullptr;
-  this->labels = DataVector(0);
+
 #ifdef USE_SCALAPACK
   auto& parallelConfig = this->config->getParallelConfig();
 if (parallelConfig.scalapackEnabled_) {
@@ -58,44 +57,20 @@ void ModelFittingClustering::update(Dataset &newDataset) {
   // Update the model
   dataset = &newDataset;
   generateDensityEstimationModel(newDataset);
-  if (firstEpoch) {
-    generateSimilarityGraph(newDataset);
-  } else {
-    std::vector<size_t> allVertexIndexes;
-    for (size_t index = 0; index < vpTree->getStoredItems().getNrows(); index++) {
-      allVertexIndexes.push_back(index);
-    }
-    this->hierarchy = std::make_unique<HierarchyTree>(allVertexIndexes);
-  }
-
-  // Obtaining the cluster hierarchy for this batch
-  std::map<UndirectedGraph::vertex_descriptor, size_t> clusterMap;
-  double stepIncrease =
-    (config->getClusteringConfig().maxDensityThreshold -
-    config->getClusteringConfig().minDensityThreshold)
-    /config->getClusteringConfig().steps;
-
-  for (double step = config->getClusteringConfig().minDensityThreshold;
-  step <= config->getClusteringConfig().maxDensityThreshold; step+=stepIncrease){
-    std::cout << "============= Step " << step << " =============" << std::endl;
-    prunedGraphPreviousStep = std::make_shared<Graph>(*graph);
-    clusterMap.clear();
-    applyDensityThresholds(step);
-    detectComponentsAndLabel(clusterMap);
-    getHierarchy(clusterMap, step);
-  }
-
-  hierarchy->postProcessing();
-  hierarchy->printTree();
+  updateVpTree(newDataset.getData());
 }
 
 double ModelFittingClustering::evaluate(const DataVector &sample) {
   std::cout << "Method not defined for Clustering Models"<<std::endl;
-  return 0,0;
+  return 0.0;
 }
 
 void ModelFittingClustering::evaluate(DataMatrix &samples, DataVector &results) {
-  hierarchy->evaluateClustering(results);
+  if (graph == nullptr) {
+    densityEstimationModel->evaluate(samples, results);
+  } else {
+    hierarchy->evaluateClustering(results);
+  }
 }
 
 bool ModelFittingClustering::refine() {
@@ -105,8 +80,9 @@ bool ModelFittingClustering::refine() {
 
 void ModelFittingClustering::reset() {
   densityEstimationModel->reset();
-  classificationModel->reset();
-  graph = nullptr;
+  graph.reset();
+  prunedGraphPreviousStep .reset();
+  hierarchy.reset();
 }
 
 double ModelFittingClustering::computeResidual(DataMatrix &validationData) const  {
@@ -149,60 +125,41 @@ void ModelFittingClustering::generateDensityEstimationModel(Dataset &dataset) {
   densityEstimationModel->update(dataset);
 }
 
-void ModelFittingClustering::generateSimilarityGraph(Dataset &dataset) {
-  if (graph == nullptr) {
-    this->vpTree = std::make_unique<VpTree>(dataset.getData());
-    graph = std::make_shared<Graph>(dataset.getData().getNrows());
-    DataVector currrentRow(dataset.getData().getNcols());
-    std::vector<size_t> allVertexIndexes;
+void ModelFittingClustering::generateSimilarityGraph() {
+  graph = std::make_shared<Graph>(getPoints().getNrows());
+  DataVector currrentRow(getPoints().getNcols());
 
-    for (size_t index = 0; index < vpTree->getStoredItems().getNrows(); index++) {
-      vpTree->getStoredItems().getRow(index, currrentRow);
-      auto nearestNeighbors = vpTree->getNearestNeighbors(currrentRow,
-          config->getClusteringConfig().noNearestNeighbors);
-      graph->createEdges(index, nearestNeighbors);
-      allVertexIndexes.push_back(index);
-    }
-
-    this->hierarchy = std::make_unique<HierarchyTree>(allVertexIndexes);
-    std::cout << "Num of vertices: " << boost::num_vertices(*(graph->getGraph())) << std::endl;
-    std::cout << "Num of edges " << boost::num_edges(*(graph->getGraph())) << std::endl;
-
-  } else {
-    updateGraph(dataset.getData());
-  }
-}
-
-void ModelFittingClustering::updateGraph(DataMatrix &newDataset) {
-  clock_t start = std::clock();
-  vpTree->update(newDataset);
-
-  DataVector currrentRow(newDataset.getNcols());
-  graph = std::make_shared<Graph>(vpTree->getStoredItems().getNrows());
-  std::vector<size_t> allVertexIndexes;
-
-  for (size_t index = 0; index < vpTree->getStoredItems().getNrows(); index++) {
-    vpTree->getStoredItems().getRow(index, currrentRow);
+  for (size_t index = 0; index < getPoints().getNrows(); index++) {
+    getPoints().getRow(index, currrentRow);
     auto nearestNeighbors = vpTree->getNearestNeighbors(currrentRow,
         config->getClusteringConfig().noNearestNeighbors);
     graph->createEdges(index, nearestNeighbors);
-    allVertexIndexes.push_back(index);
+  }
+  std::cout << "Num of vertices: " << boost::num_vertices(*(graph->getGraph())) << std::endl;
+  std::cout << "Num of edges " << boost::num_edges(*(graph->getGraph())) << std::endl;
+
+}
+
+void ModelFittingClustering::updateVpTree(DataMatrix &newDataset) {
+  clock_t start = std::clock();
+  if (vpTree == nullptr) {
+    this->vpTree = std::make_unique<VpTree>(newDataset);
+  } else {
+    vpTree->update(newDataset);
   }
   clock_t end = std::clock();
-  std::cout << "Vertices in *graph: " << boost::num_vertices(*graph->getGraph()) << std::endl;
-  std::cout << "Edges in *graph: " << boost::num_edges(*graph->getGraph()) << std::endl;
-  std::cout << "Graph updated in  " <<
+  std::cout << "VpTree updated in  " <<
             std::to_string(static_cast<double>(end - start) / CLOCKS_PER_SEC) << " seconds"
             << std::endl;
-
-  this->hierarchy = std::make_unique<HierarchyTree>(allVertexIndexes);
 }
 
 
 void ModelFittingClustering::applyDensityThresholds(double densityThreshold) {
-  DataVector evaluation(vpTree->getStoredItems().getNrows());
 
-  densityEstimationModel->evaluate((vpTree->getStoredItems()), evaluation);
+  DataMatrix points = getPoints();
+  DataVector evaluation(points.getNrows());
+
+  densityEstimationModel->evaluate(points, evaluation);
 
   double maxValue = evaluation.max();
   for (size_t index = 0; index < evaluation.size(); index++) {
@@ -230,12 +187,13 @@ void ModelFittingClustering::getHierarchy(
   for (auto vertex:clusterMap) {
     labelstoPointsMap[vertex.second].push_back(graph->getIndex(vertex.first));
   }
-
   std::cout << "Building the hierarchy"<<std::endl;
   std::vector<ClusterNode*> updatedClusters;
   std::vector<size_t> visitedLabels;
+
   for (auto cluster: labelstoPointsMap) {
-    ClusterNode* newChild = new ClusterNode(cluster.first, cluster.second, densityThreshold);
+    ClusterNode* newChild = new ClusterNode(static_cast<int>(cluster.first),
+              cluster.second, densityThreshold);
     ClusterNode* parentCluster = hierarchy->getMostSpecificCluster(cluster.second.at(0));
     parentCluster->addChild(newChild);
     newChild->setLevel(parentCluster->getLevel()+1);
@@ -245,7 +203,6 @@ void ModelFittingClustering::getHierarchy(
       visitedLabels.push_back(parentCluster->getClusterLabel());
     }
   }
-
   for (auto parent: updatedClusters) {
     if (parent->getChildren().size() > 1) {
       if (parent->split(prunedGraphPreviousStep, densityThreshold)) {
@@ -267,33 +224,15 @@ void ModelFittingClustering::getHierarchy(
       parent->removeChildren();
     }
   }
+  hierarchy->postProcessing();
 }
 
-void ModelFittingClustering::generateClassificationModel(
-  std::map<UndirectedGraph::vertex_descriptor, size_t> &clusterMap) {
+void ModelFittingClustering::intializeHierarchyTree() {
+  this->hierarchy = std::make_unique<HierarchyTree>(getPoints().getNrows());
+}
 
-  // Prepares dataset for the classification Model
-  Dataset* classificationDataSet = new Dataset(vpTree->getStoredItems().getNrows(),
-                                               vpTree->getStoredItems().getNcols());
-
-  DataMatrix& samples = classificationDataSet->getData();
-  DataVector& componentLabels = classificationDataSet->getTargets();
-
-  samples.copyFrom(vpTree->getStoredItems());
-
-  for (size_t index = 0; index < vpTree->getStoredItems().getNrows(); index++) {
-    if (!graph->containsVertex(index)) {
-      componentLabels.set(index, static_cast<double>(-1));
-    } else {
-      componentLabels.set(index, clusterMap[graph->getVertexDescriptor(index)]);
-    }
-  }
-
-  classificationModel->fit(*classificationDataSet);
-
-  labels.resizeZero(componentLabels.size());
-
-  classificationModel->evaluate(samples, labels);
+void ModelFittingClustering::copyPreviousGraphStep() {
+  prunedGraphPreviousStep = std::make_shared<Graph>(*graph);
 }
 
 std::unique_ptr<ModelFittingDensityEstimation>*
@@ -301,17 +240,8 @@ std::unique_ptr<ModelFittingDensityEstimation>*
   return &densityEstimationModel;
 }
 
-std::unique_ptr<ModelFittingClassification>*
-    ModelFittingClustering::getClassificationModel() {
-  return &classificationModel;
-}
-
 DataMatrix ModelFittingClustering::getPoints() const {
   return vpTree->getStoredItems();
-}
-
-DataVector ModelFittingClustering::getLabels() const{
-  return labels;
 }
 
 std::unique_ptr<HierarchyTree>* ModelFittingClustering::getHierarchyTree() {

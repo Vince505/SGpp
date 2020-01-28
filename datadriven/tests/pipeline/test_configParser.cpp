@@ -339,16 +339,17 @@ BOOST_AUTO_TEST_CASE(testVisualizationGeneralConfig) {
   DataMiningConfigParser parser{datasetPath};
   VisualizationGeneralConfig defaults;
 
-  defaults.algorithm = std::vector<std::string>({"otherAlgorithm"});
+  defaults.algorithm = "otherAlgorithm";
   defaults.targetDirectory = "./targetDirectory";
   defaults.targetFileType = VisualizationFileType::json;
+  defaults.plots = std::vector<std::string>({"otherPlots"});
   defaults.numBatches = 5;
   defaults.crossValidation = false;
 
   VisualizationGeneralConfig config;
   bool hasConfig;
   bool hasGeneralVisualizationConfig;
-  std::vector<std::string> expectedAlgorithm = std::vector<std::string>({"tsne", "heatmaps"});
+  std::vector<std::string> expectedPlots = std::vector<std::string>({"scatterplots", "heatmaps"});
 
   hasGeneralVisualizationConfig = parser.hasVisualizationGeneralConfig();
 
@@ -357,8 +358,9 @@ BOOST_AUTO_TEST_CASE(testVisualizationGeneralConfig) {
   BOOST_CHECK_EQUAL(hasConfig, true);
   BOOST_CHECK_EQUAL(hasGeneralVisualizationConfig, true);
 
-  BOOST_CHECK_EQUAL_COLLECTIONS(config.algorithm.begin(), config.algorithm.end(),
-                                expectedAlgorithm.begin(), expectedAlgorithm.end());
+  BOOST_CHECK_EQUAL(config.algorithm, "tsne");
+  BOOST_CHECK_EQUAL_COLLECTIONS(config.plots.begin(), config.plots.end(),
+  expectedPlots.begin(), expectedPlots.end());
   BOOST_CHECK_EQUAL(std::strcmp(config.targetDirectory.c_str(), "./output"), 0);
   BOOST_CHECK_EQUAL(static_cast<int>(config.targetFileType),
                     static_cast<int>(VisualizationFileType::json));
@@ -372,7 +374,6 @@ BOOST_AUTO_TEST_CASE(testVisualizationParameters) {
 
   defaults.perplexity = 22;
   defaults.theta = 0.1;
-  defaults.targetDimension = 2;
   defaults.seed = 50;
   defaults.numberCores = 3;
   defaults.maxNumberIterations = 200;
@@ -388,7 +389,6 @@ BOOST_AUTO_TEST_CASE(testVisualizationParameters) {
   BOOST_CHECK_EQUAL(hasVisualizationParameters, true);
   BOOST_CHECK_EQUAL(config.perplexity, 30);
   BOOST_CHECK_EQUAL(config.theta, 0.5);
-  BOOST_CHECK_EQUAL(config.targetDimension, 2);
   BOOST_CHECK_EQUAL(config.seed, 150);
   BOOST_CHECK_EQUAL(config.numberCores, 3);
   BOOST_CHECK_EQUAL(config.maxNumberIterations, 500);

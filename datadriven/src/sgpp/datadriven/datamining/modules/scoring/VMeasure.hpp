@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include <sgpp/datadriven/datamining/modules/scoring/Metric.hpp>
+#include <sgpp/datadriven/datamining/modules/scoring/ClusteringMetric.hpp>
 
 namespace sgpp {
 namespace datadriven {
@@ -14,36 +14,22 @@ namespace datadriven {
  * the data contains labels
  * to compare against
  */
-class VMeasure: public Metric {
+class VMeasure: public ClusteringMetric {
 public:
   Metric *clone() const override;
 
   /**
-    * Quantify the V Measure score
-    * of a clustering
-    *
-    * @param predictedValues clustering given  by the model for testing data
-    * @param trueValues trueLabels of the clustering
-    * @param model reference to the model
-    * @param testDataset dataset with test data
-    * @return the v Measure score of a clustering
-    */
-  double measure(const DataVector &predictedValues, const DataVector &trueValues,
-                 const ModelFittingBase &model, Dataset &testDataset) const override;
+   * Quantify the V Measure score
+   * of a clustering
+   * @param predictedValues clustering given  by the model for testing data
+   * @param trueValues trueLabels of the clustering
+   * @param model reference to the model
+   * @param testDataset dataset with test data
+   * @return he v Measure score of a clustering
+   */
 
-
-  /**
-    * Quantify the V Measure score
-      * of a clustering
-    *
-    * @param predictedValues clustering given  by the model for testing data
-    * @param trueValues trueLabels of the clustering
-    * @param model reference to the model
-    * @param testDataset dataset with test data
-    * @return the v Measure score of a clustering
-    */
-  double measureLowerIsBetter(const DataVector &predictedValues, const DataVector &trueValues,
-                              const ModelFittingBase &model, Dataset &testDataset) const override;
+  double measurePostProcessing(const DataVector &predictedValues, const DataVector &trueValues,
+                               const ModelFittingBase &model, Dataset &testDataset) const override;
 
 };
 

@@ -19,6 +19,8 @@
 #include <sgpp/datadriven/datamining/modules/hpo/BoHyperparameterOptimizer.hpp>
 #include <sgpp/datadriven/datamining/modules/hpo/DensityEstimationFitterFactory.hpp>
 #include <sgpp/datadriven/datamining/modules/hpo/HarmonicaHyperparameterOptimizer.hpp>
+
+#include <sgpp/datadriven/datamining/modules/postProcessing/PostProcessingDensityEstimation.hpp>
 #include <sgpp/datadriven/datamining/modules/visualization/VisualizerDensityEstimation.hpp>
 #include <sgpp/datadriven/datamining/modules/visualization/VisualizerConfiguration.hpp>
 
@@ -74,6 +76,9 @@ const {
   return new VisualizerDensityEstimation(config);
 }
 
-
+PostProcessingBase* DensityEstimationMinerFactory::createPostProcesser(
+  const DataMiningConfigParser& parser) const {
+  return new PostProcessingDensityEstimation();
+}
 } /* namespace datadriven */
 } /* namespace sgpp */

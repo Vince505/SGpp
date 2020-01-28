@@ -20,7 +20,8 @@ namespace datadriven {
 
 Metric *DavidBouldin::clone() const { return new DavidBouldin(*this);}
 
-double DavidBouldin::measure(const DataVector &predictedValues, const DataVector &trueValues,
+double DavidBouldin::measurePostProcessing(const DataVector &predictedValues,
+  const DataVector &trueValues,
   const ModelFittingBase &model, Dataset &testDataset) const {
   auto clusteringModel = dynamic_cast<const ModelFittingClustering*>(&model);
 
@@ -92,12 +93,10 @@ double DavidBouldin::measure(const DataVector &predictedValues, const DataVector
     davidBouldinIndex+=maxIndex;
   }
   davidBouldinIndex = davidBouldinIndex/clusterLabels.size()+numberNoise/4.0;
+
   return davidBouldinIndex;
 }
 
-double DavidBouldin::measureLowerIsBetter(const DataVector &predictedValues, const DataVector &trueValues,
-  const ModelFittingBase &model, Dataset &testDataset) const {
-  return measure(predictedValues, trueValues, model, testDataset);
-}
+
 }//  namespace datadriven
 } //  namespace sgpp

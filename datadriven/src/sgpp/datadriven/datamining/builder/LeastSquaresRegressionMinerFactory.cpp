@@ -16,6 +16,7 @@
 #include <sgpp/datadriven/datamining/modules/hpo/HarmonicaHyperparameterOptimizer.hpp>
 #include <sgpp/datadriven/datamining/modules/hpo/BoHyperparameterOptimizer.hpp>
 
+#include <sgpp/datadriven/datamining/modules/postProcessing/PostProcessingLeastSquares.hpp>
 #include <sgpp/datadriven/datamining/modules/visualization/VisualizerDummy.hpp>
 
 #include <string>
@@ -41,6 +42,11 @@ Visualizer* LeastSquaresRegressionMinerFactory::createVisualizer(
   config.readParams(parser);
 
   return new VisualizerDummy();
+}
+
+PostProcessingBase* LeastSquaresRegressionMinerFactory::createPostProcesser(
+  const DataMiningConfigParser& parser) const {
+  return new PostProcessingLeastSquares();
 }
 } /* namespace datadriven */
 } /* namespace sgpp */

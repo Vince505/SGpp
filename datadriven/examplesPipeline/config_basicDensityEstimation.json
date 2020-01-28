@@ -35,7 +35,8 @@
     },
     "visualization": {
         "generalConfig": {
-            "algorithm": ["tsne", "heatmaps"],
+            "algorithm": "tsne",
+            "plots": ["scatterplots", "heatmaps"],
             "targetDirectory": "./output",
             "targetFileType": "json",
             "numBatches": 1
@@ -45,7 +46,6 @@
             "theta": 0.5,
             "seed": 150,
             "maxNumberIterations": 1000,
-            "targetDimension": 2,
             "numberCores": 1
         }
     }

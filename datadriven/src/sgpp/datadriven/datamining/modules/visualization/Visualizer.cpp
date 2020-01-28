@@ -5,6 +5,7 @@
 
 
 #include <sgpp/datadriven/datamining/modules/visualization/Visualizer.hpp>
+#include <sgpp/datadriven/datamining/modules/visualization/algorithms/bhtsne/tsne.hpp>
 #include <string>
 #include<iostream>
 #ifdef _WIN32
@@ -13,6 +14,8 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #endif
+
+using sgpp::datadriven::TSNE;
 namespace sgpp {
 namespace datadriven {
 
@@ -29,6 +32,35 @@ void Visualizer::createFolder(std::string folder_path) {
   #elif __linux__
   mkdir(folder_path.c_str(), S_IRWXU | S_IRWXU | S_IROTH);
   #endif
+}
+void Visualizer::runTsne(DataMatrix &originalData,
+  DataMatrix &compressedData) {
+    if (originalData.getNcols() <= 2) {
+      std::cout << "The tsne algorithm can only be applied if "
+      "the dimension is greater than 2" << std::endl;
+      compressedData = originalData;
+      return;
+    }
+
+    size_t N = originalData.getNrows();
+    size_t D = originalData.getNcols();
+
+    std::unique_ptr<double[]> input (new double[N*D]);
+
+    std::copy(originalData.data(), originalData.data()+N*D,
+      input.get());
+
+    std::unique_ptr<double[]> output(new double[N*2]);
+
+    std::cout << "Compressing with tsne to 2"<<" dimensions" << std::endl;
+
+    TSNE tsne;
+    tsne.run(input, N, D , output, 2,
+    config.getVisualizationParameters().perplexity, config.getVisualizationParameters().theta,
+    config.getVisualizationParameters().seed, false,
+    config.getVisualizationParameters().maxNumberIterations);
+
+    compressedData = DataMatrix(output.get(), N, 2);
 }
 
 void Visualizer::initializeHeatmapMatrix(DataMatrix &heatmapMatrix, size_t &nDimensions) {

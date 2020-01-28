@@ -29,11 +29,14 @@ class SparseGridMinerSplitting : public SparseGridMiner {
    * @param scorer configured instance of scorer object that will assess the quality of the
    * generalization provided by the fitter on testing data. The miner instance will take ownership
    * of the passed object.
-   * @param visualizer configured instance of viusalizer object that will produce the output
+   * @param visualizer configured instance of visualizer object that will produce the output
    * to visualize the model and its results
+   * @param postProcesser configured instance of postProcesser object that will execute some post
+   * processing after the training of the model
    */
   SparseGridMinerSplitting(DataSourceSplitting* dataSource, ModelFittingBase* fitter,
-                           Scorer* scorer, Visualizer* visualizer);
+                           Scorer* scorer, Visualizer* visualizer,
+                           PostProcessingBase* postProcesser);
 
   /**
    * Copy constructor deleted - not all members can be copied or cloned .

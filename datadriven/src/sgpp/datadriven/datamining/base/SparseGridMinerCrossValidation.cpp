@@ -18,8 +18,8 @@ namespace datadriven {
 
 SparseGridMinerCrossValidation::SparseGridMinerCrossValidation(
     DataSourceCrossValidation* dataSource, ModelFittingBase* fitter, Scorer* scorer,
-    Visualizer* visualizer)
-    : SparseGridMiner(fitter, scorer, visualizer), dataSource{dataSource} {}
+    Visualizer* visualizer, PostProcessingBase* postProcesser)
+    : SparseGridMiner(fitter, scorer, visualizer, postProcesser), dataSource{dataSource} {}
 
 double SparseGridMinerCrossValidation::learn(bool verbose) {
   // todo(fuchsgdk): see below
@@ -125,15 +125,15 @@ double SparseGridMinerCrossValidation::learn(bool verbose) {
         }
         iteration++;
       }
-      if (epoch == 0) {
-        fitter->switchFirstEpochFlag();
-      }
     }
     // Evaluate the final score on the validation data
     dataSource->reset();
+    postProcesser->postProcessing(*dataSource, *fitter, *visualizer);
+
     Dataset* validationData = dataSource->getValidationData();
-    scores.push_back(scorer->test(*fitter, *validationData));
+    scores.push_back(scorer->testPostProcessing(*fitter, *validationData));
   }
+
 
   // Calculate mean score and std deviation
   double meanScore = 0.0;

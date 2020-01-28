@@ -19,8 +19,8 @@ namespace datadriven {
 
 Metric *FowlkesMallows::clone() const { return new FowlkesMallows(*this); }
 
-double FowlkesMallows::measure(const DataVector &predictedValues, const DataVector &trueValues,
-                               const ModelFittingBase &model, Dataset &testDataset) const {
+double FowlkesMallows::measurePostProcessing(const DataVector &predictedValues,
+  const DataVector &trueValues, const ModelFittingBase &model, Dataset &testDataset) const {
   DataMatrix countMatrix(0,0,0.0);
 
   size_t nTrueValues = 0;
@@ -78,12 +78,6 @@ double FowlkesMallows::measure(const DataVector &predictedValues, const DataVect
   double score = tk/sqrt(pk*qk);
 
   return score;
-}
-
-double FowlkesMallows::measureLowerIsBetter(const DataVector &predictedValues,
-  const DataVector &trueValues,
-  const ModelFittingBase &model, Dataset &testDataset) const{
-  return measure(predictedValues, trueValues, model, testDataset);
 }
 
 } //  namespace datadriven
