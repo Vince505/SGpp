@@ -3,7 +3,6 @@
 // use, please see the copyright notice provided with SG++ or at
 // sgpp.sparsegrids.org
 
-#pragma once
 
 #include <sgpp/datadriven/datamining/modules/scoring/ClusteringMetric.hpp>
 
@@ -20,5 +19,6 @@ double ClusteringMetric::measureLowerIsBetter(const DataVector &predictedValues,
   return measure(predictedValues, trueValues, model, testDataset);
 }
 
-} // namespace datadriven
-} // namespace sgpp
+}  // namespace datadriven
+}  // namespace sgpp
+

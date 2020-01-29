@@ -57,8 +57,7 @@ ModelFittingBase *UniversalMinerFactory::createFitter(const DataMiningConfigPars
     FitterConfigurationClassification config{};
     config.readParams(parser);
     model = new ModelFittingClassification(config);
-  }
-  else if (fType == FitterType::Clustering) {
+  } else if (fType == FitterType::Clustering) {
     FitterConfigurationClustering config {};
     config.readParams(parser);
     model = new ModelFittingClustering(config);

@@ -58,14 +58,14 @@ void VisualizerClassification::runVisualization(ModelFittingBase &model, DataSou
   // Creating the output directory
   if (config.getGeneralConfig().crossValidation) {
     currentDirectory = config.getGeneralConfig().
-      targetDirectory+"/Epoch_" + std::to_string(epoch);
+      targetDirectory+"/Fold_" + std::to_string(fold);
     createFolder(currentDirectory);
     currentDirectory = config.getGeneralConfig().
-      targetDirectory+"/Epoch_" + std::to_string(epoch)+"/Fold_" + std::to_string(fold);
+      targetDirectory+"/Fold_" + std::to_string(fold)+"/Epoch_" + std::to_string(epoch);
     createFolder(currentDirectory);
     currentDirectory = config.getGeneralConfig().
-      targetDirectory+"/Epoch" + std::to_string(epoch)+
-                       "/Fold_" + std::to_string(fold) + "/Batch_" + std::to_string(batch);
+      targetDirectory+"/Fold_" + std::to_string(fold)+"/Epoch" + std::to_string(epoch)+
+                      + "/Batch_" + std::to_string(batch);
     createFolder(currentDirectory);
 
   } else {
@@ -148,14 +148,19 @@ void VisualizerClassification::runVisualization(ModelFittingBase &model, DataSou
 }
 
 void VisualizerClassification::runPostProcessingVisualization(ModelFittingBase &model,
-                                                                 DataSource &dataSource) {
+  DataSource &dataSource, size_t fold) {
   if (std::find(config.getGeneralConfig().plots.begin(),
                 config.getGeneralConfig().plots.end(), "scatterplots")
       != config.getGeneralConfig().plots.end() && config.getGeneralConfig().execute) {
+    auto currentDirectory = config.getGeneralConfig().targetDirectory;
 
-    createFolder(config.getGeneralConfig().targetDirectory);
-
-    if (config.getGeneralConfig().algorithm == "tsne") {
+    if (config.getGeneralConfig().crossValidation) {
+      currentDirectory = currentDirectory
+        +"/Fold_" + std::to_string(fold);
+    }
+    // TSNE just needs to be run once, in the remaining folds we just append the
+    // evaluation of the model
+    if (config.getGeneralConfig().algorithm == "tsne" && fold == 0)  {
       runTsne(originalData, compressedData);
     }
 
@@ -164,17 +169,17 @@ void VisualizerClassification::runPostProcessingVisualization(ModelFittingBase &
     model.evaluate(originalData, predictedLabels);
 
     if (config.getGeneralConfig().targetFileType == VisualizationFileType::json) {
-      compressedData.appendCol(predictedLabels);
-      storeScatterPlotJson(compressedData,
-                    model, config.getGeneralConfig().targetDirectory);
+      DataMatrix toJson(compressedData);
+      toJson.appendCol(predictedLabels);
+      storeScatterPlotJson(toJson,
+                    model, currentDirectory);
     } else {
-
       DataMatrix toCsvMatrix(compressedData);
 
       toCsvMatrix.appendCol(predictedLabels);
 
-      CSVTools::writeMatrixToCSVFile(config.getGeneralConfig().targetDirectory +
-                                     "scatterplot", toCsvMatrix);
+      CSVTools::writeMatrixToCSVFile(currentDirectory +
+                                     "/scatterplot", toCsvMatrix);
     }
   }
 }
@@ -225,7 +230,7 @@ void VisualizerClassification::storeScatterPlotJson(DataMatrix &matrix, ModelFit
 
   jsonOutput["layout"].addDictAttr("title");
 
-  jsonOutput["layout"]["title"].addIDAttr("text", "\"TSNE Compression\"");
+  jsonOutput["layout"]["title"].addIDAttr("text", "\"Classification. Predicted Labels\"");
   jsonOutput["layout"]["title"].addIDAttr("x", 0.5);
 
   jsonOutput.serialize(currentDirectory + "/scatterPlot.json");

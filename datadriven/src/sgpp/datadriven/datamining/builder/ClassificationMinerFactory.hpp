@@ -49,7 +49,7 @@ class ClassificationMinerFactory : public MinerFactory {
 
   /**
    * Factory method to build a postProcesser instance base on a configuration file.
-   * @param parser the datamining configuration parser instance to create the postProcesser from
+   * @param parser the datamining configuration parser instance used to create the postProcesser
    * @return the postProcesser instance
    */
   PostProcessingBase* createPostProcesser(const DataMiningConfigParser& parser) const override;

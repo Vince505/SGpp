@@ -12,9 +12,8 @@ namespace sgpp {
 namespace datadriven {
 
 void PostProcessingDensityEstimation::postProcessing(DataSource &datasource,
-  ModelFittingBase &model, Visualizer &visualizer) {
-  std::cout << "For Density Estimation Models no post processing is required" << std::endl;
+  ModelFittingBase &model, Visualizer &visualizer, size_t fold) {
+  visualizer.runPostProcessingVisualization(model, datasource, fold);
 }
-
-} // namespace datadriven
-} // namespace sgpp
+}  // namespace datadriven
+}  // namespace sgpp

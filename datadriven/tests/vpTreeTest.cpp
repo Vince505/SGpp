@@ -3,8 +3,6 @@
 // use, please see the copyright notice provided with SG++ or at
 // sgpp.sparsegrids.org
 
-#ifdef USE_GSL
-
 #include <sgpp/datadriven/tools/vpTree/VpTree.hpp>
 #include <sgpp/base/datatypes/DataMatrix.hpp>
 #include <sgpp/base/datatypes/DataVector.hpp>
@@ -150,5 +148,3 @@ BOOST_AUTO_TEST_CASE(nearestNeighbors) {
 }
 
 BOOST_AUTO_TEST_SUITE_END()
-
-#endif /* USE_GSL */

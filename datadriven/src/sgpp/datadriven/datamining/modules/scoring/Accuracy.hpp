@@ -44,15 +44,11 @@ class Accuracy : public Metric {
   /**
    * Quantify the difference between predicted values and actual values in terms of accuracy.
    * After postProcessing
-   *
-   * @param predictedValues values calculated by the model for testing data
-   * @param trueValues actual values as taken from the dataset.
-   * @param model reference to the model
-   * @param testDataset dataset with test data
-   * @return Accuracy - larger values are better.
+   * @params model The fitted model
+   * @params datasource The source pointing the data
+   * @returns Accuracy - larger values are better.
    */
-  double measurePostProcessing(const DataVector &predictedValues, const DataVector &trueValues,
-                               const ModelFittingBase &model, Dataset &testDataset) const override;
+  double measurePostProcessing(ModelFittingBase &model, DataSource &datasource) const override;
 };
 
 } /* namespace datadriven */

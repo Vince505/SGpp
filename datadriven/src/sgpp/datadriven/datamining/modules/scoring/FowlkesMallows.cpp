@@ -19,9 +19,9 @@ namespace datadriven {
 
 Metric *FowlkesMallows::clone() const { return new FowlkesMallows(*this); }
 
-double FowlkesMallows::measurePostProcessing(const DataVector &predictedValues,
-  const DataVector &trueValues, const ModelFittingBase &model, Dataset &testDataset) const {
-  DataMatrix countMatrix(0,0,0.0);
+double FowlkesMallows::measurePostProcessing(ModelFittingBase &model,
+  DataSource &datasource) const {
+  DataMatrix countMatrix(0, 0, 0.0);
 
   size_t nTrueValues = 0;
   size_t nPredictedValues = 0;
@@ -29,10 +29,15 @@ double FowlkesMallows::measurePostProcessing(const DataVector &predictedValues,
   std::map<int, size_t> trueLabelsMap;
   std::map<int, size_t> predLabelsMap;
 
+  Dataset* testDataset = datasource.getAllSamples();
+  DataVector trueValues = testDataset->getTargets();
+
+  DataVector predictedValues(testDataset->getNumberInstances());
+  model.evaluate(testDataset->getData(), predictedValues);
 
   for (size_t index = 0; index < predictedValues.size() ; index++) {
-    auto trueValue = trueValues.get(index);
-    auto predictedValue = predictedValues.get(index);
+    auto trueValue = static_cast<int>(trueValues.get(index));
+    auto predictedValue = static_cast<int>(predictedValues.get(index));
 
     if (trueLabelsMap.find(trueValue) == trueLabelsMap.end()) {
       trueLabelsMap[trueValue] = nTrueValues++;
@@ -48,11 +53,11 @@ double FowlkesMallows::measurePostProcessing(const DataVector &predictedValues,
       countMatrix.get(trueLabelsMap[trueValue], predLabelsMap[predictedValue])+1);
   }
 
-  DataMatrix squareMatrix (countMatrix);
+  DataMatrix squareMatrix(countMatrix);
 
   squareMatrix.sqr();
 
-  double tk = squareMatrix.sum() - trueValues.size();
+  double tk = squareMatrix.sum() - static_cast<double>(trueValues.size());
 
   DataVector rowVector(countMatrix.getNcols());
 
@@ -62,7 +67,7 @@ double FowlkesMallows::measurePostProcessing(const DataVector &predictedValues,
     pk += pow(rowVector.sum(), 2);
   }
 
-  pk = pk - trueValues.size();
+  pk = pk - static_cast<double>(trueValues.size());
 
   countMatrix.transpose();
   DataVector colVector(countMatrix.getNcols());
@@ -73,12 +78,13 @@ double FowlkesMallows::measurePostProcessing(const DataVector &predictedValues,
     qk += pow(colVector.sum(), 2);
   }
 
-  qk = qk - trueValues.size();
+  qk = qk - static_cast<double>(trueValues.size());
 
   double score = tk/sqrt(pk*qk);
 
+  std::cout << "Fowlkes-Mallows Score is " << score << std::endl;
   return score;
 }
 
-} //  namespace datadriven
-} //  namespace sgpp
+}  // namespace datadriven
+}  // namespace sgpp

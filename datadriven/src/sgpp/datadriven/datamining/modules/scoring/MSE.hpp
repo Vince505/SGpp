@@ -46,16 +46,12 @@ class MSE : public Metric {
   /**
    * Quantify the difference between predicted values and actual values in terms of mean
    * squared error, after postProcessing.
-   *
-   * @param predictedValues values calculated by the model for testing data
-   * @param trueValues actual values as taken from the dataset.
-   * @param model reference to the model
-   * @param testDataset dataset with test data
+   * @params model The fitted model
+   * @params datasource The source pointing the data
    * @return mean squared error (MSE) - strictly positive such that smaller values are better.
    */
 
-  double measurePostProcessing(const DataVector &predictedValues, const DataVector &trueValues,
-    const ModelFittingBase &model, Dataset &testDataset) const override;
+  double measurePostProcessing(ModelFittingBase &model, DataSource &datasource) const override;
 };
 } /* namespace datadriven */
 } /* namespace sgpp */

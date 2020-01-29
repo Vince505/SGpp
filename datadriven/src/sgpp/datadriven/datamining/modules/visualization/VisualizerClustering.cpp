@@ -10,13 +10,13 @@
 #include <sgpp/base/tools/json/ListNode.hpp>
 #include <sgpp/base/tools/json/DictNode.hpp>
 
-#include <omp.h>
-#include <math.h>
 #include <iostream>
 #include <vector>
 #include <algorithm>
 #include <string>
 #include <queue>
+#include <omp.h>
+#include <math.h>
 
 using json::JSON;
 namespace sgpp {
@@ -24,12 +24,10 @@ namespace datadriven {
   VisualizerClustering::VisualizerClustering(VisualizerConfiguration config) {
     this->config = config;
     this->visualizerDensityEstimation = new VisualizerDensityEstimation(config);
-
   }
 
   void VisualizerClustering::runVisualization(ModelFittingBase &model, DataSource &dataSource,
       size_t epoch, size_t fold, size_t batch) {
-
     if (batch % config.getGeneralConfig().numBatches != 0 ||
         !config.getGeneralConfig().execute) {
       return;
@@ -38,7 +36,7 @@ namespace datadriven {
     size_t nDimensions = model.getDataset()->getDimension();
     if (epoch == 0 && fold == 0 && batch == 0) {
       resolution = static_cast<size_t>(pow(2,
-                                           model.getFitterConfiguration().getGridConfig().level_+2));
+        model.getFitterConfiguration().getGridConfig().level_+2));
       visualizerDensityEstimation->setResolution(resolution);
     }
 
@@ -48,14 +46,14 @@ namespace datadriven {
     // Creating the output directory
     if (config.getGeneralConfig().crossValidation) {
       currentDirectory = config.getGeneralConfig().
-        targetDirectory+"/Epoch_" + std::to_string(epoch);
+        targetDirectory+"/Fold_" + std::to_string(fold);
       createFolder(currentDirectory);
       currentDirectory = config.getGeneralConfig().
-        targetDirectory+"/Epoch_" + std::to_string(epoch)+"/Fold_" + std::to_string(fold);
+        targetDirectory+"/Fold_" + std::to_string(fold)+"/Epoch_" + std::to_string(epoch);
       createFolder(currentDirectory);
       currentDirectory = config.getGeneralConfig().
-        targetDirectory+"/Epoch" + std::to_string(epoch)+
-                         "/Fold_" + std::to_string(fold) + "/Batch_" + std::to_string(batch);
+        targetDirectory+"/Fold_" + std::to_string(fold)+"/Epoch" + std::to_string(epoch)+
+                         + "/Batch_" + std::to_string(batch);
       createFolder(currentDirectory);
 
     } else {
@@ -76,7 +74,6 @@ namespace datadriven {
     ModelFittingClustering *clusteringModel =
       dynamic_cast<ModelFittingClustering *>(&model);
 
-    //tsneCompressedData = clusteringModel->getPoints();
     #pragma omp parallel sections
     {
       #pragma omp section
@@ -107,24 +104,29 @@ namespace datadriven {
   }
 
   void VisualizerClustering::runPostProcessingVisualization(ModelFittingBase &model,
-                                                                   DataSource &dataSource) {
-
-
+        DataSource &dataSource, size_t fold) {
     if (std::find(config.getGeneralConfig().plots.begin(),
                   config.getGeneralConfig().plots.end(), "scatterplots")
         != config.getGeneralConfig().plots.end() && config.getGeneralConfig().execute ) {
+      auto currentDirectory = config.getGeneralConfig().targetDirectory;
 
-      createFolder(config.getGeneralConfig().targetDirectory+"/Clustering");
+      if (config.getGeneralConfig().crossValidation) {
+        currentDirectory = currentDirectory
+                           +"/Fold_" + std::to_string(fold);
+      }
+
       ModelFittingClustering *clusteringModel =
         dynamic_cast<ModelFittingClustering *>(&model);
 
       DataMatrix originalData = clusteringModel->getPoints();
-      if (config.getGeneralConfig().algorithm == "tsne") {
+      // TSNE just needs to be run once, in the remaining folds we just append the
+      // evaluation of the model
+      if (config.getGeneralConfig().algorithm == "tsne" && fold == 0) {
         runTsne(originalData, compressedData);
       }
       if (config.getGeneralConfig().targetFileType == VisualizationFileType::json) {
         storeScatterPlotJson(compressedData,
-                      model, config.getGeneralConfig().targetDirectory + "/Clustering");
+                      model, currentDirectory + "/Clustering");
       } else {
         DataVector clusterLabels(compressedData.getNrows());
 
@@ -134,7 +136,7 @@ namespace datadriven {
 
         toCsvMatrix.appendCol(clusterLabels);
 
-        CSVTools::writeMatrixToCSVFile(config.getGeneralConfig().targetDirectory +
+        CSVTools::writeMatrixToCSVFile(currentDirectory +
                                        "/Clustering/clustering", toCsvMatrix);
       }
     }
@@ -142,7 +144,6 @@ namespace datadriven {
 
   void VisualizerClustering::storeScatterPlotJson(DataMatrix &matrix, ModelFittingBase &model,
                                                  std::string currentDirectory) {
-
     ModelFittingClustering *clusteringModel =
       dynamic_cast<ModelFittingClustering *>(&model);
     #pragma omp parallel sections
@@ -159,8 +160,8 @@ namespace datadriven {
     }
   }
 
-  void VisualizerClustering::getHierarchyAnimation(DataMatrix &matrix, ModelFittingClustering &model,
-      std::string currentDirectory) {
+  void VisualizerClustering::getHierarchyAnimation(DataMatrix &matrix,
+    ModelFittingClustering &model, std::string currentDirectory) {
     JSON jsonOutput;
 
     auto tree = model.getHierarchyTree();
@@ -172,9 +173,7 @@ namespace datadriven {
     // Add empty data traces that can be identified by name in the frames. Otherwise animation
     // won't work. Each cluster, including the noise, is considered as a data trace.
     jsonOutput.addListAttr("data");
-    for (size_t cluster = 0; cluster <= numberClusters; cluster++) {
 
-    }
     // Layout of the plot
     jsonOutput.addDictAttr("layout");
 
@@ -213,7 +212,7 @@ namespace datadriven {
       jsonOutput["layout"]["sliders"][0]["steps"][frame].addIDAttr("visible", true);
       jsonOutput["layout"]["sliders"][0]["steps"][frame].addIDAttr("method", "\"restyle\"");
       jsonOutput["layout"]["sliders"][0]["steps"][frame].addIDAttr("label",
-                                                                   "\"Level: "+std::to_string(frame)+"\"");
+        "\"Level: "+std::to_string(frame)+"\"");
 
       jsonOutput["layout"]["sliders"][0]["steps"][frame].addListAttr("args");
       jsonOutput["layout"]["sliders"][0]["steps"][frame]["args"].addIdValue(
@@ -236,7 +235,6 @@ namespace datadriven {
 
       // Per frame Each cluster is processed as a separate component in a trace
       for (size_t cluster = 0; cluster <= numberClusters; cluster++) {
-
         jsonOutput["data"].addDictValue();
         jsonOutput["data"][traceIndex].addIDAttr("mode", "\"markers\"");
 
@@ -247,7 +245,7 @@ namespace datadriven {
           jsonOutput["data"][traceIndex].addIDAttr("visible", false);
         }
 
-        if(cluster == 0) {
+        if (cluster == 0) {
           if (frame == 0) {
             jsonOutput["data"][traceIndex].addIDAttr("name", "\"Unclustered\"");
           } else {
@@ -272,15 +270,12 @@ namespace datadriven {
         traceIndex++;
       }
 
-
       for (size_t index = traceIndex; index <(maxLevel+1)*(numberClusters+1); index++) {
         jsonOutput["layout"]["sliders"][0]["steps"][frame]["args"][1].addIdValue(false);
       }
-
     }
     std::cout << "Writing file " << currentDirectory + "/Hierarchy.json" << std::endl;
     jsonOutput.serialize(currentDirectory + "/Hierarchy.json");
-
   }
 
   void VisualizerClustering::getGraphPlot(DataMatrix &matrix, ModelFittingClustering &model,
@@ -313,11 +308,10 @@ namespace datadriven {
     auto graph = model.getGraph();
 
     for (size_t index = 0; index < matrix.getNrows(); index++) {
-
       matrix.getRow(index, source);
       if (graph->containsVertex(index)) {
         auto neighbors = graph->getAdjacentVertices(index);
-        for(size_t neighbor: neighbors) {
+        for (size_t neighbor : neighbors) {
           jsonOutput["data"][0]["x"].addIdValue(source.get(0));
           jsonOutput["data"][0]["y"].addIdValue(source.get(1));
           matrix.getRow(neighbor, sink);
@@ -326,9 +320,8 @@ namespace datadriven {
           jsonOutput["data"][0]["x"].addIdValue("\"None\"\n");
           jsonOutput["data"][0]["y"].addIdValue("\"None\"\n");
         }
-
      }
-   }
+    }
     // Adding the data points
 
     auto tree = model.getHierarchyTree();
@@ -342,7 +335,7 @@ namespace datadriven {
 
     separateClustersIntoTraces(matrix, zCol, traces);
 
-    for(size_t clusterNumber = 0 ; clusterNumber <= numberClusters; clusterNumber++) {
+    for (size_t clusterNumber = 0 ; clusterNumber <= numberClusters; clusterNumber++) {
       jsonOutput["data"].addDictValue();
       jsonOutput["data"][clusterNumber + 1].addIDAttr("type", "\"scatter\"");
       jsonOutput["data"][clusterNumber + 1].addIDAttr("mode", "\"markers\"");
@@ -365,24 +358,20 @@ namespace datadriven {
     }
     std::cout << "Writing file " << currentDirectory + "/Graph.json" << std::endl;
     jsonOutput.serialize(currentDirectory + "/Graph.json");
-
-
   }
 
 
 void VisualizerClustering::separateClustersIntoTraces(DataMatrix &points,
   DataVector &labels, std::vector<DataMatrix> &traces) {
-
-    for(size_t cluster = 0 ; cluster < traces.size(); cluster++) {
+    for (size_t cluster = 0 ; cluster < traces.size(); cluster++) {
       traces[cluster].resize(0, points.getNcols());
     }
 
-    for(size_t index = 0 ; index<labels.size(); index++) {
+    for (size_t index = 0 ; index < labels.size(); index++) {
       DataVector traceRow(points.getNcols());
       points.getRow(index, traceRow);
       traces[static_cast<int>(labels.get(index))+1].appendRow(traceRow);
     }
-
   }
 }  // namespace datadriven
 }  // namespace sgpp

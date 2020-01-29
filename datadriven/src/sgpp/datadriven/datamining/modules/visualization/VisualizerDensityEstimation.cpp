@@ -34,16 +34,15 @@ void VisualizerDensityEstimation::runVisualization(ModelFittingBase &model, Data
   // Creating the output directory
   if (config.getGeneralConfig().crossValidation) {
     currentDirectory = config.getGeneralConfig().
-      targetDirectory+"/Epoch_" + std::to_string(epoch);
+      targetDirectory+"/Fold_" + std::to_string(fold);
     createFolder(currentDirectory);
     currentDirectory = config.getGeneralConfig().
-    targetDirectory+"/Epoch_" + std::to_string(epoch)+"/Fold_" + std::to_string(fold);
+      targetDirectory+"/Fold_" + std::to_string(fold)+"/Epoch_" + std::to_string(epoch);
     createFolder(currentDirectory);
     currentDirectory = config.getGeneralConfig().
-        targetDirectory+"/Epoch" + std::to_string(epoch)+
-        "/Fold_" + std::to_string(fold) + "/Batch_" + std::to_string(batch);
+      targetDirectory+"/Fold_" + std::to_string(fold)+"/Epoch" + std::to_string(epoch)+
+                       + "/Batch_" + std::to_string(batch);
     createFolder(currentDirectory);
-
   } else {
     currentDirectory = config.getGeneralConfig().
       targetDirectory+"/Epoch_" + std::to_string(epoch);
@@ -95,14 +94,22 @@ void VisualizerDensityEstimation::runVisualization(ModelFittingBase &model, Data
 }
 
 void VisualizerDensityEstimation::runPostProcessingVisualization(ModelFittingBase &model,
-                                                     DataSource &dataSource) {
+                                                     DataSource &dataSource, size_t fold) {
   if (std::find(config.getGeneralConfig().plots.begin(),
                 config.getGeneralConfig().plots.end(), "scatterplots")
       != config.getGeneralConfig().plots.end() && config.getGeneralConfig().execute) {
 
-    createFolder(config.getGeneralConfig().targetDirectory);
+    auto currentDirectory = config.getGeneralConfig().targetDirectory;
+
+    if (config.getGeneralConfig().crossValidation) {
+      currentDirectory = currentDirectory
+                         +"/Fold_" + std::to_string(fold);
+    }
+
     DataMatrix originalData = dataSource.getAllSamples()->getData();
-    if (config.getGeneralConfig().algorithm == "tsne") {
+    // TSNE just needs to be run once, in the remaining folds we just append the
+    // evaluation of the model
+    if (config.getGeneralConfig().algorithm == "tsne" && fold == 0) {
       runTsne(originalData, compressedData);
     }
 
@@ -111,17 +118,18 @@ void VisualizerDensityEstimation::runPostProcessingVisualization(ModelFittingBas
     model.evaluate(originalData, densityValues);
 
     if (config.getGeneralConfig().targetFileType == VisualizationFileType::json) {
-      compressedData.appendCol(densityValues);
-      storeScatterPlotJson(compressedData,
-                    model, config.getGeneralConfig().targetDirectory);
+      DataMatrix toJson(compressedData);
+      toJson.appendCol(densityValues);
+      storeScatterPlotJson(toJson,
+                    model, currentDirectory);
     } else {
 
       DataMatrix toCsvMatrix(compressedData);
 
       toCsvMatrix.appendCol(densityValues);
 
-      CSVTools::writeMatrixToCSVFile(config.getGeneralConfig().targetDirectory +
-                                     "scatterplot", toCsvMatrix);
+      CSVTools::writeMatrixToCSVFile(currentDirectory +
+                                     "/scatterplot", toCsvMatrix);
     }
   }
 }

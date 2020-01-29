@@ -128,10 +128,9 @@ double SparseGridMinerCrossValidation::learn(bool verbose) {
     }
     // Evaluate the final score on the validation data
     dataSource->reset();
-    postProcesser->postProcessing(*dataSource, *fitter, *visualizer);
+    postProcesser->postProcessing(*dataSource, *fitter, *visualizer, fold);
 
-    Dataset* validationData = dataSource->getValidationData();
-    scores.push_back(scorer->testPostProcessing(*fitter, *validationData));
+    scores.push_back(scorer->testPostProcessing(*fitter, *dataSource));
   }
 
 

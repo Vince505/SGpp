@@ -18,7 +18,7 @@ void VisualizerDummy::runVisualization(ModelFittingBase &model, DataSource &data
 }
 
 void VisualizerDummy::runPostProcessingVisualization(ModelFittingBase &model,
-  DataSource &dataSource) {
+  DataSource &dataSource, size_t fold) {
   return;
 }
 

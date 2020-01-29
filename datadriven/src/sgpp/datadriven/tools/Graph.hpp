@@ -7,6 +7,7 @@
 
 #include <sgpp/base/datatypes/DataMatrix.hpp>
 #include <boost/graph/adjacency_list.hpp>
+#include <boost/graph/copy.hpp>
 #include <sgpp/datadriven/tools/vpTree/VpTree.hpp>
 
 #include <map>
@@ -43,14 +44,12 @@ class Graph {
     boost::graph_traits<UndirectedGraph>::vertex_iterator vi, vend;
     boost::tie(vi, vend) = boost::vertices(*(this->graph));
 
-    for (size_t cnt = 0; cnt <= this->maxIndex; cnt++) {
+    for (size_t cnt = 0; cnt < this->maxIndex ; cnt++) {
       if (std::find(this->deletedVertices.begin(), this->deletedVertices.end(), cnt)
           == this->deletedVertices.end()) {
         this->indexToPointer[cnt] = *vi;
         this->pointerToIndex[*vi] = cnt;
         ++vi;
-      } else {
-        cnt++;
       }
     }
   }
@@ -118,6 +117,10 @@ class Graph {
   size_t getIndex (UndirectedGraph::vertex_descriptor vertexDescriptor);
 
   UndirectedGraph::vertex_descriptor getVertexDescriptor(size_t vertex);
+
+  size_t getNumberVertices();
+
+  size_t getNumberEdges();
 
   bool containsVertex(size_t vertex);
 

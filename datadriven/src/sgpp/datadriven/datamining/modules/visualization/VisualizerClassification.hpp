@@ -44,8 +44,10 @@ class VisualizerClassification:public Visualizer {
    * Method to run the visualization process when executing a post Process
    * @param model The model used to evaluate the visualization
    * @param dataSource The datasource from where the data points are obtained
+   * @param fold The current fold being processed
    */
-  void runPostProcessingVisualization(ModelFittingBase &model, DataSource &dataSource) override;
+  void runPostProcessingVisualization(ModelFittingBase &model, DataSource &dataSource,
+    size_t fold = 0) override;
 
  protected:
   /**

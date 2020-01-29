@@ -10,6 +10,7 @@
 
 #include <iostream>
 #include <map>
+#include <vector>
 #include <cmath>
 
 using sgpp::base::DataMatrix;
@@ -20,23 +21,26 @@ namespace datadriven {
 
 Metric *DavidBouldin::clone() const { return new DavidBouldin(*this);}
 
-double DavidBouldin::measurePostProcessing(const DataVector &predictedValues,
-  const DataVector &trueValues,
-  const ModelFittingBase &model, Dataset &testDataset) const {
-  auto clusteringModel = dynamic_cast<const ModelFittingClustering*>(&model);
+double DavidBouldin::measurePostProcessing(ModelFittingBase &model, DataSource &datasource) const {
+  auto clusteringModel = dynamic_cast<ModelFittingClustering*>(&model);
 
   DataMatrix samples = clusteringModel->getPoints();
 
-  std::vector<size_t> clusterLabels;
-  std::map<size_t, size_t> pointsPerLabel;
-  std::map<size_t, DataVector> clusterCentroids;
-  std::map<size_t, double> averageDistances;
+  std::vector<int> clusterLabels;
+  std::map<int, size_t> pointsPerLabel;
+  std::map<int, DataVector> clusterCentroids;
+  std::map<int, double> averageDistances;
 
+  auto hierarchy = clusteringModel->getHierarchyTree();
+
+  DataVector allLabels;
+
+  (*hierarchy)->evaluateClustering(allLabels);
   size_t numberNoise = 0;
 
   // Getting the number of labels and the centroids
-  for (size_t index = 0; index < predictedValues.size() ; index++) {
-    auto value = predictedValues.get(index);
+  for (size_t index = 0; index < allLabels.size() ; index++) {
+    auto value = static_cast<int>(allLabels.get(index));
     if (value != -1) {  // Skipping all noisy data
       if (std::find(clusterLabels.begin(), clusterLabels.end(), value) == clusterLabels.end()) {
         clusterLabels.push_back(value);
@@ -51,13 +55,13 @@ double DavidBouldin::measurePostProcessing(const DataVector &predictedValues,
       numberNoise++;
     }
   }
-  for (auto &label: clusterLabels) {
+  for (auto &label : clusterLabels) {
     clusterCentroids[label].mult(1/ static_cast<double>(pointsPerLabel[label]));
   }
 
   // Calculating the average distances to the cluster centroids
-  for (size_t index = 0; index < predictedValues.size() ; index++) {
-    auto value = predictedValues.get(index);
+  for (size_t index = 0; index < allLabels.size() ; index++) {
+    auto value = static_cast<int>(allLabels.get(index));
     if (value != -1) {  // Skipping all noisy data
       DataVector row(samples.getNcols());
       samples.getRow(index, row);
@@ -67,7 +71,7 @@ double DavidBouldin::measurePostProcessing(const DataVector &predictedValues,
       averageDistances[value] = averageDistances[value] + row.l2Norm();
     }
   }
-  for (auto &label: clusterLabels) {
+  for (auto &label : clusterLabels) {
     averageDistances[label] = averageDistances[label]/static_cast<double>(pointsPerLabel[label]);
   }
 
@@ -92,11 +96,11 @@ double DavidBouldin::measurePostProcessing(const DataVector &predictedValues,
     }
     davidBouldinIndex+=maxIndex;
   }
-  davidBouldinIndex = davidBouldinIndex/clusterLabels.size()+numberNoise/4.0;
+  davidBouldinIndex = davidBouldinIndex/static_cast<double>(clusterLabels.size())+
+    static_cast<double>(numberNoise)/4.0;
 
+  std::cout << "David Bouldin Score is " << davidBouldinIndex << std::endl;
   return davidBouldinIndex;
 }
-
-
-}//  namespace datadriven
-} //  namespace sgpp
+}  // namespace datadriven
+}  // namespace sgpp

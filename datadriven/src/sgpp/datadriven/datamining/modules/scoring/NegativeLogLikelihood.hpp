@@ -54,14 +54,11 @@ class NegativeLogLikelihood : public Metric {
    * Quantify the NLL of the predicted values after post processing
    * (i.e. adding the logs of the predicted values
    * and ignoring the true values).
-   * @param predictedValues probabilites calculated by the model for testing data
-   * @param trueValues ignored
-   * @param model reference to the model
-   * @param testDataset dataset with test data
+   * @params model The fitted model
+   * @params datasource The source pointing the data
    * @return the negative log likelihood of the predicted probabilities
    */
-  double measurePostProcessing(const DataVector &predictedValues, const DataVector &trueValues,
-                               const ModelFittingBase &model, Dataset &testDataset) const override;
+  double measurePostProcessing(ModelFittingBase &model, DataSource &datasource) const override;
 };
 } /* namespace datadriven */
 } /* namespace sgpp */

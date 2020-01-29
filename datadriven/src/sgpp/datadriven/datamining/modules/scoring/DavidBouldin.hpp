@@ -17,25 +17,18 @@ namespace datadriven {
  * to compare against
  */
 class DavidBouldin: public ClusteringMetric {
-public:
+ public:
   Metric *clone() const override;
   /**
    * Quantify the David-Bouldin score
    * of a clustering after postprocessing
-   *
-   * @param predictedValues ignored
-   * @param trueValues ignored
-   * @param model reference to the model
-   * @param testDataset ignored
+   * @params model The fitted model
+   * @params datasource The source pointing the data
    * @return the David-Bouldin score of a clustering
    */
-  double measurePostProcessing(const DataVector &predictedValues, const DataVector &trueValues,
-                               const ModelFittingBase &model, Dataset &testDataset) const override;
-
-
+  double measurePostProcessing(ModelFittingBase &model, DataSource &datasource) const override;
 };
-
-} //  namespace datadriven
-} //  namespace sgpp
+}  // namespace datadriven
+}  // namespace sgpp
 
 

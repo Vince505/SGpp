@@ -15,24 +15,16 @@ namespace datadriven {
  * to compare against
  */
 class FowlkesMallows: public ClusteringMetric {
-public:
+ public:
   Metric *clone() const override;
-
-
   /**
    * Quantify the Fowlkes-Mallows score
    * of a clustering
-   *
-   * @param predictedValues clustering given  by the model for testing data
-   * @param trueValues trueLabels of the clustering
-   * @param model reference to the model
-   * @param testDataset dataset with test data
+   * @params model The fitted model
+   * @params datasource The source pointing the data
    * @return the Fowlkes-Mallows score of a clustering
    */
-  double measurePostProcessing(const DataVector &predictedValues, const DataVector &trueValues,
-                               const ModelFittingBase &model, Dataset &testDataset) const override;
-
+  double measurePostProcessing(ModelFittingBase &model, DataSource &datasource) const override;
 };
-
-} //  namespace datadriven
-} //  namespace sgpp
+}  // namespace datadriven
+}  // namespace sgpp

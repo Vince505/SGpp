@@ -12,11 +12,10 @@
 namespace sgpp {
 namespace datadriven {
 class PostProcessingClassification : public PostProcessingBase {
-public:
+ public:
   void postProcessing(DataSource &datasource,
-    ModelFittingBase &model, Visualizer &visualizer) override;
+    ModelFittingBase &model, Visualizer &visualizer, size_t fold = 0) override;
 };
-
-} // namespace datadriven
-} // namespace sgpp
+}  // namespace datadriven
+}  // namespace sgpp
 

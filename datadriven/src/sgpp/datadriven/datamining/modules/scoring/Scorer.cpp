@@ -65,11 +65,8 @@ double Scorer::testDistributed(ModelFittingBase& model, Dataset& testDataset, bo
 }
 
 double Scorer::testPostProcessing(ModelFittingBase& model,
-  Dataset& testDataset) {
-  DataVector predictedValues(testDataset.getNumberInstances());
-  model.evaluate(testDataset.getData(), predictedValues);
-  return metric->measurePostProcessing(predictedValues, testDataset.getTargets(),
-    model, testDataset);
+                                  DataSource& dataSource) {
+  return metric->measurePostProcessing(model, dataSource);
 }
 
 } /* namespace datadriven */

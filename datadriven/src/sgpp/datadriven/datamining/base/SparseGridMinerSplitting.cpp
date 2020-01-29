@@ -111,7 +111,7 @@ double SparseGridMinerSplitting::learn(bool verbose) {
   }
 
   postProcesser->postProcessing(*dataSource, *fitter, *visualizer);
-  return scorer->testPostProcessing(*fitter, *(dataSource->getValidationData()));
+  return scorer->testPostProcessing(*fitter, *dataSource);
 }
 
 double SparseGridMinerSplitting::optimizeLambda(bool verbose) {

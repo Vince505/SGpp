@@ -12,9 +12,8 @@ namespace sgpp {
 namespace datadriven {
 
 void PostProcessingLeastSquares::postProcessing(DataSource &datasource,
-  ModelFittingBase &model, Visualizer &visualizer) {
+  ModelFittingBase &model, Visualizer &visualizer, size_t fold) {
   std::cout << "For Regression Models no post processing is required" << std::endl;
 }
-
-} // namespace datadriven
-} // namespace sgpp
+}  // namespace datadriven
+}  // namespace sgpp

@@ -19,11 +19,10 @@ namespace datadriven {
 
 Metric *VMeasure::clone() const { return new VMeasure(*this); }
 
-double VMeasure::measurePostProcessing(const DataVector &predictedValues,
-  const DataVector &trueValues, const ModelFittingBase &model, Dataset &testDataset) const {
+double VMeasure::measurePostProcessing(ModelFittingBase &model, DataSource &datasource) const {
   // Obtaining the count of points belonging to a pair of classes
 
-  DataMatrix countMatrix(0,0,0.0);
+  DataMatrix countMatrix(0, 0, 0.0);
 
   size_t nTrueValues = 0;
   size_t nPredictedValues = 0;
@@ -31,9 +30,15 @@ double VMeasure::measurePostProcessing(const DataVector &predictedValues,
   std::map<int, size_t> trueLabelsMap;
   std::map<int, size_t> predLabelsMap;
 
+  Dataset* testDataset = datasource.getAllSamples();
+  DataVector trueValues = testDataset->getTargets();
+
+  DataVector predictedValues(testDataset->getNumberInstances());
+  model.evaluate(testDataset->getData(), predictedValues);
+
   for (size_t index = 0; index < predictedValues.size() ; index++) {
-    auto trueValue = trueValues.get(index);
-    auto predictedValue = predictedValues.get(index);
+    auto trueValue = static_cast<int>(trueValues.get(index));
+    auto predictedValue = static_cast<int>(predictedValues.get(index));
 
     if (trueLabelsMap.find(trueValue) == trueLabelsMap.end()) {
       trueLabelsMap[trueValue] = nTrueValues++;
@@ -57,16 +62,15 @@ double VMeasure::measurePostProcessing(const DataVector &predictedValues,
   DataMatrix transposeCountMatrix(countMatrix);
 
   transposeCountMatrix.transpose();
-  DataVector predictedVector (transposeCountMatrix.getNcols());
+  DataVector predictedVector(transposeCountMatrix.getNcols());
 
   DataVector trueVector(countMatrix.getNcols());
 
-  double n = trueValues.size();
+  double n = static_cast<double>(trueValues.size());
 
-  for (auto &trueLabel: trueLabelsMap) {
-
+  for (auto &trueLabel : trueLabelsMap) {
     // Calculating class conditional entropy
-    for (auto &predLabel: predLabelsMap) {
+    for (auto &predLabel : predLabelsMap) {
       double nck = countMatrix.get(trueLabel.second, predLabel.second);
       transposeCountMatrix.getRow(predLabel.second, predictedVector);
       double nk = predictedVector.sum();
@@ -104,9 +108,9 @@ double VMeasure::measurePostProcessing(const DataVector &predictedValues,
   double clusterEntropy = 0.0;
 
 
-  for (auto &predLabel: predLabelsMap) {
+  for (auto &predLabel : predLabelsMap) {
     // Calculating cluster conditional entropy
-      for (auto &trueLabel: trueLabelsMap) {
+      for (auto &trueLabel : trueLabelsMap) {
       double nck = countMatrix.get(trueLabel.second, predLabel.second);
       countMatrix.getRow(trueLabel.second, trueVector);
 
@@ -141,8 +145,9 @@ double VMeasure::measurePostProcessing(const DataVector &predictedValues,
 
   std::cout << "Homogeneity: " << h << std::endl;
   std::cout << "Completeness: " << c << std::endl;
+
+  std::cout << "V Measure Score is " << vMeasure << std::endl;
   return vMeasure;
 }
-
-} //  namespace datadriven
-} //  namespace sgpp
+}  // namespace datadriven
+}  // namespace sgpp

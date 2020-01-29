@@ -35,11 +35,13 @@ class VisualizerDummy:public Visualizer {
     size_t fold, size_t batch) override;
 
   /**
-  * Method to run the visualization process when executing a post Process
-  * @param model The model used to evaluate the visualization
-  * @param dataSource The datasource from where the data points are obtained
-  */
-  void runPostProcessingVisualization(ModelFittingBase &model, DataSource &dataSource) override;
+   * Method to run the visualization process when executing a post Process
+   * @param model The model used to evaluate the visualization
+   * @param dataSource The datasource from where the data points are obtained
+   * @param fold The current fold being processed
+   */
+  void runPostProcessingVisualization(ModelFittingBase &model, DataSource &dataSource,
+    size_t fold = 0) override;
 
   /**
    * Method to generate and store in json  format for the

@@ -121,5 +121,12 @@ bool Graph::containsVertex(size_t vertex) {
 UndirectedGraph* Graph::getGraph() {
   return graph;
 }
+
+size_t Graph::getNumberVertices() {
+  return boost::num_vertices(*graph);
+}
+size_t Graph::getNumberEdges() {
+  return boost::num_edges(*graph);
+}
 }  // namespace datadriven
 }  // namespace sgpp

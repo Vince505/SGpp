@@ -42,8 +42,10 @@ class VisualizerClustering : public VisualizerClassification {
    * Method to run the visualization process when executing a post Process
    * @param model The model used to evaluate the visualization
    * @param dataSource The datasource from where the data points are obtained
+   * @param fold The current fold being processed
    */
-  void runPostProcessingVisualization(ModelFittingBase &model, DataSource &dataSource) override;
+  void runPostProcessingVisualization(ModelFittingBase &model, DataSource &dataSource,
+                                      size_t fold = 0) override;
 
  protected:
   /**
@@ -58,12 +60,26 @@ class VisualizerClustering : public VisualizerClassification {
   VisualizerDensityEstimation* visualizerDensityEstimation;
 
  private:
+  /**
+   * Method to generate and store in json format for the plotly library the plot containing
+   * the full graph with the final clustering label
+   * @param matrix Data Points to be plotted
+   * @param model THe clustering model trained in the pipeline
+   * @param currentDirectory Directory to store the data
+   */
   void getGraphPlot(DataMatrix &matrix,
     ModelFittingClustering &model, std::string currentDirectory);
 
   void getHierarchyAnimation(DataMatrix &matrix,
                     ModelFittingClustering &model, std::string currentDirectory);
 
+  /**
+   * Method which separates a matrix of points into multiple matrices depending on their value
+   * obtained by the model. This makes the generation of he json easier
+   * @param points The matrix of points to separate
+   * @param labels THe labels associated to the points
+   * @param traces vector of matrices in which the points will be distributed
+   */
   void separateClustersIntoTraces(sgpp::base::DataMatrix &points,
     sgpp::base::DataVector &labels, std::vector<sgpp::base::DataMatrix> &traces);
 };

@@ -1,4 +1,3 @@
-//
 // Copyright (C) 2008-today The SG++ project
 // This file is part of the SG++ project. For conditions of distribution and
 // use, please see the copyright notice provided with SG++ or at
@@ -50,6 +49,7 @@ class ClusteringMinerFactory : public MinerFactory {
 
   /**
    * Factory method to build a postProcesser instance base on a configuration file.
+   * @param parser the datamining configuration parser instance used to create the postProcesser
    * @return the postProcesser instance
    */
   PostProcessingBase* createPostProcesser(const DataMiningConfigParser& parser) const override;

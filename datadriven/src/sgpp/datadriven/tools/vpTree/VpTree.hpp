@@ -47,6 +47,8 @@ class VpTree {
   */
   static double euclideanDistance(sgpp::base::DataVector point1, sgpp::base::DataVector point2);
 
+  size_t getIndexedKeyFromPoint(sgpp::base::DataVector &point);
+
   void printPreorder();
 
  private:
@@ -76,6 +78,8 @@ class VpTree {
 
   VpNode* findInsertionNode(VpNode* root, sgpp::base::DataVector &newPoint);
 
+  size_t findIndex(VpNode* node, sgpp::base::DataVector &point);
+
   void searchRecursively(VpNode* &node, sgpp::base::DataVector &target,
       size_t noNearestNeighbors, std::priority_queue<VpHeapItem> &heap);
 
@@ -86,7 +90,10 @@ class VpTree {
 
   void sortByDistances(size_t index1, size_t index2);
 
+
+
   void printPreorder(VpNode* node);
+
 
 };
 }  // namespace datadriven

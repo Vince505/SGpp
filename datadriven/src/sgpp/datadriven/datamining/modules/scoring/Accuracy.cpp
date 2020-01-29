@@ -36,9 +36,11 @@ double Accuracy::measureLowerIsBetter(const DataVector& predictedValues,
   return 1 / (accuracy + 1e-10);
 }
 
-double Accuracy::measurePostProcessing(const DataVector &predictedValues, const DataVector &trueValues,
-                                  const ModelFittingBase &model, Dataset &testDataset) const {
-  return measure(predictedValues, trueValues, model, testDataset);
+double Accuracy::measurePostProcessing(ModelFittingBase &model, DataSource &datasource) const {
+  Dataset* testDataset = datasource.getValidationData();
+  DataVector predictedValues(testDataset->getNumberInstances());
+  model.evaluate(testDataset->getData(), predictedValues);
+  return measure(predictedValues, testDataset->getTargets(), model, *testDataset);
 }
 
 } /* namespace datadriven */

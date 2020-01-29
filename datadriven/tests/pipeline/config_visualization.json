@@ -47,7 +47,7 @@
             "algorithm": "tsne",
             "plots": ["scatterplots", "heatmaps"],
             "targetFile":"./output",
-            "targetFileType":"csv",
+            "targetFileType":"json",
             "numBatches":1
         },
         "parameters": {

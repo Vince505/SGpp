@@ -14,7 +14,6 @@
 #include <map>
 #include <iostream>
 #include <ctime>
-#include <queue>
 #include <vector>
 
 using sgpp::base::DataMatrix;
@@ -57,19 +56,32 @@ void ModelFittingClustering::update(Dataset &newDataset) {
   // Update the model
   dataset = &newDataset;
   generateDensityEstimationModel(newDataset);
-  updateVpTree(newDataset.getData());
 }
 
 double ModelFittingClustering::evaluate(const DataVector &sample) {
-  std::cout << "Method not defined for Clustering Models"<<std::endl;
+  std::cout << "Method not defined for Clustering Models" << std::endl;
   return 0.0;
 }
 
 void ModelFittingClustering::evaluate(DataMatrix &samples, DataVector &results) {
-  if (graph == nullptr) {
+  if (hierarchy == nullptr) {
     densityEstimationModel->evaluate(samples, results);
   } else {
-    hierarchy->evaluateClustering(results);
+    DataVector evaluateTemp;
+    hierarchy->evaluateClustering(evaluateTemp);
+    results.resize(samples.getNrows());
+
+    for (size_t index = 0; index < samples.getNrows(); index++) {
+      DataVector currentRow(samples.getNcols());
+      samples.getRow(index, currentRow);
+      size_t vpIndex = vpTree->getIndexedKeyFromPoint(currentRow);
+      if (vpIndex == getPoints().getNrows()) {
+        std::cout << "Point "+ currentRow.toString() +" wasn't used for clustering"<< std::endl;
+        results.set(index, -1.0);
+      } else {
+        results.set(index, evaluateTemp.get(vpIndex));
+      }
+    }
   }
 }
 
@@ -137,7 +149,6 @@ void ModelFittingClustering::generateSimilarityGraph() {
   }
   std::cout << "Num of vertices: " << boost::num_vertices(*(graph->getGraph())) << std::endl;
   std::cout << "Num of edges " << boost::num_edges(*(graph->getGraph())) << std::endl;
-
 }
 
 void ModelFittingClustering::updateVpTree(DataMatrix &newDataset) {
@@ -155,7 +166,6 @@ void ModelFittingClustering::updateVpTree(DataMatrix &newDataset) {
 
 
 void ModelFittingClustering::applyDensityThresholds(double densityThreshold) {
-
   DataMatrix points = getPoints();
   DataVector evaluation(points.getNrows());
 
@@ -181,17 +191,16 @@ void ModelFittingClustering::detectComponentsAndLabel(
 
 void ModelFittingClustering::getHierarchy(
   std::map<UndirectedGraph::vertex_descriptor, size_t> &clusterMap, double densityThreshold) {
-
   std::map<size_t, std::vector<size_t>> labelstoPointsMap;
 
-  for (auto vertex:clusterMap) {
+  for (auto vertex : clusterMap) {
     labelstoPointsMap[vertex.second].push_back(graph->getIndex(vertex.first));
   }
-  std::cout << "Building the hierarchy"<<std::endl;
+  std::cout << "Building the hierarchy" << std::endl;
   std::vector<ClusterNode*> updatedClusters;
   std::vector<size_t> visitedLabels;
 
-  for (auto cluster: labelstoPointsMap) {
+  for (auto cluster : labelstoPointsMap) {
     ClusterNode* newChild = new ClusterNode(static_cast<int>(cluster.first),
               cluster.second, densityThreshold);
     ClusterNode* parentCluster = hierarchy->getMostSpecificCluster(cluster.second.at(0));
@@ -203,13 +212,13 @@ void ModelFittingClustering::getHierarchy(
       visitedLabels.push_back(parentCluster->getClusterLabel());
     }
   }
-  for (auto parent: updatedClusters) {
+  for (auto parent : updatedClusters) {
     if (parent->getChildren().size() > 1) {
       if (parent->split(prunedGraphPreviousStep, densityThreshold)) {
         // Check if the node is the root. We cannot split the root
         if (parent->getParent() != nullptr) {
           // Assigning the level of the node to its children
-          for (auto child: parent->getChildren()) {
+          for (auto child : parent->getChildren()) {
             child->setLevel(parent->getLevel());
           }
 
@@ -240,7 +249,7 @@ std::unique_ptr<ModelFittingDensityEstimation>*
   return &densityEstimationModel;
 }
 
-DataMatrix ModelFittingClustering::getPoints() const {
+DataMatrix& ModelFittingClustering::getPoints() const {
   return vpTree->getStoredItems();
 }
 

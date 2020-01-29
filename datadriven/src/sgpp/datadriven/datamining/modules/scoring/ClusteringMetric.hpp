@@ -13,9 +13,7 @@
 namespace sgpp {
 namespace datadriven {
 class ClusteringMetric: public Metric {
-
-public:
-
+ public:
   /**
    * Quantify the score for the currently trained density estimation model using the mean error
    * squared metric
@@ -45,19 +43,17 @@ public:
 
   /**
    * Quantify the quality of a cluster using a specific metric
-   *
-   * @param predictedValues values calculated by the model for testing data
-   * @param trueValues actual values as taken from the dataset.
-   * @param model reference to the model
+   * @params model The fitted model
+   * @params datasource The source pointing the data
    * @param testDataset dataset with test data
    * @return Cluster quality score Value
    */
-  virtual double measurePostProcessing(const DataVector &predictedValues,
-    const DataVector &trueValues, const ModelFittingBase &model, Dataset &testDataset) const = 0;
-private:
+  virtual double measurePostProcessing(ModelFittingBase &model, DataSource &datasource) const = 0;
+
+ private:
   MSE mseMetric;
 };
 
-} // namespace datadriven
-} // namespace sgpp
+}  // namespace datadriven
+}  // namespace sgpp
 

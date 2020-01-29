@@ -114,6 +114,7 @@ void VpTree::updateHard(sgpp::base::DataMatrix &matrix) {
   }
   root = buildRecursively(0, storedItems.getNrows());
 }
+
 VpNode* VpTree::buildRecursively(size_t startIndex, size_t endIndex)  {
     if (endIndex == startIndex) {     // indicates that we're done here!
       return nullptr;
@@ -143,6 +144,10 @@ VpNode* VpTree::buildRecursively(size_t startIndex, size_t endIndex)  {
     return node;
 }
 
+size_t VpTree::getIndexedKeyFromPoint(DataVector &point) {
+  return findIndex(root, point);
+}
+
 void VpTree::insertNewNode(size_t indexNewPoint) {
   DataVector newPoint(storedItems.getNcols());
   storedItems.getRow(indexNewPoint, newPoint);
@@ -162,7 +167,7 @@ void VpTree::insertNewNode(size_t indexNewPoint) {
     insertionNode->threshold = distance;
     insertionNode->left = newNode;
   } else {
-    if (distance <= insertionNode->threshold) {
+    if (distance < insertionNode->threshold) {
       insertionNode->left = newNode;
     } else {
       insertionNode->right = newNode;
@@ -180,7 +185,7 @@ VpNode* VpTree::findInsertionNode(VpNode* node, DataVector &newPoint) {
 
   double distance = euclideanDistance(newPoint, vantagePoint);
 
-  if (distance <= node->threshold) {
+  if (distance < node->threshold) {
     if (node->left == nullptr) {
       return node;
     } else {
@@ -195,6 +200,29 @@ VpNode* VpTree::findInsertionNode(VpNode* node, DataVector &newPoint) {
   }
 }
 
+size_t  VpTree::findIndex(VpNode* node, DataVector &point) {
+  DataVector vantagePoint(storedItems.getNcols());
+
+  storedItems.getRow(node->index, vantagePoint);
+  double distance = euclideanDistance(point, vantagePoint);
+  if (distance == 0) {
+    return node->index;
+  }
+
+  if (distance < node->threshold) {
+    if (node->left == nullptr) {
+      return storedItems.getNrows();
+    } else {
+      return findIndex(node->left, point);
+    }
+  } else {
+    if (node->right == nullptr) {
+      return storedItems.getNrows();
+    } else {
+      return findIndex(node->right, point);
+    }
+  }
+}
 double VpTree::euclideanDistance(DataVector point1, DataVector point2) {
   point1.sub(point2);
   return point1.l2Norm();
