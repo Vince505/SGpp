@@ -64,7 +64,7 @@ void VisualizerClassification::runVisualization(ModelFittingBase &model, DataSou
       targetDirectory+"/Fold_" + std::to_string(fold)+"/Epoch_" + std::to_string(epoch);
     createFolder(currentDirectory);
     currentDirectory = config.getGeneralConfig().
-      targetDirectory+"/Fold_" + std::to_string(fold)+"/Epoch" + std::to_string(epoch)+
+      targetDirectory+"/Fold_" + std::to_string(fold)+"/Epoch_" + std::to_string(epoch)+
                       + "/Batch_" + std::to_string(batch);
     createFolder(currentDirectory);
 
@@ -103,11 +103,12 @@ void VisualizerClassification::runVisualization(ModelFittingBase &model, DataSou
       for (size_t index=0; index < models->size(); index++) {
         DataMatrix heatMapMatrixThread;
         DataMatrix cutMatrixThread;
+        std::string currentDirectory;
         if (config.getGeneralConfig().crossValidation) {
           currentDirectory = config.getGeneralConfig().
                    targetDirectory
-                   + "/Epoch_" + std::to_string(epoch)
                    + "/Fold_" + std::to_string(fold)
+                   + "/Epoch_" + std::to_string(epoch)
                    + "/Batch_" + std::to_string(batch)
                    +"/Model_Class_" + std::to_string(static_cast<int>(classes.get(index)));
          } else {
@@ -225,7 +226,8 @@ void VisualizerClassification::storeScatterPlotJson(DataMatrix &matrix, ModelFit
   jsonOutput["data"][0]["marker"]["colorbar"]["title"].addIDAttr("text", "\"Class \"");
   jsonOutput["data"][0]["marker"]["colorbar"].addIDAttr("tickmode", "\"array\"");
   jsonOutput["data"][0]["marker"]["colorbar"].addIDAttr("tickvals", classes.toString());
-
+  jsonOutput["data"][0].addIDAttr("hovertext", zCol.toString());
+  jsonOutput["data"][0].addIDAttr("hoverinfo", "\"x+y+text\"");
   jsonOutput.addDictAttr("layout");
 
   jsonOutput["layout"].addDictAttr("title");
@@ -339,6 +341,8 @@ void VisualizerClassification::storeHeatmapJson(DataMatrix &matrix,
       jsonOutput["data"][graphIndex].addDictAttr("colorbar");
       jsonOutput["data"][graphIndex]["colorbar"].addIDAttr("tickmode", "\"array\"");
       jsonOutput["data"][graphIndex]["colorbar"].addIDAttr("tickvals", classes.toString());
+      jsonOutput["data"][graphIndex]["colorbar"].addDictAttr("title");
+      jsonOutput["data"][graphIndex]["colorbar"]["title"].addIDAttr("text", "\"Class\"");
     }
 
     graphIndex++;
@@ -621,6 +625,8 @@ void VisualizerClassification::storeHeatmapJson(DataMatrix &matrix,
   jsonOutput["data"][graphIndex].addDictAttr("colorbar");
   jsonOutput["data"][graphIndex]["colorbar"].addIDAttr("tickmode", "\"array\"");
   jsonOutput["data"][graphIndex]["colorbar"].addIDAttr("tickvals", classes.toString());
+  jsonOutput["data"][graphIndex]["colorbar"].addDictAttr("title");
+  jsonOutput["data"][graphIndex]["colorbar"]["title"].addIDAttr("text", "\"Class\"");
 
   DataVector evaluation(originalData.getNrows());
 

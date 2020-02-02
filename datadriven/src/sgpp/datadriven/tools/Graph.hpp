@@ -67,6 +67,12 @@ class Graph {
   void addVertex();
 
   /**
+   * Method to add an additional vertex to the graph with the given index
+   * @param vertex the index to be associated with the graph
+   */
+  void addVertex(size_t vertex);
+
+  /**
    * Removes a given vertex
    * @param vertex The index used to identify the vertex to remove
    */
@@ -114,30 +120,75 @@ class Graph {
    */
   std::vector<size_t> getAdjacentVertices(size_t vertex);
 
+  /**
+   * Gets the real index of a vertex given its descriptor
+   * @param vertexDescriptor The boost vertex descriptor of a vertex
+   * @return The index of a vertex
+   */
   size_t getIndex (UndirectedGraph::vertex_descriptor vertexDescriptor);
 
+  /**
+   * Gets the vertex descriptor of a vertex given its index
+   * @param vertex Index of the vertex
+   * @return The boost vertex descriptor of a vertex
+   */
   UndirectedGraph::vertex_descriptor getVertexDescriptor(size_t vertex);
 
+  /**
+   * Obtains the current number of vertices in the graph
+   * @return Number of vertices in the graph
+   */
   size_t getNumberVertices();
 
+  /**
+   * Obtains the current number of edges in the graph
+   * @return Number of edges in the graph
+   */
   size_t getNumberEdges();
 
+  /**
+   * Verifies if a vertex given its index is in the graph
+   * @param vertex Index of the vertex to verify
+   * @return True if vertex is in the graph, False otherwise
+   */
   bool containsVertex(size_t vertex);
+
+  /**
+   * Gets the list of previously deleted vertices
+   * @return list of previously deleted vertices
+   */
+  std::vector<size_t> getDeletedVertices();
 
  private:
 
+    /** Filss the boost index structure to execute the connected component algorithm correctly
+     *
+     */
     void fillIndexMap();
     /**
      * Boost graph data structure
      */
     UndirectedGraph* graph;
 
+    /**
+     * Map from boost vertex descriptor to a numeric index
+     */
     std::map<UndirectedGraph::vertex_descriptor, size_t> pointerToIndex;
 
+    /**
+     * Map from numeric index to boost vertex descriptor
+     */
     std::map<size_t, UndirectedGraph::vertex_descriptor> indexToPointer;
 
+    /**
+     * List to keep track of vertices previously deleted
+     */
     std::vector<size_t> deletedVertices;
 
+    /**
+     * Keep track of the maximum number ofvertices inserted
+     * to keep track of it when copying the graph
+     */
     size_t maxIndex;
 
 };

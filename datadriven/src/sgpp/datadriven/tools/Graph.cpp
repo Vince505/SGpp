@@ -38,6 +38,18 @@ void Graph::addVertex() {
   maxIndex++;
 }
 
+void Graph::addVertex(size_t vertex) {
+  if (containsVertex(vertex)) {
+    std::cout << "Vertex with index " << vertex << " is already in the graph." << std::endl;
+  } else {
+    auto vertex_descriptor = boost::add_vertex(*graph);
+    indexToPointer[vertex] = vertex_descriptor;
+    pointerToIndex[vertex_descriptor] = vertex;
+    deletedVertices.erase(std::remove(deletedVertices.begin(),
+      deletedVertices.end(), vertex), deletedVertices.end());
+  }
+}
+
 void Graph::removeVertex(size_t vertex) {
     boost::clear_vertex(indexToPointer[vertex], *graph);
     boost::remove_vertex(indexToPointer[vertex], *graph);
@@ -127,6 +139,10 @@ size_t Graph::getNumberVertices() {
 }
 size_t Graph::getNumberEdges() {
   return boost::num_edges(*graph);
+}
+
+std::vector<size_t> Graph::getDeletedVertices() {
+  return deletedVertices;
 }
 }  // namespace datadriven
 }  // namespace sgpp

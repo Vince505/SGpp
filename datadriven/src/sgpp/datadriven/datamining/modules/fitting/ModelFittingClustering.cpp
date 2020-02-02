@@ -147,21 +147,19 @@ void ModelFittingClustering::generateSimilarityGraph() {
         config->getClusteringConfig().noNearestNeighbors);
     graph->createEdges(index, nearestNeighbors);
   }
-  std::cout << "Num of vertices: " << boost::num_vertices(*(graph->getGraph())) << std::endl;
-  std::cout << "Num of edges " << boost::num_edges(*(graph->getGraph())) << std::endl;
+  std::cout << "Num of vertices: " << graph->getNumberVertices() << std::endl;
+  std::cout << "Num of edges " << graph->getNumberEdges() << std::endl;
 }
 
 void ModelFittingClustering::updateVpTree(DataMatrix &newDataset) {
   clock_t start = std::clock();
   if (vpTree == nullptr) {
     this->vpTree = std::make_unique<VpTree>(newDataset);
-  } else {
-    vpTree->update(newDataset);
+    clock_t end = std::clock();
+    std::cout << "VpTree updated in  " <<
+              std::to_string(static_cast<double>(end - start) / CLOCKS_PER_SEC) << " seconds"
+              << std::endl;
   }
-  clock_t end = std::clock();
-  std::cout << "VpTree updated in  " <<
-            std::to_string(static_cast<double>(end - start) / CLOCKS_PER_SEC) << " seconds"
-            << std::endl;
 }
 
 
@@ -234,6 +232,24 @@ void ModelFittingClustering::getHierarchy(
     }
   }
   hierarchy->postProcessing();
+}
+
+void ModelFittingClustering::rebuildNearestNeighborsGraph() {
+  std::cout << "Rebuilding the graph"<<std::endl;
+  DataVector currrentRow(getPoints().getNcols());
+
+  auto deletedNodes = graph->getDeletedVertices();
+  for (auto vertex : deletedNodes) {
+    graph->addVertex(vertex);
+  }
+  for (auto vertex : deletedNodes) {
+    getPoints().getRow(vertex, currrentRow);
+    auto nearestNeighbors = vpTree->getNearestNeighbors(currrentRow,
+      config->getClusteringConfig().noNearestNeighbors);
+    graph->createEdges(vertex, nearestNeighbors);
+  }
+  std::cout << "Num of vertices: " << graph->getNumberVertices() << std::endl;
+  std::cout << "Num of edges " << graph->getNumberEdges() << std::endl;
 }
 
 void ModelFittingClustering::intializeHierarchyTree() {

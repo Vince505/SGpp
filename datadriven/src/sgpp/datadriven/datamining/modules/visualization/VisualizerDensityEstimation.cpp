@@ -40,7 +40,7 @@ void VisualizerDensityEstimation::runVisualization(ModelFittingBase &model, Data
       targetDirectory+"/Fold_" + std::to_string(fold)+"/Epoch_" + std::to_string(epoch);
     createFolder(currentDirectory);
     currentDirectory = config.getGeneralConfig().
-      targetDirectory+"/Fold_" + std::to_string(fold)+"/Epoch" + std::to_string(epoch)+
+      targetDirectory+"/Fold_" + std::to_string(fold)+"/Epoch_" + std::to_string(epoch)+
                        + "/Batch_" + std::to_string(batch);
     createFolder(currentDirectory);
   } else {
@@ -98,7 +98,6 @@ void VisualizerDensityEstimation::runPostProcessingVisualization(ModelFittingBas
   if (std::find(config.getGeneralConfig().plots.begin(),
                 config.getGeneralConfig().plots.end(), "scatterplots")
       != config.getGeneralConfig().plots.end() && config.getGeneralConfig().execute) {
-
     auto currentDirectory = config.getGeneralConfig().targetDirectory;
 
     if (config.getGeneralConfig().crossValidation) {
@@ -123,7 +122,6 @@ void VisualizerDensityEstimation::runPostProcessingVisualization(ModelFittingBas
       storeScatterPlotJson(toJson,
                     model, currentDirectory);
     } else {
-
       DataMatrix toCsvMatrix(compressedData);
 
       toCsvMatrix.appendCol(densityValues);
@@ -175,7 +173,8 @@ void VisualizerDensityEstimation::storeScatterPlotJson(DataMatrix &matrix, Model
   DataVector zCol(matrix.getNrows());
 
   matrix.getColumn(2, zCol);
-
+  jsonOutput["data"][0].addIDAttr("hovertext", zCol.toString());
+  jsonOutput["data"][0].addIDAttr("hoverinfo", "\"x+y+text\"");
   jsonOutput["data"][0]["marker"].addIDAttr("color", zCol.toString());
 
   jsonOutput["data"][0]["marker"].addIDAttr("colorscale", "\"Viridis\"");
@@ -599,8 +598,6 @@ std::string filepath) {
 
   grid->getStorage().getCoordinateArrays(gridMatrix);
 
-  double maxValue = matrix.max();
-  double minValue = matrix.min();
 
   json::JSON jsonOutput;
   jsonOutput.addListAttr("data");
@@ -634,6 +631,9 @@ std::string filepath) {
   DataVector zCol(matrix.getNrows());
 
   matrix.getColumn(2, zCol);
+
+  double maxValue = zCol.max();
+  double minValue = zCol.min();
 
   jsonOutput["data"][0].addIDAttr("z", zCol.toString());
   jsonOutput["data"][0].addIDAttr("showlegend", false);

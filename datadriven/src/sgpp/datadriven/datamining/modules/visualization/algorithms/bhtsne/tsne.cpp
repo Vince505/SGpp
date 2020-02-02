@@ -34,13 +34,12 @@
 /**
  * Code originally taken from https://lvdmaaten.github.io/tsne/
  * It has been modified in order to be adapted to the SG++ datamining
- * pipeline structure and has been parallelized
+ * pipeline structure
  */
 
 #include <sgpp/datadriven/datamining/modules/visualization/algorithms/bhtsne/tsne.hpp>
 #include <sgpp/datadriven/datamining/modules/visualization/algorithms/bhtsne/vptree.hpp>
 #include <sgpp/datadriven/datamining/modules/visualization/algorithms/bhtsne/sptree.hpp>
-#include <omp.h>
 #include <cfloat>
 #include <iostream>
 #include <vector>
@@ -61,6 +60,7 @@ TSNE::TSNE() {
 void TSNE::run(std::unique_ptr<double[]> &X, size_t N, size_t D,
   std::unique_ptr<double[]> &Y, size_t no_dims, double perplexity,
   double theta, size_t rand_seed, bool skip_random_init, size_t max_iter, size_t mom_switch_iter) {
+
   srand(static_cast<unsigned int>(rand_seed));
   // Determine whether we are using an exact algorithm
   if (static_cast<double>(N - 1) < 3 * perplexity) {
@@ -93,7 +93,6 @@ void TSNE::run(std::unique_ptr<double[]> &X, size_t N, size_t D,
   zeroMean(X.get(), N, D);
   double max_X = .0;
 
-  #pragma omp parallel for schedule(dynamic)
   for (size_t i = 0; i < N * D; i++) {
     if (fabs(X[i]) > max_X) {
       max_X = fabs(X[i]);
@@ -123,7 +122,6 @@ void TSNE::run(std::unique_ptr<double[]> &X, size_t N, size_t D,
     sum_P += val_P[i];
   }
 
-  #pragma omp parallel for schedule(dynamic)
   for (size_t i = 0; i < row_P[N]; i++) {
     val_P[i] /= sum_P;
   }
@@ -132,7 +130,6 @@ void TSNE::run(std::unique_ptr<double[]> &X, size_t N, size_t D,
 
   // Initialize solution (randomly)
   if (!skip_random_init) {
-    #pragma omp parallel for schedule(dynamic)
     for (size_t i = 0; i < N * no_dims; i++) {
       Y[i] = randn() * .0001;
     }
@@ -148,7 +145,6 @@ void TSNE::run(std::unique_ptr<double[]> &X, size_t N, size_t D,
   for (size_t iter = 0; iter < max_iter; iter++) {
     computeGradient(row_P, col_P, val_P, Y, N, no_dims, dY, theta);
     // Update gains
-    #pragma omp parallel for schedule(dynamic)
     for (size_t i = 0; i < N * no_dims; i++) {
       gains[i] = (sign(dY[i]) != sign(uY[i])) ? (gains[i] + .2) : (gains[i] * .8);
       if (gains[i] < .01) {
@@ -205,25 +201,14 @@ void TSNE::computeGradient(std::unique_ptr<size_t[]>  &inp_row_P,
     exit(1);
   }
 
-  #pragma omp parallel sections
-  {
-    #pragma omp section
-    {
-      tree->computeEdgeForces(inp_row_P.get(), inp_col_P.get(),
-        inp_val_P.get(), N, pos_f);
-    }
+  tree->computeEdgeForces(inp_row_P.get(), inp_col_P.get(),
+    inp_val_P.get(), N, pos_f);
 
-    #pragma omp section
-    {
-      #pragma omp parallel for schedule(dynamic)
-      for (size_t n = 0; n < N; n++) {
-        tree->computeNonEdgeForces(n, theta, neg_f + n * D, &sum_Q);
-      }
-    }
+  for (size_t n = 0; n < N; n++) {
+    tree->computeNonEdgeForces(n, theta, neg_f + n * D, &sum_Q);
   }
 
   // Compute final t-SNE gradient
-  #pragma omp parallel for schedule(dynamic)
   for (size_t i = 0; i < N * D; i++) {
     dC[i] = pos_f[i] - (neg_f[i] / sum_Q);
   }
@@ -249,7 +234,6 @@ double TSNE::evaluateError(std::unique_ptr<size_t[]>  &row_P,
   // Loop over all edges to compute t-SNE error
   size_t ind1, ind2;
   double C = .0, Q;
-  #pragma omp parallel for schedule(dynamic)
   for (size_t n = 0; n < N; n++) {
     ind1 = n * D;
     for (size_t i = row_P[n]; i < row_P[n + 1]; i++) {
@@ -288,7 +272,6 @@ void TSNE::computeGaussianPerplexity(std::unique_ptr<double[]>  &X,
       new VpTree<DataPoint, DataPoint::euclidean_distance>();
     std::vector<DataPoint> obj_X(N, DataPoint(D, -1, X.get()));
 
-    #pragma omp parallel for schedule(dynamic)
     for (size_t n = 0; n < N; n++) {
       obj_X[n] = DataPoint(D, static_cast<int>(n), X.get() + n * D);
     }
@@ -299,7 +282,6 @@ void TSNE::computeGaussianPerplexity(std::unique_ptr<double[]>  &X,
     std::vector<DataPoint> indices;
     std::vector<double> distances;
 
-    #pragma omp parallel for schedule(dynamic) private(indices, distances)
     for (size_t n = 0; n < N; n++) {
       if (n % 10000 == 0) {
         printf(" - point %zu of %zu\n", n, N);
@@ -361,7 +343,6 @@ void TSNE::computeGaussianPerplexity(std::unique_ptr<double[]>  &X,
       }
 
       // Row-normalize current row of P and store in matrix
-      #pragma omp parallel for schedule(dynamic)
       for (size_t m = 0; m < K; m++) {
         cur_P[m] /= sum_P;
         col_P[row_P[n] + m] = (size_t) indices[m + 1].index();
@@ -385,7 +366,6 @@ void TSNE::symmetrizeMatrix(std::unique_ptr<size_t[]> &row_P,
   std::unique_ptr <int[]> row_counts (new int[N]());
   // int* row_counts = reinterpret_cast<int*> (calloc(N, sizeof(int)));
 
-  #pragma omp parallel for schedule(dynamic)
   for (size_t n = 0; n < N; n++) {
     for (size_t i = row_P[n]; i < row_P[n + 1]; i++) {
       // Check whether element (col_P[i], n) is present
@@ -474,7 +454,7 @@ void TSNE::zeroMean(double* X, size_t N, size_t D) {
   // Compute data mean
  static std::unique_ptr<double[]> mean (new double[D]());
   size_t nD = 0;
-  #pragma omp parallel for schedule(dynamic)
+
   for (size_t n = 0; n < N; n++) {
     for (size_t d = 0; d < D; d++) {
       mean[d] += X[nD + d];
@@ -482,7 +462,6 @@ void TSNE::zeroMean(double* X, size_t N, size_t D) {
     nD += D;
   }
 
-  #pragma omp parallel for schedule(dynamic)
   for (size_t d = 0; d < D; d++) {
     mean[d] /= static_cast<double> (N);
   }

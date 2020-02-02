@@ -10,13 +10,14 @@
 #include <sgpp/base/tools/json/ListNode.hpp>
 #include <sgpp/base/tools/json/DictNode.hpp>
 
+#include <omp.h>
+#include <math.h>
 #include <iostream>
 #include <vector>
 #include <algorithm>
 #include <string>
 #include <queue>
-#include <omp.h>
-#include <math.h>
+
 
 using json::JSON;
 namespace sgpp {
@@ -52,7 +53,7 @@ namespace datadriven {
         targetDirectory+"/Fold_" + std::to_string(fold)+"/Epoch_" + std::to_string(epoch);
       createFolder(currentDirectory);
       currentDirectory = config.getGeneralConfig().
-        targetDirectory+"/Fold_" + std::to_string(fold)+"/Epoch" + std::to_string(epoch)+
+        targetDirectory+"/Fold_" + std::to_string(fold)+"/Epoch_" + std::to_string(epoch)+
                          + "/Batch_" + std::to_string(batch);
       createFolder(currentDirectory);
 
@@ -112,8 +113,12 @@ namespace datadriven {
 
       if (config.getGeneralConfig().crossValidation) {
         currentDirectory = currentDirectory
-                           +"/Fold_" + std::to_string(fold);
+                           +"/Fold_" + std::to_string(fold)+"/Clustering";
+      } else {
+        currentDirectory = currentDirectory+"/Clustering";
       }
+
+      createFolder(currentDirectory);
 
       ModelFittingClustering *clusteringModel =
         dynamic_cast<ModelFittingClustering *>(&model);
@@ -124,9 +129,16 @@ namespace datadriven {
       if (config.getGeneralConfig().algorithm == "tsne" && fold == 0) {
         runTsne(originalData, compressedData);
       }
+      clusteringModel->generateSimilarityGraph();
+      auto densityEstimationModel = clusteringModel->getDensityEstimationModel();
       if (config.getGeneralConfig().targetFileType == VisualizationFileType::json) {
-        storeScatterPlotJson(compressedData,
-                      model, currentDirectory + "/Clustering");
+        DataMatrix toJsonMatrix(compressedData);
+        DataVector densityValues(toJsonMatrix.getNrows());
+        (*densityEstimationModel)->evaluate(originalData, densityValues);
+        toJsonMatrix.appendCol(densityValues);
+
+        storeScatterPlotJson(toJsonMatrix,
+                      model, currentDirectory);
       } else {
         DataVector clusterLabels(compressedData.getNrows());
 
@@ -137,7 +149,14 @@ namespace datadriven {
         toCsvMatrix.appendCol(clusterLabels);
 
         CSVTools::writeMatrixToCSVFile(currentDirectory +
-                                       "/Clustering/clustering", toCsvMatrix);
+                                       "/clustering", toCsvMatrix);
+
+
+        DataVector densityValues(toCsvMatrix.getNrows());
+        (*densityEstimationModel)->evaluate(originalData, densityValues);
+        toCsvMatrix.setColumn(2, densityValues);
+        CSVTools::writeMatrixToCSVFile(currentDirectory +
+                                       "/densityValues", toCsvMatrix);
       }
     }
   }
@@ -155,7 +174,7 @@ namespace datadriven {
       }
       #pragma omp section
       {
-        getGraphPlot(matrix, *clusteringModel, currentDirectory);
+        getDensityGraphPlot(matrix, *clusteringModel, currentDirectory);
       }
     }
   }
@@ -204,7 +223,6 @@ namespace datadriven {
     jsonOutput.addListAttr("frames");
 
     std::vector<DataMatrix> traces(numberClusters+1);
-
     // Each frame is a level
     size_t traceIndex = 0;
     for (size_t frame = 0; frame <= maxLevel; frame++) {
@@ -274,11 +292,65 @@ namespace datadriven {
         jsonOutput["layout"]["sliders"][0]["steps"][frame]["args"][1].addIdValue(false);
       }
     }
+
+    // To keep track where the graph traces start
+    size_t graphTraceIndex = traceIndex;
+    // Adding the graphs per level
+    for (size_t frame = 0; frame <= maxLevel; frame++) {
+      for (size_t index = 0; index < frame; index++) {
+        jsonOutput["layout"]["sliders"][0]["steps"][frame]["args"][1].addIdValue(false);
+      }
+
+      jsonOutput["data"].addDictValue();
+      jsonOutput["data"][traceIndex].addIDAttr("mode", "\"lines\"");
+      jsonOutput["data"][traceIndex].addIDAttr("name", "\"Graph\"");
+      jsonOutput["data"][traceIndex].addDictAttr("line");
+      jsonOutput["data"][traceIndex]["line"].addIDAttr("width", 0.5);
+      jsonOutput["data"][traceIndex].addListAttr("x");
+      jsonOutput["data"][traceIndex].addListAttr("y");
+      if (frame == 0) {
+        jsonOutput["data"][traceIndex].addIDAttr("visible", true);
+      } else {
+        jsonOutput["data"][traceIndex].addIDAttr("visible", false);
+      }
+      jsonOutput["layout"]["sliders"][0]["steps"][frame]["args"][1].addIdValue(true);
+      traceIndex++;
+
+      for (size_t index = frame+1; index <=maxLevel; index++) {
+        jsonOutput["layout"]["sliders"][0]["steps"][frame]["args"][1].addIdValue(false);
+      }
+    }
+
+    auto graph = model.getGraph();
+    DataVector source(matrix.getNcols());
+    DataVector sink(matrix.getNcols());
+
+    for (size_t index = 0; index < matrix.getNrows(); index++) {
+      size_t pointLevel =  (*tree)->getMostSpecificLevel(index);
+      matrix.getRow(index, source);
+
+      auto neighbors = graph->getAdjacentVertices(index);
+      for (size_t neighbor : neighbors) {
+        size_t neighborLevel = (*tree)->getMostSpecificLevel(neighbor);
+        for (size_t level = 0; level <= pointLevel; level++) {
+          if (neighborLevel >= pointLevel) {
+            jsonOutput["data"][graphTraceIndex + level]["x"].addIdValue(source.get(0));
+            jsonOutput["data"][graphTraceIndex + level]["y"].addIdValue(source.get(1));
+            matrix.getRow(neighbor, sink);
+            jsonOutput["data"][graphTraceIndex + level]["x"].addIdValue(sink.get(0));
+            jsonOutput["data"][graphTraceIndex + level]["y"].addIdValue(sink.get(1));
+            jsonOutput["data"][graphTraceIndex + level]["x"].addIdValue("\"None\"\n");
+            jsonOutput["data"][graphTraceIndex + level]["y"].addIdValue("\"None\"\n");
+          }
+        }
+      }
+    }
+
     std::cout << "Writing file " << currentDirectory + "/Hierarchy.json" << std::endl;
     jsonOutput.serialize(currentDirectory + "/Hierarchy.json");
   }
 
-  void VisualizerClustering::getGraphPlot(DataMatrix &matrix, ModelFittingClustering &model,
+  void VisualizerClustering::getDensityGraphPlot(DataMatrix &matrix, ModelFittingClustering &model,
     std::string currentDirectory) {
     JSON jsonOutput;
 
@@ -288,14 +360,14 @@ namespace datadriven {
 
     jsonOutput["layout"].addDictAttr("title");
 
-    jsonOutput["layout"]["title"].addIDAttr("text", "\"Graph and Clustering\"");
+    jsonOutput["layout"]["title"].addIDAttr("text", "\"Graph and Densities\"");
     jsonOutput["layout"]["title"].addIDAttr("x", 0.5);
 
     // Trace for the edges of the graph
     jsonOutput["data"].addDictValue();
     jsonOutput["data"][0].addIDAttr("type", "\"scatter\"");
     jsonOutput["data"][0].addIDAttr("mode", "\"lines\"");
-    jsonOutput["data"][0].addIDAttr("name", "\"graph\"");
+    jsonOutput["data"][0].addIDAttr("name", "\"Graph\"");
     jsonOutput["data"][0].addDictAttr("line");
     jsonOutput["data"][0]["line"].addIDAttr("width", 0.5);
 
@@ -322,40 +394,41 @@ namespace datadriven {
         }
      }
     }
-    // Adding the data points
 
-    auto tree = model.getHierarchyTree();
+    // Adding the data points¿
+    jsonOutput["data"].addDictValue();
+    jsonOutput["data"][1].addIDAttr("type", "\"scatter\"");
+    jsonOutput["data"][1].addIDAttr("mode", "\"markers\"");
+    jsonOutput["data"][1].addIDAttr("showlegend", false);
+    DataVector xCol(matrix.getNrows());
+    matrix.getColumn(0, xCol);
+    jsonOutput["data"].addDictValue();
+    jsonOutput["data"][1].addIDAttr("x", xCol.toString());
 
-    size_t numberClusters = (*tree)->getNumberClusters();
+    DataVector yCol(matrix.getNrows());
+    matrix.getColumn(1, yCol);
+    jsonOutput["data"][1].addIDAttr("y", yCol.toString());
 
-    std::vector<DataMatrix> traces(numberClusters+1);
+    DataVector zCol(matrix.getNrows());
 
-    DataVector zCol(matrix.getNcols());
-    model.evaluate(matrix, zCol);
+    matrix.getColumn(2, zCol);
 
-    separateClustersIntoTraces(matrix, zCol, traces);
+    jsonOutput["data"][1].addDictAttr("marker");
+    jsonOutput["data"][1].addIDAttr("hovertext", zCol.toString());
+    jsonOutput["data"][1].addIDAttr("hoverinfo", "\"x+y+text\"");
+    jsonOutput["data"][1]["marker"].addIDAttr("color", zCol.toString());
+    jsonOutput["data"][1]["marker"].addIDAttr("colorscale", "\"Viridis\"");
+    jsonOutput["data"][1]["marker"].addIDAttr("opacity", 0.8);
+    jsonOutput["data"][1]["marker"].addIDAttr("showscale", true);
+    jsonOutput["data"][1]["marker"].addDictAttr("colorbar");
+    jsonOutput["data"][1]["marker"]["colorbar"].addDictAttr("title");
+    jsonOutput["data"][1]["marker"]["colorbar"]["title"].addIDAttr("text", "\"Density value\"");
 
-    for (size_t clusterNumber = 0 ; clusterNumber <= numberClusters; clusterNumber++) {
-      jsonOutput["data"].addDictValue();
-      jsonOutput["data"][clusterNumber + 1].addIDAttr("type", "\"scatter\"");
-      jsonOutput["data"][clusterNumber + 1].addIDAttr("mode", "\"markers\"");
+    // Places graph legend on the left side of the plot
+    jsonOutput["layout"].addDictAttr("legend");
+    jsonOutput["layout"]["legend"].addIDAttr("x", -0.05);
+    jsonOutput["layout"]["legend"].addIDAttr("y", 1.0);
 
-      if (clusterNumber == 0) {
-        jsonOutput["data"][clusterNumber + 1].addIDAttr("name", "\"Noise\"");
-      } else {
-        jsonOutput["data"][clusterNumber + 1].addIDAttr("name", "\"Cluster: " +
-                                                                std::to_string(clusterNumber - 1) +
-                                                                "\"");
-      }
-
-      DataVector xCol(traces[clusterNumber].getNrows());
-      traces[clusterNumber].getColumn(0, xCol);
-      jsonOutput["data"][clusterNumber + 1].addIDAttr("x", xCol.toString());
-
-      DataVector yCol(traces[clusterNumber].getNrows());
-      traces[clusterNumber].getColumn(1, yCol);
-      jsonOutput["data"][clusterNumber + 1].addIDAttr("y", yCol.toString());
-    }
     std::cout << "Writing file " << currentDirectory + "/Graph.json" << std::endl;
     jsonOutput.serialize(currentDirectory + "/Graph.json");
   }

@@ -163,6 +163,12 @@ class ModelFittingClustering : public ModelFittingBase {
     double densityThreshold);
 
   /**
+   * Reinsert previously
+   * deleted nodes given a vp tree data structure to recalculate nearest neighbors
+   */
+  void rebuildNearestNeighborsGraph();
+
+  /**
    * Method to obtain the points used in the clustering
    * @return
    */

@@ -62,12 +62,12 @@ class VisualizerClustering : public VisualizerClassification {
  private:
   /**
    * Method to generate and store in json format for the plotly library the plot containing
-   * the full graph with the final clustering label
+   * the full graph with the graph and evaluated densities
    * @param matrix Data Points to be plotted
    * @param model THe clustering model trained in the pipeline
    * @param currentDirectory Directory to store the data
    */
-  void getGraphPlot(DataMatrix &matrix,
+  void getDensityGraphPlot(DataMatrix &matrix,
     ModelFittingClustering &model, std::string currentDirectory);
 
   void getHierarchyAnimation(DataMatrix &matrix,

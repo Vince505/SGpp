@@ -57,6 +57,9 @@ ClusterNode* HierarchyTree::getRoot() {
   return this->root;
 }
 
+size_t HierarchyTree::getMostSpecificLevel(size_t vertexIndex) {
+  return findNode(root,  vertexIndex)->getLevel();
+}
 ClusterNode* HierarchyTree::getMostSpecificCluster(size_t vertexIndex) {
   return findNode(root,  vertexIndex);
 }
