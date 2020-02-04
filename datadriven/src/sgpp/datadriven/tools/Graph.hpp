@@ -8,7 +8,7 @@
 #include <sgpp/base/datatypes/DataMatrix.hpp>
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/copy.hpp>
-#include <sgpp/datadriven/tools/vpTree/VpTree.hpp>
+#include <sgpp/datadriven/tools/vpTree/VpHeapItem.hpp>
 
 #include <map>
 #include <queue>
@@ -153,14 +153,7 @@ class Graph {
    */
   bool containsVertex(size_t vertex);
 
-  /**
-   * Gets the list of previously deleted vertices
-   * @return list of previously deleted vertices
-   */
-  std::vector<size_t> getDeletedVertices();
-
  private:
-
     /** Filss the boost index structure to execute the connected component algorithm correctly
      *
      */

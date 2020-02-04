@@ -162,6 +162,7 @@ void FitterConfiguration::setupDefaults() {
   clusteringConfig.noNearestNeighbors = 10;
   clusteringConfig.minDensityThreshold = 0.1;
   clusteringConfig.maxDensityThreshold = 0.5;
+  clusteringConfig.steps = 5;
 
   //databaseConfig.filepath = "";
 

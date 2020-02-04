@@ -10,7 +10,9 @@
 
 namespace sgpp {
 namespace datadriven {
-
+/**
+ * Struct to define the elements of a heap containing  the neraest neighbors.
+ */
 struct VpHeapItem {
   VpHeapItem(size_t index, double distance) :
   index(index), distance(distance) {}

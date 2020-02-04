@@ -26,12 +26,12 @@ void VisualizerConfiguration::setupDefaults() {
   generalConfig.targetDirectory = "./output";
   generalConfig.targetFileType = VisualizationFileType::CSV;
   generalConfig.numBatches = 1;
+  generalConfig.numberCores = 1;
 
   visualizationParameters.perplexity = 30;
   visualizationParameters.theta = 0.5;
   visualizationParameters.maxNumberIterations = 1000;
   visualizationParameters.seed = rand();
-  visualizationParameters.numberCores = 1;
   std::cout << "Setting up defaults done" << std::endl;
 }
 

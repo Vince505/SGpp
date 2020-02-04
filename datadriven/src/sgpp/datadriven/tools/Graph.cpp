@@ -141,8 +141,5 @@ size_t Graph::getNumberEdges() {
   return boost::num_edges(*graph);
 }
 
-std::vector<size_t> Graph::getDeletedVertices() {
-  return deletedVertices;
-}
 }  // namespace datadriven
 }  // namespace sgpp

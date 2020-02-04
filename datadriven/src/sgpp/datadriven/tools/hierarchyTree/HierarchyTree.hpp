@@ -13,9 +13,7 @@ namespace datadriven {
 
 
 class HierarchyTree {
-
 public:
-
   /**
    * Construnctor
    * @param numberPoints Number of points used for the clustering
@@ -93,7 +91,6 @@ public:
    */
   size_t getMostSpecificLevel(size_t vertexIndex);
 private:
-
   /**
    * Root of the tree
    */
@@ -142,7 +139,6 @@ private:
    * @param clusterLabel Label to assign
    */
   void setPostProcessingLabel(ClusterNode* node, int &clusterLabel);
-
 };
 
 }  // namespace datadriven

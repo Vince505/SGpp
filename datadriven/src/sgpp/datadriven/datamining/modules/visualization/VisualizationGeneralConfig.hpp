@@ -51,6 +51,11 @@ struct VisualizationGeneralConfig {
   * module
   */
   std::string targetDirectory = "";
+
+  /*
+   * Number of cores to run the module in parallel
+   */
+  std::size_t numberCores = 1;
 };
 }  // namespace datadriven
 }  // namespace sgpp

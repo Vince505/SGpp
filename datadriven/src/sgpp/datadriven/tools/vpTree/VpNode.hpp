@@ -15,13 +15,11 @@ namespace datadriven {
  * of the SG++ Toolbox
  */
 struct VpNode {
+  /**
+   * Constructor
+   */
   VpNode() = default;
 
-  VpNode(VpNode &&rhs) = default;
-
-  VpNode(const VpNode &rhs) = default;
-
-  VpNode &operator=(VpNode &&rhs) = default;
   /**
    * Destructor.
    */

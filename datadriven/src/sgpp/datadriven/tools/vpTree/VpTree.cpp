@@ -105,15 +105,6 @@ void VpTree::update(DataMatrix &matrix) {
   }
 }
 
-void VpTree::updateHard(sgpp::base::DataMatrix &matrix) {
-  DataVector newRow(matrix.getNcols());
-
-  for (size_t index = 0; index < matrix.getNrows() ; index++) {
-    matrix.getRow(index, newRow);
-    storedItems.appendRow(newRow);
-  }
-  root = buildRecursively(0, storedItems.getNrows());
-}
 
 VpNode* VpTree::buildRecursively(size_t startIndex, size_t endIndex)  {
     if (endIndex == startIndex) {     // indicates that we're done here!

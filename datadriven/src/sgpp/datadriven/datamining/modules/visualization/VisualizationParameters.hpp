@@ -31,11 +31,6 @@ struct VisualizationParameters {
    * algorithm
    */
   std::size_t maxNumberIterations = 1000;
-
-  /*
-   * Number of cores to run the algorithm in parallel
-   */
-  std::size_t numberCores = 1;
 };
 }  // namespace datadriven
 }  // namespace sgpp

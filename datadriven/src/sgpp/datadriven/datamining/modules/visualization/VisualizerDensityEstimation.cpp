@@ -60,7 +60,7 @@ void VisualizerDensityEstimation::runVisualization(ModelFittingBase &model, Data
   }
 
   size_t nDimensions = model.getDataset()->getDimension();
-  omp_set_num_threads(static_cast<int> (config.getVisualizationParameters().numberCores));
+  omp_set_num_threads(static_cast<int> (config.getGeneralConfig().numberCores));
 
   #pragma omp parallel sections
   {

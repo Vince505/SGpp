@@ -70,7 +70,7 @@ namespace datadriven {
               << std::endl;
 
 
-    omp_set_num_threads(static_cast<int> (config.getVisualizationParameters().numberCores));
+    omp_set_num_threads(static_cast<int> (config.getGeneralConfig().numberCores));
 
     ModelFittingClustering *clusteringModel =
       dynamic_cast<ModelFittingClustering *>(&model);
@@ -140,21 +140,12 @@ namespace datadriven {
         storeScatterPlotJson(toJsonMatrix,
                       model, currentDirectory);
       } else {
-        DataVector clusterLabels(compressedData.getNrows());
-
-        clusteringModel->evaluate(originalData, clusterLabels);
+        storeHierarchyCsv(compressedData, *clusteringModel, currentDirectory);
 
         DataMatrix toCsvMatrix(compressedData);
-
-        toCsvMatrix.appendCol(clusterLabels);
-
-        CSVTools::writeMatrixToCSVFile(currentDirectory +
-                                       "/clustering", toCsvMatrix);
-
-
         DataVector densityValues(toCsvMatrix.getNrows());
         (*densityEstimationModel)->evaluate(originalData, densityValues);
-        toCsvMatrix.setColumn(2, densityValues);
+        toCsvMatrix.appendCol(densityValues);
         CSVTools::writeMatrixToCSVFile(currentDirectory +
                                        "/densityValues", toCsvMatrix);
       }
@@ -300,7 +291,6 @@ namespace datadriven {
       for (size_t index = 0; index < frame; index++) {
         jsonOutput["layout"]["sliders"][0]["steps"][frame]["args"][1].addIdValue(false);
       }
-
       jsonOutput["data"].addDictValue();
       jsonOutput["data"][traceIndex].addIDAttr("mode", "\"lines\"");
       jsonOutput["data"][traceIndex].addIDAttr("name", "\"Graph\"");
@@ -324,23 +314,27 @@ namespace datadriven {
     auto graph = model.getGraph();
     DataVector source(matrix.getNcols());
     DataVector sink(matrix.getNcols());
-
+    std::vector<size_t> visitedVertex;
     for (size_t index = 0; index < matrix.getNrows(); index++) {
+      visitedVertex.push_back(index);
       size_t pointLevel =  (*tree)->getMostSpecificLevel(index);
       matrix.getRow(index, source);
-
       auto neighbors = graph->getAdjacentVertices(index);
       for (size_t neighbor : neighbors) {
-        size_t neighborLevel = (*tree)->getMostSpecificLevel(neighbor);
-        for (size_t level = 0; level <= pointLevel; level++) {
-          if (neighborLevel >= pointLevel) {
-            jsonOutput["data"][graphTraceIndex + level]["x"].addIdValue(source.get(0));
-            jsonOutput["data"][graphTraceIndex + level]["y"].addIdValue(source.get(1));
-            matrix.getRow(neighbor, sink);
-            jsonOutput["data"][graphTraceIndex + level]["x"].addIdValue(sink.get(0));
-            jsonOutput["data"][graphTraceIndex + level]["y"].addIdValue(sink.get(1));
-            jsonOutput["data"][graphTraceIndex + level]["x"].addIdValue("\"None\"\n");
-            jsonOutput["data"][graphTraceIndex + level]["y"].addIdValue("\"None\"\n");
+        // We skip points which were already linked previously to avoid edges repetitions
+        if (std::find(visitedVertex.begin(), visitedVertex.end(), neighbor)
+            != visitedVertex.end()) {
+          size_t neighborLevel = (*tree)->getMostSpecificLevel(neighbor);
+          for (size_t level = 0; level <= pointLevel; level++) {
+            if (neighborLevel >= pointLevel) {
+              jsonOutput["data"][graphTraceIndex + level]["x"].addIdValue(source.get(0));
+              jsonOutput["data"][graphTraceIndex + level]["y"].addIdValue(source.get(1));
+              matrix.getRow(neighbor, sink);
+              jsonOutput["data"][graphTraceIndex + level]["x"].addIdValue(sink.get(0));
+              jsonOutput["data"][graphTraceIndex + level]["y"].addIdValue(sink.get(1));
+              jsonOutput["data"][graphTraceIndex + level]["x"].addIdValue("\"None\"\n");
+              jsonOutput["data"][graphTraceIndex + level]["y"].addIdValue("\"None\"\n");
+            }
           }
         }
       }
@@ -378,19 +372,24 @@ namespace datadriven {
     jsonOutput["data"][0].addListAttr("y");
 
     auto graph = model.getGraph();
-
+    std::vector<size_t> visitedVertex;
     for (size_t index = 0; index < matrix.getNrows(); index++) {
+      visitedVertex.push_back(index);
       matrix.getRow(index, source);
       if (graph->containsVertex(index)) {
         auto neighbors = graph->getAdjacentVertices(index);
         for (size_t neighbor : neighbors) {
-          jsonOutput["data"][0]["x"].addIdValue(source.get(0));
-          jsonOutput["data"][0]["y"].addIdValue(source.get(1));
-          matrix.getRow(neighbor, sink);
-          jsonOutput["data"][0]["x"].addIdValue(sink.get(0));
-          jsonOutput["data"][0]["y"].addIdValue(sink.get(1));
-          jsonOutput["data"][0]["x"].addIdValue("\"None\"\n");
-          jsonOutput["data"][0]["y"].addIdValue("\"None\"\n");
+          // We skip points which were already linked previously to avoid edges repetitions
+          if (std::find(visitedVertex.begin(), visitedVertex.end(), neighbor)
+              != visitedVertex.end()) {
+            jsonOutput["data"][0]["x"].addIdValue(source.get(0));
+            jsonOutput["data"][0]["y"].addIdValue(source.get(1));
+            matrix.getRow(neighbor, sink);
+            jsonOutput["data"][0]["x"].addIdValue(sink.get(0));
+            jsonOutput["data"][0]["y"].addIdValue(sink.get(1));
+            jsonOutput["data"][0]["x"].addIdValue("\"None\"\n");
+            jsonOutput["data"][0]["y"].addIdValue("\"None\"\n");
+          }
         }
      }
     }
@@ -426,7 +425,7 @@ namespace datadriven {
 
     // Places graph legend on the left side of the plot
     jsonOutput["layout"].addDictAttr("legend");
-    jsonOutput["layout"]["legend"].addIDAttr("x", -0.05);
+    jsonOutput["layout"]["legend"].addIDAttr("x", -0.1);
     jsonOutput["layout"]["legend"].addIDAttr("y", 1.0);
 
     std::cout << "Writing file " << currentDirectory + "/Graph.json" << std::endl;
@@ -444,6 +443,21 @@ void VisualizerClustering::separateClustersIntoTraces(DataMatrix &points,
       DataVector traceRow(points.getNcols());
       points.getRow(index, traceRow);
       traces[static_cast<int>(labels.get(index))+1].appendRow(traceRow);
+    }
+  }
+
+void VisualizerClustering::storeHierarchyCsv(DataMatrix &matrix,
+  ModelFittingClustering &model, std::string currentDirectory) {
+    auto tree = model.getHierarchyTree();
+    size_t maxLevel = (*tree)->getNumberLevels();
+    DataMatrix toCsvMatrix(matrix);
+    DataVector labels(toCsvMatrix.getNrows(), 0.0);
+    toCsvMatrix.appendCol(labels);
+    for (size_t level = 0; level <= maxLevel; level++) {
+      (*tree)->evaluateClusteringAtLevel(labels, level);
+      toCsvMatrix.setColumn(2, labels);
+      CSVTools::writeMatrixToCSVFile(currentDirectory +
+                                     "/clustering_level_"+std::to_string(level), toCsvMatrix);
     }
   }
 }  // namespace datadriven

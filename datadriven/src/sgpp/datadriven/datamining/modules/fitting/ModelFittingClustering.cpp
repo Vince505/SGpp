@@ -162,7 +162,6 @@ void ModelFittingClustering::updateVpTree(DataMatrix &newDataset) {
   }
 }
 
-
 void ModelFittingClustering::applyDensityThresholds(double densityThreshold) {
   DataMatrix points = getPoints();
   DataVector evaluation(points.getNrows());
@@ -232,24 +231,6 @@ void ModelFittingClustering::getHierarchy(
     }
   }
   hierarchy->postProcessing();
-}
-
-void ModelFittingClustering::rebuildNearestNeighborsGraph() {
-  std::cout << "Rebuilding the graph"<<std::endl;
-  DataVector currrentRow(getPoints().getNcols());
-
-  auto deletedNodes = graph->getDeletedVertices();
-  for (auto vertex : deletedNodes) {
-    graph->addVertex(vertex);
-  }
-  for (auto vertex : deletedNodes) {
-    getPoints().getRow(vertex, currrentRow);
-    auto nearestNeighbors = vpTree->getNearestNeighbors(currrentRow,
-      config->getClusteringConfig().noNearestNeighbors);
-    graph->createEdges(vertex, nearestNeighbors);
-  }
-  std::cout << "Num of vertices: " << graph->getNumberVertices() << std::endl;
-  std::cout << "Num of edges " << graph->getNumberEdges() << std::endl;
 }
 
 void ModelFittingClustering::intializeHierarchyTree() {

@@ -344,6 +344,7 @@ BOOST_AUTO_TEST_CASE(testVisualizationGeneralConfig) {
   defaults.targetFileType = VisualizationFileType::json;
   defaults.plots = std::vector<std::string>({"otherPlots"});
   defaults.numBatches = 5;
+  defaults.numberCores = 3;
   defaults.crossValidation = false;
 
   VisualizationGeneralConfig config;
@@ -365,6 +366,7 @@ BOOST_AUTO_TEST_CASE(testVisualizationGeneralConfig) {
   BOOST_CHECK_EQUAL(static_cast<int>(config.targetFileType),
                     static_cast<int>(VisualizationFileType::json));
   BOOST_CHECK_EQUAL(defaults.numBatches, 5);
+  BOOST_CHECK_EQUAL(config.numberCores, 3);
   BOOST_CHECK_EQUAL(defaults.crossValidation, false);
 }
 
@@ -375,7 +377,6 @@ BOOST_AUTO_TEST_CASE(testVisualizationParameters) {
   defaults.perplexity = 22;
   defaults.theta = 0.1;
   defaults.seed = 50;
-  defaults.numberCores = 3;
   defaults.maxNumberIterations = 200;
 
   VisualizationParameters config;
@@ -390,7 +391,6 @@ BOOST_AUTO_TEST_CASE(testVisualizationParameters) {
   BOOST_CHECK_EQUAL(config.perplexity, 30);
   BOOST_CHECK_EQUAL(config.theta, 0.5);
   BOOST_CHECK_EQUAL(config.seed, 150);
-  BOOST_CHECK_EQUAL(config.numberCores, 3);
   BOOST_CHECK_EQUAL(config.maxNumberIterations, 500);
 }
 

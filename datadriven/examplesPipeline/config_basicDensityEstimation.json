@@ -39,14 +39,14 @@
             "plots": ["scatterplots", "heatmaps"],
             "targetDirectory": "./output",
             "targetFileType": "json",
-            "numBatches": 1
+            "numBatches": 1,
+            "numberCores": 1
         },
         "parameters": {
             "perplexity": 30,
             "theta": 0.5,
             "seed": 150,
-            "maxNumberIterations": 1000,
-            "numberCores": 1
+            "maxNumberIterations": 1000
         }
     }
 }

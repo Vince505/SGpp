@@ -7,6 +7,7 @@
 #include  <sgpp/datadriven/tools/hierarchyTree/HierarchyTree.hpp>
 
 #include <iostream>
+#include <vector>
 
 using sgpp::base::DataVector;
 namespace sgpp {
@@ -26,7 +27,7 @@ void HierarchyTree::printTree() {
   std::cout << "Cluster Label: " << root->getClusterLabel() << std::endl;
   std::cout << "Level: " << root->getLevel() << std::endl;
   std::cout << "Indexes: ";
-  for (auto vertexIndex: cluster) {
+  for (auto vertexIndex : cluster) {
     std::cout << vertexIndex << ", ";
   }
   std::cout << std::endl;
@@ -34,7 +35,7 @@ void HierarchyTree::printTree() {
   printNode(root);
 }
 void HierarchyTree::printNode(ClusterNode* node) {
-  for(auto child: node->getChildren()) {
+  for (auto child : node->getChildren()) {
     auto cluster = child->getVertexIndexes();
     std::cout << "================================================"<< std::endl;
     std::cout << "Parent: " << child->getParent()->getClusterLabel();
@@ -42,13 +43,13 @@ void HierarchyTree::printNode(ClusterNode* node) {
     std::cout << "Cluster Label: " << child->getClusterLabel() << std::endl;
     std::cout << "Level: " << child->getLevel() << std::endl;
     std::cout << "Indexes: ";
-    for (auto vertexIndex: cluster) {
+    for (auto vertexIndex : cluster) {
       std::cout << vertexIndex << ", ";
     }
     std::cout << std::endl;
   }
 
-  for(auto child: node->getChildren()) {
+  for (auto child : node->getChildren()) {
     printNode(child);
   }
 }
@@ -65,10 +66,10 @@ ClusterNode* HierarchyTree::getMostSpecificCluster(size_t vertexIndex) {
 }
 
 ClusterNode* HierarchyTree::findNode(ClusterNode* node, size_t vertexIndex) {
-  for (auto index: node->getVertexIndexes()) {
+  for (auto index : node->getVertexIndexes()) {
     if (vertexIndex == index) {
       if (node->getChildren().size() > 0) {
-        for (auto children: node->getChildren()) {
+        for (auto children : node->getChildren()) {
           auto foundNode = findNode(children, vertexIndex);
           if (foundNode != nullptr) {
             return foundNode;
@@ -91,10 +92,10 @@ ClusterNode* HierarchyTree::findNodeAtLevel(ClusterNode* node, size_t vertexInde
   if (node->getLevel() > level) {
     return node->getParent();
   }
-  for (auto index: node->getVertexIndexes()) {
+  for (auto index : node->getVertexIndexes()) {
     if (vertexIndex == index) {
       if (node->getChildren().size() > 0) {
-        for (auto children: node->getChildren()) {
+        for (auto children : node->getChildren()) {
           auto foundNode = findNodeAtLevel(children, vertexIndex, level);
           if (foundNode != nullptr) {
             return foundNode;
@@ -125,18 +126,17 @@ size_t HierarchyTree::getNumberLevels() {
 void HierarchyTree::countCluster(ClusterNode* node, size_t &numberClusters) {
   numberClusters += node->getChildren().size();
 
-  for (auto child: node->getChildren()) {
+  for (auto child : node->getChildren()) {
     countCluster(child, numberClusters);
   }
 }
 
 void HierarchyTree::countLevel(ClusterNode* node, size_t &maxLevel) {
-
   if (node->getLevel() > maxLevel) {
     maxLevel = node->getLevel();
   }
 
-  for (auto child: node->getChildren()) {
+  for (auto child : node->getChildren()) {
     countLevel(child, maxLevel);
   }
 }
@@ -148,25 +148,25 @@ void HierarchyTree::postProcessing() {
 }
 
 void HierarchyTree::setPostProcessingLabel(ClusterNode* node, int &label) {
-  for (auto child: node->getChildren()) {
+  for (auto child : node->getChildren()) {
     child->setClusterLabel(label++);;
   }
 
-  for (auto child: node->getChildren()) {
+  for (auto child : node->getChildren()) {
     setPostProcessingLabel(child, label);
   }
 }
 
 void HierarchyTree::evaluateClustering(DataVector &results) {
   results.resize(root->getVertexIndexes().size());
-  for (auto vertex: root->getVertexIndexes()) {
+  for (auto vertex : root->getVertexIndexes()) {
     results.set(vertex, getMostSpecificCluster(vertex)->getClusterLabel());
   }
 }
 
 void HierarchyTree::evaluateClusteringAtLevel(DataVector &results, size_t level) {
   results.resize(root->getVertexIndexes().size());
-  for (auto vertex: root->getVertexIndexes()) {
+  for (auto vertex : root->getVertexIndexes()) {
     results.set(vertex, getMostSpecificClusterAtLevel(vertex, level)->getClusterLabel());
   }
 }

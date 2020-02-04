@@ -16,6 +16,7 @@
 #include <sgpp/datadriven/datamining/modules/fitting/FitterConfigurationDensityEstimation.hpp>
 #include <sgpp/datadriven/tools/Graph.hpp>
 #include <sgpp/datadriven/tools/hierarchyTree/HierarchyTree.hpp>
+#include <sgpp/datadriven/tools/vpTree/VpTree.hpp>
 
 #include <map>
 #include <vector>
@@ -56,7 +57,8 @@ class ModelFittingClustering : public ModelFittingBase {
   double evaluate(const DataVector& sample) override;
 
   /**
-   * Evaluates a series of samples and assign them a cluster label if
+   * Evaluates a series of samples and assign them a cluster label if the point
+   * was used in the clustering. Otherwise it will be labeled as noise
    * @param samples Samples to evaluate
    * @param results Labels assigned to the samples
    */
@@ -163,17 +165,10 @@ class ModelFittingClustering : public ModelFittingBase {
     double densityThreshold);
 
   /**
-   * Reinsert previously
-   * deleted nodes given a vp tree data structure to recalculate nearest neighbors
-   */
-  void rebuildNearestNeighborsGraph();
-
-  /**
    * Method to obtain the points used in the clustering
    * @return
    */
   DataMatrix& getPoints() const;
-
 
  protected:
   /**
@@ -207,13 +202,11 @@ class ModelFittingClustering : public ModelFittingBase {
    */
   std::unique_ptr<HierarchyTree> hierarchy;
 
-
   /**
    * Method that generates the density estimation model of the unlabeled dataset
    * @params dataset the training dataset that is used to fit the model.
    */
   void generateDensityEstimationModel(Dataset &dataset);
-
 
   /**
    * Creates a density estimation model that fits the model settings.

@@ -82,6 +82,16 @@ class VisualizerClustering : public VisualizerClassification {
    */
   void separateClustersIntoTraces(sgpp::base::DataMatrix &points,
     sgpp::base::DataVector &labels, std::vector<sgpp::base::DataMatrix> &traces);
+
+  /**
+   * Stores the cluster labels of all of the dimensionally
+   * compressed points per each label in a csv file
+   * @param matrix Matrix containing the 2D embedding of the points
+   * @param model Trained model
+   * @param currentDirectory Directory to store the files
+   */
+  void storeHierarchyCsv(DataMatrix &matrix,
+                         ModelFittingClustering &model, std::string currentDirectory);
 };
 }  // namespace datadriven
 }  // namespace sgpp

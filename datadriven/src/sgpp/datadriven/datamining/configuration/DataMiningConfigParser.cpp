@@ -611,6 +611,8 @@ bool DataMiningConfigParser::getVisualizationGeneralConfig(
 
     config.targetDirectory = parseString(*visualizationGeneralConfig, "targetDirectory",
                                          defaults.targetDirectory, "visualization");
+    config.numberCores =
+      parseUInt(*visualizationGeneralConfig, "numberCores", defaults.numberCores, "visualization");
 
     // parse file type
     if (visualizationGeneralConfig->contains("targetFileType")) {
@@ -661,9 +663,6 @@ bool DataMiningConfigParser::getVisualizationParameters(
 
     config.maxNumberIterations = parseUInt(*visualizationParameters, "maxNumberIterations",
                                            defaults.maxNumberIterations, "visualization");
-
-    config.numberCores =
-        parseUInt(*visualizationParameters, "numberCores", defaults.numberCores, "visualization");
   } else {
     std::cout << "# Could not find specification of visualization parameters. "
                  "Falling Back to default values."
