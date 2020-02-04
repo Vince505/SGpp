@@ -321,20 +321,16 @@ namespace datadriven {
       matrix.getRow(index, source);
       auto neighbors = graph->getAdjacentVertices(index);
       for (size_t neighbor : neighbors) {
-        // We skip points which were already linked previously to avoid edges repetitions
-        if (std::find(visitedVertex.begin(), visitedVertex.end(), neighbor)
-            != visitedVertex.end()) {
-          size_t neighborLevel = (*tree)->getMostSpecificLevel(neighbor);
-          for (size_t level = 0; level <= pointLevel; level++) {
-            if (neighborLevel >= pointLevel) {
-              jsonOutput["data"][graphTraceIndex + level]["x"].addIdValue(source.get(0));
-              jsonOutput["data"][graphTraceIndex + level]["y"].addIdValue(source.get(1));
-              matrix.getRow(neighbor, sink);
-              jsonOutput["data"][graphTraceIndex + level]["x"].addIdValue(sink.get(0));
-              jsonOutput["data"][graphTraceIndex + level]["y"].addIdValue(sink.get(1));
-              jsonOutput["data"][graphTraceIndex + level]["x"].addIdValue("\"None\"\n");
-              jsonOutput["data"][graphTraceIndex + level]["y"].addIdValue("\"None\"\n");
-            }
+        size_t neighborLevel = (*tree)->getMostSpecificLevel(neighbor);
+        for (size_t level = 0; level <= pointLevel; level++) {
+          if (neighborLevel >= pointLevel) {
+            jsonOutput["data"][graphTraceIndex + level]["x"].addIdValue(source.get(0));
+            jsonOutput["data"][graphTraceIndex + level]["y"].addIdValue(source.get(1));
+            matrix.getRow(neighbor, sink);
+            jsonOutput["data"][graphTraceIndex + level]["x"].addIdValue(sink.get(0));
+            jsonOutput["data"][graphTraceIndex + level]["y"].addIdValue(sink.get(1));
+            jsonOutput["data"][graphTraceIndex + level]["x"].addIdValue("\"None\"\n");
+            jsonOutput["data"][graphTraceIndex + level]["y"].addIdValue("\"None\"\n");
           }
         }
       }
