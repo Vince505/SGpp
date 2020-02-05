@@ -88,8 +88,8 @@ class VpTree {
 
   /**
    * Method that builds a VpTree recursevily
-   * @param startIndex Index of the matrix of the points to store
-   * @param endIndex End index of the matrix of the poinst to store
+   * @param startIndex start Index of the matrix of the points to store
+   * @param endIndex End index of the matrix of the points to store
    * @return The node corresponding to the roort of the tree
    */
   VpNode* buildRecursively(size_t startIndex, size_t endIndex);

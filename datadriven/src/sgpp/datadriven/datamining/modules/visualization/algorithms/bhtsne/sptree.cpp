@@ -288,7 +288,7 @@ bool SPTree::insert(size_t new_index) {
 
   // Find out where the point can be inserted
   for (size_t i = 0; i < no_children; i++) {
-    if (children[i]->insert(new_index)) {
+    if (children[i]->insert(new_index)) {<
       return true;
     }
   }
@@ -471,6 +471,5 @@ void SPTree::computeEdgeForces(size_t* row_P, size_t* col_P,
     ind1 += dimension;
 }
 }
-
 }  // namespace datadriven
 }  // namespace sgpp

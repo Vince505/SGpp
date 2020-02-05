@@ -53,17 +53,31 @@
 namespace sgpp {
 namespace datadriven {
 
+/**
+ * Reference class to the define DataPoint structures for the Vp-Tree for the t-SNE algorithm
+ */
 class DataPoint {
+  /**
+   * Index idetifiying the point
+   */
  size_t _ind;
-
  public:
   double* _x;
   size_t _D;
+  /**
+   * Constructor
+   */
   DataPoint() {
     _D = 1;
     _ind = -1;
     _x = NULL;
   }
+  /**
+   * Constructor
+   * @param D Dimensionality of the data
+   * @param ind Index idetifiying the point
+   * @param x Array containing all of the coordinates of a given point
+   */
   DataPoint(size_t D, int ind, double* x) {
     _D = D;
     _ind = ind;
@@ -72,6 +86,10 @@ class DataPoint {
       _x[d] = x[d];
     }
   }
+  /**
+   * Move copy operator
+   * @param other copy
+   */
   DataPoint(const DataPoint& other) {  // this makes a deep copy -- should not free anything
     if (this != &other) {
       _D = other.dimensionality();
@@ -82,13 +100,19 @@ class DataPoint {
       }
     }
   }
-
+  /**
+   * Destructor
+   */
   ~DataPoint() {
     if (_x != NULL) {
       delete[ ]_x;
     }
   }
-
+  /**
+   * Move operator
+   * @param other old object
+   * @return
+   */
   DataPoint& operator= (const DataPoint& other) {         // asignment should free old object
     if (this != &other) {
       if (_x != NULL) {
@@ -103,16 +127,35 @@ class DataPoint {
     }
     return *this;
   }
+  /**
+   * Gets index of the point
+   * @return Index of a point
+   */
   size_t index() const {
     return _ind;
   }
+  /**
+   * Gets dimensionality of the point
+   * @return Dimensionality of the point
+   */
   size_t dimensionality() const {
     return _D;
   }
+  /**
+   * Returns the dth coordinate of a point
+   * @param d The position of the coordinate
+   * @return The dth coordinate of a point
+   */
   double x(size_t d) const {
     return _x[d];
   }
 
+  /**
+   * Calculates the euclidiean distance between 2 datapoints
+   * @param t1 Point 1
+   * @param t2 Point 2
+   * @return Euclidian distance of 2 Datapoints
+   */
   static double euclidean_distance(const DataPoint &t1, const DataPoint &t2) {
     double dd = .0;
     double* x1 = t1._x;
@@ -138,14 +181,23 @@ class VpTree {
       delete _root;
   }
 
-  // Function to create a new vpTree from data
+  /**
+   * Creates a vpTree based on an item lists
+   * @param items Structure containing the elments used to build the vpTree
+   */
   void create(const std::vector<T>& items) {
     delete _root;
     _items = items;
     _root = buildFromPoints(0, items.size());
   }
 
-  // Function that uses the tree to find the k nearest neighbors of target
+  /**
+   * Search the nearest neighbors of a given targe
+   * @param target Target whose nearest neighbors are to be found
+   * @param k The number of nearest neighbors to seek
+   * @param results Vector containing the nearest neighbors
+   * @param distances Vector containing the distances to the nearest neighbors
+   */
   void search(const T& target, size_t k, std::vector<T>* results,
     std::vector<double>* distances) {
     // Use a priority queue to store intermediate results on
@@ -171,7 +223,14 @@ class VpTree {
   }
 
  private:
+  /**
+   * Vector containing the items of the VpTree
+   */
   std::vector<T> _items;
+
+  /**
+   * Variable to store the distance of the currently found farthest nearest neighbor
+   */
   double _tau;
 
   // Single node of a VP tree (has a point and radius;
@@ -182,14 +241,24 @@ class VpTree {
     Node* left;             // points closer by than threshold
     Node* right;            // points farther away than threshold
 
+    /**
+     * Default constructor
+     */
     Node() :
     index(0), threshold(0.), left(0), right(0) {}
 
-    ~Node() {               // destructor
+    /**
+     * Destructor
+     */
+    ~Node() {
       delete left;
       delete right;
     }
-  }* _root;
+  }
+  /**
+   * Root of the tree
+   */
+  * _root;
 
 
   // An item on the intermediate result queue
@@ -212,7 +281,12 @@ class VpTree {
     }
   };
 
-  // Function that (recursively) fills the tree
+  /**
+   *
+   * @param lower Start index of the vector of the elements to store
+   * @param upper End index of the matrix of the elements to store
+   * @return Reference to the created node
+   */
   Node* buildFromPoints(size_t lower, size_t upper) {
     if (upper == lower) {     // indicates that we're done here!
       return NULL;
@@ -249,7 +323,13 @@ class VpTree {
     return node;
   }
 
-  // Helper function that searches the tree
+  /**
+   * Searchs recursively for the k neearest neighbors
+   * @param node Node being processed
+   * @param target Target whose nearest neighbors are to be found
+   * @param k The number of nearest neighbors to seek
+   * @param heap Priority queue which keeps track of the currently found nearest neighbors
+   */
   void search(Node* node, const T& target, size_t k, std::priority_queue<HeapItem>& heap) {
     if (node == NULL) {
       return;     // indicates that we're done here
