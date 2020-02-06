@@ -3,7 +3,7 @@
 // use, please see the copyright notice provided with SG++ or at
 // sgpp.sparsegrids.org
 
-#include <sgpp/datadriven/tools/Graph.hpp>
+#include <sgpp/datadriven/datamining/tools/Graph.hpp>
 #include <boost/graph/connected_components.hpp>
 #include <boost/graph/graph_traits.hpp>
 

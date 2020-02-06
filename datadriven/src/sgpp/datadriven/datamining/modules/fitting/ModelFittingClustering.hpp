@@ -14,9 +14,9 @@
 #include <sgpp/datadriven/datamining/modules/fitting/ModelFittingClassification.hpp>
 #include <sgpp/datadriven/datamining/modules/fitting/FitterConfigurationClustering.hpp>
 #include <sgpp/datadriven/datamining/modules/fitting/FitterConfigurationDensityEstimation.hpp>
-#include <sgpp/datadriven/tools/Graph.hpp>
-#include <sgpp/datadriven/tools/hierarchyTree/HierarchyTree.hpp>
-#include <sgpp/datadriven/tools/vpTree/VpTree.hpp>
+#include <sgpp/datadriven/datamining/tools/Graph.hpp>
+#include <sgpp/datadriven/datamining/tools/hierarchyTree/HierarchyTree.hpp>
+#include <sgpp/datadriven/datamining/tools/vpTree/VpTree.hpp>
 
 #include <map>
 #include <vector>

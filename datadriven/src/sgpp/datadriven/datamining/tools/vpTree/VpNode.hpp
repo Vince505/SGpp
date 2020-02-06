@@ -38,7 +38,6 @@ struct VpNode {
   size_t index;
   /* Threshold that divides the tree into 2 */
   double threshold;
-
 };
 }  // namespace datadriven
 }  // namespace sgpp

@@ -8,7 +8,7 @@
 #include <sgpp/base/datatypes/DataMatrix.hpp>
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/copy.hpp>
-#include <sgpp/datadriven/tools/vpTree/VpHeapItem.hpp>
+#include <sgpp/datadriven/datamining/tools/vpTree/VpHeapItem.hpp>
 
 #include <map>
 #include <queue>

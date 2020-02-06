@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include  <sgpp/datadriven/tools/hierarchyTree/ClusterNode.hpp>
+#include  <sgpp/datadriven/datamining/tools/hierarchyTree/ClusterNode.hpp>
 #include <sgpp/base/datatypes/DataVector.hpp>
 
 namespace sgpp {
@@ -13,9 +13,9 @@ namespace datadriven {
 
 
 class HierarchyTree {
-public:
+ public:
   /**
-   * Construnctor
+   * Constructor
    * @param numberPoints Number of points used for the clustering
    */
   explicit HierarchyTree(size_t numberPoints);
@@ -90,7 +90,8 @@ public:
    * @return THe most specific level in which the point is found in the tree
    */
   size_t getMostSpecificLevel(size_t vertexIndex);
-private:
+
+ private:
   /**
    * Root of the tree
    */

@@ -3,7 +3,7 @@
 // use, please see the copyright notice provided with SG++ or at
 // sgpp.sparsegrids.org
 
-#include <sgpp/datadriven/tools/Graph.hpp>
+#include <sgpp/datadriven/datamining/tools/Graph.hpp>
 #include <boost/test/unit_test.hpp>
 
 #include <vector>
@@ -52,17 +52,16 @@ BOOST_AUTO_TEST_CASE(graphCreation) {
 }
 
 BOOST_AUTO_TEST_CASE(adjacentVertices) {
-
   // Tests that the adjacent vertices function works corrrectly
   std::vector<size_t> realAdjacentVertices = {0, 1, 4, 5};
 
   auto predictedAdjacentVertices = testGraph.getAdjacentVertices(2);
+  std::sort(predictedAdjacentVertices.begin(), predictedAdjacentVertices.end());
   BOOST_CHECK_EQUAL_COLLECTIONS(realAdjacentVertices.begin(), realAdjacentVertices.end(),
   predictedAdjacentVertices.begin(), predictedAdjacentVertices.end());
 }
 
 BOOST_AUTO_TEST_CASE(connectedComponents) {
-
   // Tests that the number of connected components is correct
   std::map<UndirectedGraph::vertex_descriptor, size_t> clusterMap;
   BOOST_CHECK_EQUAL(testGraph.getConnectedComponents(clusterMap), 1);
@@ -78,8 +77,9 @@ BOOST_AUTO_TEST_CASE(deletion) {
   BOOST_CHECK_EQUAL(testGraph.containsVertex(5), false);
 
   auto predictedAdjacentVertices = testGraph.getAdjacentVertices(2);
+  std::sort(predictedAdjacentVertices.begin(), predictedAdjacentVertices.end());
   // 5 must not appear anymore as the adjacent vertex of 2
-  BOOST_CHECK_EQUAL_COLLECTIONS(realAdjacentVertices.begin(),realAdjacentVertices.end(),
+  BOOST_CHECK_EQUAL_COLLECTIONS(realAdjacentVertices.begin(), realAdjacentVertices.end(),
   predictedAdjacentVertices.begin(), predictedAdjacentVertices.end());
 
   // Connected componentes increase since the vertex 5 was previously linking to subgraphs
@@ -102,10 +102,10 @@ BOOST_AUTO_TEST_CASE(copy) {
   auto predictedAdjacentVertices = testGraph.getAdjacentVertices(7);
   auto copyAdjacentVertices = copyGraph.getAdjacentVertices(7);
 
-  std::sort(predictedAdjacentVertices.begin(),predictedAdjacentVertices.end());
-  std::sort(copyAdjacentVertices.begin(),copyAdjacentVertices.end());
+  std::sort(predictedAdjacentVertices.begin(), predictedAdjacentVertices.end());
+  std::sort(copyAdjacentVertices.begin(), copyAdjacentVertices.end());
 
-  BOOST_CHECK_EQUAL_COLLECTIONS(realAdjacentVertices.begin(),realAdjacentVertices.end(),
+  BOOST_CHECK_EQUAL_COLLECTIONS(realAdjacentVertices.begin(), realAdjacentVertices.end(),
   predictedAdjacentVertices.begin(), predictedAdjacentVertices.end());
 
   BOOST_CHECK_EQUAL_COLLECTIONS(realAdjacentVertices.begin(),realAdjacentVertices.end(),
@@ -137,10 +137,10 @@ BOOST_AUTO_TEST_CASE(copy) {
   // Vertex 8 does not appear anymore as an adjacent vertex in the copy graph.
   std::vector<size_t> copyRealAdjacentVertices = {6};
   copyAdjacentVertices = copyGraph.getAdjacentVertices(7);
-  BOOST_CHECK_EQUAL_COLLECTIONS(realAdjacentVertices.begin(),realAdjacentVertices.end(),
+  BOOST_CHECK_EQUAL_COLLECTIONS(realAdjacentVertices.begin(), realAdjacentVertices.end(),
   predictedAdjacentVertices.begin(), predictedAdjacentVertices.end());
 
-  BOOST_CHECK_EQUAL_COLLECTIONS(copyRealAdjacentVertices.begin(),copyRealAdjacentVertices.end(),
+  BOOST_CHECK_EQUAL_COLLECTIONS(copyRealAdjacentVertices.begin(), copyRealAdjacentVertices.end(),
   copyAdjacentVertices.begin(), copyAdjacentVertices.end());
 
 

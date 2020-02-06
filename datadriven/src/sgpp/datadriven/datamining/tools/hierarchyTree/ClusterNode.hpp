@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include  <sgpp/datadriven/tools/Graph.hpp>
+#include  <sgpp/datadriven/datamining/tools/Graph.hpp>
 #include <vector>
 
 namespace sgpp {

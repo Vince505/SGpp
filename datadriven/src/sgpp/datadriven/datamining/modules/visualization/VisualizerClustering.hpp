@@ -8,11 +8,13 @@
 #include <sgpp/datadriven/datamining/modules/visualization/VisualizerConfiguration.hpp>
 #include <sgpp/datadriven/datamining/modules/visualization/VisualizerClassification.hpp>
 #include <sgpp/datadriven/datamining/modules/fitting/ModelFittingClustering.hpp>
-#include <sgpp/datadriven/tools/hierarchyTree/ClusterNode.hpp>
+#include <sgpp/datadriven/datamining/tools/hierarchyTree/ClusterNode.hpp>
+#include <sgpp/base/tools/json/JSON.hpp>
+
 #include <vector>
 #include <string>
 
-#include <sgpp/base/tools/json/JSON.hpp>
+
 namespace sgpp {
 namespace datadriven {
 

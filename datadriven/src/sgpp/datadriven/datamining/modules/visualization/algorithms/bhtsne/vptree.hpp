@@ -60,7 +60,8 @@ class DataPoint {
   /**
    * Index idetifiying the point
    */
- size_t _ind;
+  size_t _ind;
+
  public:
   double* _x;
   size_t _D;

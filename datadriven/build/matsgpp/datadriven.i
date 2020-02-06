@@ -155,19 +155,28 @@
 %rename (getConstSolverFinalConfig) sgpp::datadriven::FitterConfiguration::getSolverFinalConfig() const;
 %rename (getConstRegularizationConfig) sgpp::datadriven::FitterConfiguration::getRegularizationConfig() const;
 %rename (getConstMultipleEvalConfig) sgpp::datadriven::FitterConfiguration::getMultipleEvalConfig() const;
+%rename (getConstFitterClustering) sgpp::datadriven::FitterConfiguration::getFitterClustering() const;
 %include "datadriven/src/sgpp/datadriven/datamining/modules/fitting/FitterConfiguration.hpp"
 %include "datadriven/src/sgpp/datadriven/datamining/modules/fitting/FitterConfigurationLeastSquares.hpp"
 %include "datadriven/src/sgpp/datadriven/datamining/modules/fitting/FitterConfigurationDensityEstimation.hpp"
 %include "datadriven/src/sgpp/datadriven/datamining/modules/fitting/FitterConfigurationClassification.hpp"
 %include "datadriven/src/sgpp/datadriven/datamining/modules/fitting/FitterConfigurationClustering.hpp"
+%include "datadriven/src/sgpp/datadriven/datamining/modules/fitting/FitterConfigurationClustering.hpp"
 %include "datadriven/src/sgpp/datadriven/datamining/modules/fitting/FitterTypeParser.hpp"
+
+%include "datadriven/src/sgpp/datadriven/datamining/tools/vpTree/VpHeapItem.hpp"
+%include "datadriven/src/sgpp/datadriven/datamining/tools/vpTree/VpNode.hpp"
+%include "datadriven/src/sgpp/datadriven/datamining/tools/vpTree/VpTree.hpp"
+%include "datadriven/src/sgpp/datadriven/datamining/tools/Graph.hpp"
+%include "datadriven/src/sgpp/datadriven/datamining/tools/hierarchyTree/ClusterNode.hpp"
+%include "datadriven/src/sgpp/datadriven/datamining/tools/hierarchyTree/HierarchyTree.hpp"
+
 %ignore  sgpp::datadriven::ModelFittingBase::operator=(ModelFittingBase&&);
 %rename(assign) sgpp::datadriven::ModelFittingBase::operator =;
 %rename (getConstFitterConfiguration) sgpp::datadriven::ModelFittingBase::getFitterConfiguration() const;
 %include "datadriven/src/sgpp/datadriven/datamining/modules/fitting/ModelFittingBase.hpp"
 %include "datadriven/src/sgpp/datadriven/datamining/modules/fitting/ModelFittingBaseSingleGrid.hpp"
 %include "datadriven/src/sgpp/datadriven/datamining/modules/fitting/ModelFittingLeastSquares.hpp"
-
 %include "datadriven/src/sgpp/datadriven/datamining/modules/fitting/ModelFittingDensityEstimation.hpp"
 %include "datadriven/src/sgpp/datadriven/datamining/modules/fitting/ModelFittingDensityEstimationCombi.hpp"
 %include "datadriven/src/sgpp/datadriven/datamining/modules/fitting/ModelFittingClassification.hpp"
@@ -180,14 +189,26 @@
 %include "datadriven/src/sgpp/datadriven/datamining/modules/visualization/VisualizerDummy.hpp"
 %include "datadriven/src/sgpp/datadriven/datamining/modules/visualization/VisualizerDensityEstimation.hpp"
 %include "datadriven/src/sgpp/datadriven/datamining/modules/visualization/VisualizerClassification.hpp"
+%include "datadriven/src/sgpp/datadriven/datamining/modules/visualization/VisualizerClustering.hpp"
+
+%include "datadriven/src/sgpp/datadriven/datamining/modules/postProcessing/PostProcessingBase.hpp"
+%include "datadriven/src/sgpp/datadriven/datamining/modules/postProcessing/PostProcessingDensityEstimation.hpp"
+%include "datadriven/src/sgpp/datadriven/datamining/modules/postProcessing/PostProcessingClassification.hpp"
+%include "datadriven/src/sgpp/datadriven/datamining/modules/postProcessing/PostProcessingClustering.hpp"
+%include "datadriven/src/sgpp/datadriven/datamining/modules/postProcessing/PostProcessingLeastSquares.hpp"
 
 
 %ignore  sgpp::datadriven::Metric::operator=(Metric&&);
 %rename(assign) sgpp::datadriven::Metric::operator =;
 %include "datadriven/src/sgpp/datadriven/datamining/modules/scoring/Metric.hpp"
+%include "datadriven/src/sgpp/datadriven/datamining/modules/scoring/ClusteringMetric.hpp"
 %include "datadriven/src/sgpp/datadriven/datamining/modules/scoring/MSE.hpp"
-%include "datadriven/src/sgpp/datadriven/datamining/modules/scoring/Accuracy.hpp"
 %include "datadriven/src/sgpp/datadriven/datamining/modules/scoring/NegativeLogLikelihood.hpp"
+%include "datadriven/src/sgpp/datadriven/datamining/modules/scoring/Accuracy.hpp"
+%include "datadriven/src/sgpp/datadriven/datamining/modules/scoring/VMeasure.hpp"
+%include "datadriven/src/sgpp/datadriven/datamining/modules/scoring/FowlkesMallows.hpp"
+%include "datadriven/src/sgpp/datadriven/datamining/modules/scoring/DavidBouldin.hpp"
+%include "datadriven/src/sgpp/datadriven/datamining/modules/scoring/CalinskiHarabasz.hpp"
 %ignore  sgpp::datadriven::ShufflingFunctor::operator=(ShufflingFunctor&&);
 %rename(assign) sgpp::datadriven::ShufflingFunctor::operator =;
 %include "datadriven/src/sgpp/datadriven/datamining/modules/scoring/ScorerConfig.hpp"

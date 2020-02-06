@@ -60,7 +60,6 @@ TSNE::TSNE() {
 void TSNE::run(std::unique_ptr<double[]> &X, size_t N, size_t D,
   std::unique_ptr<double[]> &Y, size_t no_dims, double perplexity,
   double theta, size_t rand_seed, bool skip_random_init, size_t max_iter, size_t mom_switch_iter) {
-
   srand(static_cast<unsigned int>(rand_seed));
   // Determine whether we are using an exact algorithm
   if (static_cast<double>(N - 1) < 3 * perplexity) {
@@ -453,7 +452,7 @@ void TSNE::symmetrizeMatrix(std::unique_ptr<size_t[]> &row_P,
 void TSNE::zeroMean(double* X, size_t N, size_t D) {
   // Compute data mean
  static std::unique_ptr<double[]> mean (new double[D]());
-  size_t nD = 0;
+ size_t nD = 0;
 
   for (size_t n = 0; n < N; n++) {
     for (size_t d = 0; d < D; d++) {

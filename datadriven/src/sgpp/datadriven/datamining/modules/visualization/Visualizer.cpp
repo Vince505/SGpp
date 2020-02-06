@@ -8,6 +8,8 @@
 #include <sgpp/datadriven/datamining/modules/visualization/algorithms/bhtsne/tsne.hpp>
 #include <string>
 #include<iostream>
+#include <algorithm>
+#include <vector>
 #ifdef _WIN32
 #include <direct.h>
 #elif defined __linux__
@@ -52,7 +54,7 @@ void Visualizer::runTsne(DataMatrix &originalData,
 
     std::unique_ptr<double[]> output(new double[N*2]);
 
-    std::cout << "Compressing with tsne to 2"<<" dimensions" << std::endl;
+    std::cout << "Compressing with tsne to 2" << " dimensions" << std::endl;
 
     TSNE tsne;
     tsne.run(input, N, D , output, 2,
@@ -379,7 +381,7 @@ void Visualizer::getLinearCuts2D(
 }
 
 void Visualizer::getLinearCuts1D(ModelFittingBase &model,
-                                                  std::string currentDirectory, DataMatrix &cutMatrix) {
+  std::string currentDirectory, DataMatrix &cutMatrix) {
   std::string outputDir(currentDirectory+"/");
 
   DataMatrix cutResults(cutMatrix);
@@ -433,8 +435,8 @@ void Visualizer::getHeatmapMore4D(
         if (iteration == 0) {
           if (config.getGeneralConfig().targetFileType == VisualizationFileType::CSV) {
             CSVTools::writeMatrixToCSVFile(subfolder+"/Heatmap_var_dimensions_"
-                                           +std::to_string(variableColumnIndexes.at(0)+1)+"_"+
-                                           std::to_string(variableColumnIndexes.at(combination+1)+1), heatMapResults);
+            +std::to_string(variableColumnIndexes.at(0)+1)+"_"+
+            std::to_string(variableColumnIndexes.at(combination+1)+1), heatMapResults);
           } else if (config.getGeneralConfig().targetFileType == VisualizationFileType::json) {
             storeHeatmapJson(heatMapResults, model,
                              variableColumnIndexes, variableColumnIndexes.at(0),
@@ -447,8 +449,8 @@ void Visualizer::getHeatmapMore4D(
         } else {
           if (config.getGeneralConfig().targetFileType == VisualizationFileType::CSV) {
             CSVTools::writeMatrixToCSVFile(subfolder+"/Heatmap_var_dimensions_"
-                                           +std::to_string(variableColumnIndexes.at((combination < 2)?1:2)+1)+"_"+
-                                           std::to_string(variableColumnIndexes.at((combination < 1)?2:3)+1), heatMapResults);
+            + std::to_string(variableColumnIndexes.at((combination < 2)?1:2)+1)+"_"+
+            std::to_string(variableColumnIndexes.at((combination < 1)?2:3)+1), heatMapResults);
           } else if (config.getGeneralConfig().targetFileType == VisualizationFileType::json) {
             storeHeatmapJson(heatMapResults, model,
                              variableColumnIndexes, variableColumnIndexes.at((combination < 2)?1:2),

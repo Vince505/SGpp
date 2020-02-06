@@ -3,7 +3,7 @@
 // use, please see the copyright notice provided with SG++ or at
 // sgpp.sparsegrids.org
 
-#include  <sgpp/datadriven/tools/hierarchyTree/ClusterNode.hpp>
+#include  <sgpp/datadriven/datamining/tools/hierarchyTree/ClusterNode.hpp>
 #include <vector>
 #include <algorithm>
 #include <iostream>

@@ -288,7 +288,7 @@ bool SPTree::insert(size_t new_index) {
 
   // Find out where the point can be inserted
   for (size_t i = 0; i < no_children; i++) {
-    if (children[i]->insert(new_index)) {<
+    if (children[i]->insert(new_index)) {
       return true;
     }
   }

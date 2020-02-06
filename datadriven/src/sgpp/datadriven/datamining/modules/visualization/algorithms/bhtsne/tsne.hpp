@@ -69,7 +69,7 @@ class TSNE {
   void run(std::unique_ptr<double[]> &X, size_t N, size_t D,
     std::unique_ptr<double[]> &Y, size_t no_dims, double perplexity,
     double theta, size_t rand_seed,
-    bool skip_random_init, size_t max_iter, size_t mom_switch_iter =250);
+    bool skip_random_init, size_t max_iter, size_t mom_switch_iter = 250);
 
  private:
   /**

@@ -5,7 +5,7 @@
 
 #include <sgpp/datadriven/datamining/modules/postProcessing/PostProcessingClustering.hpp>
 #include <sgpp/datadriven/datamining/modules/fitting/ModelFittingClustering.hpp>
-#include <sgpp/datadriven/tools/Graph.hpp>
+#include <sgpp/datadriven/datamining/tools/Graph.hpp>
 
 #include<map>
 

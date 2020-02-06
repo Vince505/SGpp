@@ -3,7 +3,7 @@
 // use, please see the copyright notice provided with SG++ or at
 // sgpp.sparsegrids.org
 
-#include <sgpp/datadriven/tools/vpTree/VpTree.hpp>
+#include <sgpp/datadriven/datamining/tools/vpTree/VpTree.hpp>
 #include <cfloat>
 #include <utility>
 #include <algorithm>

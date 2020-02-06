@@ -5,8 +5,8 @@
 
 #pragma once
 
-#include <sgpp/datadriven/tools/vpTree/VpNode.hpp>
-#include <sgpp/datadriven/tools/vpTree/VpHeapItem.hpp>
+#include <sgpp/datadriven/datamining/tools/vpTree/VpNode.hpp>
+#include <sgpp/datadriven/datamining/tools/vpTree/VpHeapItem.hpp>
 
 #include <vector>
 #include<utility>

@@ -4,7 +4,7 @@
 // sgpp.sparsegrids.org
 
 
-#include  <sgpp/datadriven/tools/hierarchyTree/HierarchyTree.hpp>
+#include  <sgpp/datadriven/datamining/tools/hierarchyTree/HierarchyTree.hpp>
 
 #include <iostream>
 #include <vector>

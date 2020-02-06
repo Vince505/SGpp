@@ -97,7 +97,7 @@
 
 #include <sgpp/datadriven/tools/ARFFTools.hpp>
 #include <sgpp/datadriven/tools/Dataset.hpp>
-#include <sgpp/datadriven/tools/Graph.hpp>
+#include "sgpp/datadriven/datamining/tools/Graph.hpp"
 
 #include <sgpp/datadriven/operation/hash/OperationMultipleEvalScalapack/OperationMultipleEvalDistributed.hpp>
 #include <sgpp/datadriven/operation/hash/OperationMultipleEvalScalapack/OperationMultipleEvalLinearDistributed.hpp>
@@ -178,6 +178,13 @@
 #include <sgpp/datadriven/datamining/modules/dataSource/RosenblattTransformation.hpp>
 #include <sgpp/datadriven/datamining/modules/dataSource/SampleProvider.hpp>
 
+#include <sgpp/datadriven/datamining/tools/Graph.hpp>
+#include <sgpp/datadriven/datamining/tools/vpTree/VpNode.hpp>
+#include <sgpp/datadriven/datamining/tools/vpTree/VpHeapItem.hpp>
+#include <sgpp/datadriven/datamining/tools/vpTree/VpTree.hpp>
+#include <sgpp/datadriven/datamining/tools/hierarchyTree/ClusterNode.hpp>
+#include <sgpp/datadriven/datamining/tools/hierarchyTree/HierarchyTree.hpp>
+
 #include <sgpp/datadriven/datamining/modules/fitting/FitterConfiguration.hpp>
 #include <sgpp/datadriven/datamining/modules/fitting/FitterConfigurationLeastSquares.hpp>
 #include <sgpp/datadriven/datamining/modules/fitting/FitterConfigurationClustering.hpp>
@@ -192,16 +199,26 @@
 #include <sgpp/datadriven/datamining/modules/fitting/ModelFittingLeastSquares.hpp>
 #include <sgpp/datadriven/datamining/modules/fitting/ModelFittingClustering.hpp>
 
-
 #include <sgpp/datadriven/datamining/modules/visualization/VisualizationGeneralConfig.hpp>
 #include <sgpp/datadriven/datamining/modules/visualization/VisualizationParameters.hpp>
 #include <sgpp/datadriven/datamining/modules/visualization/Visualizer.hpp>
 #include <sgpp/datadriven/datamining/modules/visualization/VisualizerClassification.hpp>
 #include <sgpp/datadriven/datamining/modules/visualization/VisualizerConfiguration.hpp>
 #include <sgpp/datadriven/datamining/modules/visualization/VisualizerDensityEstimation.hpp>
+#include <sgpp/datadriven/datamining/modules/visualization/VisualizerClustering.hpp>
 #include <sgpp/datadriven/datamining/modules/visualization/VisualizerDummy.hpp>
 
+#include <sgpp/datadriven/datamining/modules/postProcessing/PostProcessingBase.hpp>
+#include <sgpp/datadriven/datamining/modules/postProcessing/PostProcessingDensityEstimation.hpp>
+#include <sgpp/datadriven/datamining/modules/postProcessing/PostProcessingClassification.hpp>
+#include <sgpp/datadriven/datamining/modules/postProcessing/PostProcessingClustering.hpp>
+#include <sgpp/datadriven/datamining/modules/postProcessing/PostProcessingLeastSquares.hpp>
+
 #include <sgpp/datadriven/datamining/modules/scoring/FowlkesMallows.hpp>
+#include <sgpp/datadriven/datamining/modules/scoring/VMeasure.hpp>
+#include <sgpp/datadriven/datamining/modules/scoring/ClusteringMetric.hpp>
+#include <sgpp/datadriven/datamining/modules/scoring/CalinskiHarabasz.hpp>
+#include <sgpp/datadriven/datamining/modules/scoring/DavidBouldin.hpp>
 #include <sgpp/datadriven/datamining/modules/scoring/Accuracy.hpp>
 #include <sgpp/datadriven/datamining/modules/scoring/MSE.hpp>
 #include <sgpp/datadriven/datamining/modules/scoring/Metric.hpp>
