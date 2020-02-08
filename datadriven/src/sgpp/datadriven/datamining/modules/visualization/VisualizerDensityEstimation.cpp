@@ -192,7 +192,7 @@ void VisualizerDensityEstimation::storeScatterPlotJson(DataMatrix &matrix, Model
 
   jsonOutput["layout"].addDictAttr("title");
 
-  jsonOutput["layout"]["title"].addIDAttr("text", "\"TSNE Compression\"");
+  jsonOutput["layout"]["title"].addIDAttr("text", "\"Density Estimation. Estimated Densities\"");
   jsonOutput["layout"]["title"].addIDAttr("x", 0.5);
 
   jsonOutput.serialize(currentDirectory + "/scatterPlot.json");
