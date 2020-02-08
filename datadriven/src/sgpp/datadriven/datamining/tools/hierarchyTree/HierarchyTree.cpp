@@ -8,6 +8,9 @@
 
 #include <iostream>
 #include <vector>
+#include <string>
+
+using json::JSON;
 
 using sgpp::base::DataVector;
 namespace sgpp {
@@ -171,5 +174,32 @@ void HierarchyTree::evaluateClusteringAtLevel(DataVector &results, size_t level)
   }
 }
 
+void HierarchyTree::storeHierarchy(std::string outputDirectory) {
+  JSON output;
+  storeHierarchy(root, output);
+  std::cout << "Stroring hierarchy info at " << outputDirectory+"/hierarchyInfo.json" << std::endl;
+  output.serialize(outputDirectory+"/hierarchyInfo.json");
+}
+
+void HierarchyTree::storeHierarchy(ClusterNode* node, json::JSON &output) {
+  if (node->getClusterLabel() != -1) {  // We skip the root or the noise cluster
+    output.addListAttr("Cluster " + std::to_string(node->getClusterLabel()));
+    std::cout << "Cluster's " << node->getClusterLabel() << " children: ";
+    if (node->getChildren().size() > 0) {
+      for (auto child : node->getChildren()) {
+        std::cout << child->getClusterLabel() << ",";
+        output["Cluster " +
+               std::to_string(node->getClusterLabel())]
+          .addIdValue(static_cast<int64_t>(child->getClusterLabel()));
+      }
+      std::cout << std::endl;
+    } else {
+      std::cout << "None" << std::endl;
+    }
+  }
+  for (auto child : node->getChildren()) {
+    storeHierarchy(child, output);
+  }
+}
 }  // namespace datadriven
 }  // namespace sgpp

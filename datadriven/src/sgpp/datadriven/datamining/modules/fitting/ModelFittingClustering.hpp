@@ -165,8 +165,14 @@ class ModelFittingClustering : public ModelFittingBase {
     double densityThreshold);
 
   /**
+   * Stores the info of the hierarchy
+   * @param outputDirectory Directory to store the file with the hierarchy info
+   */
+  void storeHierarchy(std::string outputDirectory);
+
+  /**
    * Method to obtain the points used in the clustering
-   * @return
+   * @return Matrix with all of the points used in the clustering
    */
   DataMatrix& getPoints() const;
 

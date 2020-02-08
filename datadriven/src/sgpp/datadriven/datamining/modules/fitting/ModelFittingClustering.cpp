@@ -257,5 +257,9 @@ std::unique_ptr<HierarchyTree>* ModelFittingClustering::getHierarchyTree() {
 std::shared_ptr<Graph> ModelFittingClustering::getGraph() {
   return graph;
 }
+
+void ModelFittingClustering::storeHierarchy(std::string outputDirectory) {
+  hierarchy->storeHierarchy(outputDirectory);
+}
 }  // namespace datadriven
 }  // namespace sgpp

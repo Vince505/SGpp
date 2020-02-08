@@ -49,6 +49,7 @@ void PostProcessingClustering::postProcessing(DataSource &datasource,
       break;
     }
   }
+  clusteringModel->storeHierarchy(".");
   std::cout << "Done post processing" << std::endl;
 
   visualizer.runPostProcessingVisualization(model, datasource, fold);

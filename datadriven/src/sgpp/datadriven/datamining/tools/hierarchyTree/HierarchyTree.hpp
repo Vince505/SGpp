@@ -7,7 +7,9 @@
 
 #include  <sgpp/datadriven/datamining/tools/hierarchyTree/ClusterNode.hpp>
 #include <sgpp/base/datatypes/DataVector.hpp>
+#include <sgpp/base/tools/json/JSON.hpp>
 
+#include <string>
 namespace sgpp {
 namespace datadriven {
 
@@ -91,6 +93,12 @@ class HierarchyTree {
    */
   size_t getMostSpecificLevel(size_t vertexIndex);
 
+  /**
+   * Prints on the screen the hierarchy with the format Cluster <label>:[Children]
+   * and stores it in json format.
+   * @param outputDirectory Directory to store the json file
+   */
+  void storeHierarchy(std::string outputDirectory);
  private:
   /**
    * Root of the tree
@@ -140,6 +148,13 @@ class HierarchyTree {
    * @param clusterLabel Label to assign
    */
   void setPostProcessingLabel(ClusterNode* node, int &clusterLabel);
+
+  /**
+   * Recursive method to store the information of the hierarchy
+   * @param node Node to process
+   * @param clusterLabel Label to assign
+   */
+  void storeHierarchy(ClusterNode* node, json::JSON &output);
 };
 
 }  // namespace datadriven
