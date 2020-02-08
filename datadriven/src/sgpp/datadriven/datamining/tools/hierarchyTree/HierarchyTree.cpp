@@ -176,25 +176,34 @@ void HierarchyTree::evaluateClusteringAtLevel(DataVector &results, size_t level)
 
 void HierarchyTree::storeHierarchy(std::string outputDirectory) {
   JSON output;
+  size_t n_levels = getNumberLevels();
+  for (size_t level = 1; level <= n_levels; level++) {
+    output.addDictAttr("Level "+std::to_string(level));
+  }
   storeHierarchy(root, output);
+
   std::cout << "Stroring hierarchy info at " << outputDirectory+"/hierarchyInfo.json" << std::endl;
   output.serialize(outputDirectory+"/hierarchyInfo.json");
 }
 
 void HierarchyTree::storeHierarchy(ClusterNode* node, json::JSON &output) {
   if (node->getClusterLabel() != -1) {  // We skip the root or the noise cluster
-    output.addListAttr("Cluster " + std::to_string(node->getClusterLabel()));
-    std::cout << "Cluster's " << node->getClusterLabel() << " children: ";
+    output["Level "+std::to_string(node->getLevel())]
+    .addDictAttr("Cluster " + std::to_string(node->getClusterLabel()));
+
+    output["Level "+std::to_string(node->getLevel())]
+    ["Cluster " + std::to_string(node->getClusterLabel())]
+      .addIDAttr("Density Threshold", node->getDensityThreshold());
+
+    output["Level "+std::to_string(node->getLevel())]
+    ["Cluster " + std::to_string(node->getClusterLabel())].addListAttr("Children");
+
     if (node->getChildren().size() > 0) {
       for (auto child : node->getChildren()) {
-        std::cout << child->getClusterLabel() << ",";
-        output["Cluster " +
-               std::to_string(node->getClusterLabel())]
-          .addIdValue(static_cast<int64_t>(child->getClusterLabel()));
+        output["Level "+std::to_string(node->getLevel())]["Cluster " +
+               std::to_string(node->getClusterLabel())]["Children"]
+          .addIdValue("\"Cluster "+std::to_string(child->getClusterLabel())+"\"");
       }
-      std::cout << std::endl;
-    } else {
-      std::cout << "None" << std::endl;
     }
   }
   for (auto child : node->getChildren()) {

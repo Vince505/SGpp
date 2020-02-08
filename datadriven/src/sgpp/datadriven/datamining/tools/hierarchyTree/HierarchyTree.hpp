@@ -94,8 +94,7 @@ class HierarchyTree {
   size_t getMostSpecificLevel(size_t vertexIndex);
 
   /**
-   * Prints on the screen the hierarchy with the format Cluster <label>:[Children]
-   * and stores it in json format.
+   * Stores metdadata of the hierarchy in format json
    * @param outputDirectory Directory to store the json file
    */
   void storeHierarchy(std::string outputDirectory);
