@@ -45,8 +45,8 @@ class ResidualScore : public Metric {
   /**
    * Measure the quality of the trained model. Gives the metric access to the trained model, as this
    * is required for some scores.
-   * @params model The fitted model
-   * @params datasource The source pointing the data
+   * @param model The fitted model
+   * @param datasource The source pointing the data
    */
   double measurePostProcessing(ModelFittingBase &model, DataSource &datasource) const override;
 };

@@ -46,8 +46,8 @@ class MSE : public Metric {
   /**
    * Quantify the difference between predicted values and actual values in terms of mean
    * squared error, after postProcessing.
-   * @params model The fitted model
-   * @params datasource The source pointing the data
+   * @param model The fitted model
+   * @param datasource The source pointing the data
    * @return mean squared error (MSE) - strictly positive such that smaller values are better.
    */
 

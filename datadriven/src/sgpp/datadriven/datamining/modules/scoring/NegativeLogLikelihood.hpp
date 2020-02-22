@@ -54,8 +54,8 @@ class NegativeLogLikelihood : public Metric {
    * Quantify the NLL of the predicted values after post processing
    * (i.e. adding the logs of the predicted values
    * and ignoring the true values).
-   * @params model The fitted model
-   * @params datasource The source pointing the data
+   * @param model The fitted model
+   * @param datasource The source pointing the data
    * @return the negative log likelihood of the predicted probabilities
    */
   double measurePostProcessing(ModelFittingBase &model, DataSource &datasource) const override;

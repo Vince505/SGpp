@@ -12,6 +12,8 @@
 #include<utility>
 #include <queue>
 #include <iostream>
+#include <algorithm>
+
 namespace sgpp {
 namespace datadriven {
 /**
@@ -76,10 +78,6 @@ class VpTree {
    * Node that defines the root of the tree
    */
   VpNode* root;
-  /**
-   * Value that keeps track the distance of the latest found nearest neighbor
-   */
-  double tau;
 
   /**
    * Matrix to keep track of all stored points when building the tree
@@ -124,7 +122,7 @@ class VpTree {
    * @param heap The heap contaning the info of the currently found nearest neighbors
    */
   void searchRecursively(VpNode* &node, sgpp::base::DataVector &target,
-      size_t noNearestNeighbors, std::priority_queue<VpHeapItem> &heap);
+      size_t noNearestNeighbors, std::priority_queue<VpHeapItem> &heap, double &tau);
 
   /**
    * Swaps to rows in the storage matrix

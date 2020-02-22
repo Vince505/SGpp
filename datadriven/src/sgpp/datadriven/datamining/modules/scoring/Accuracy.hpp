@@ -44,8 +44,8 @@ class Accuracy : public Metric {
   /**
    * Quantify the difference between predicted values and actual values in terms of accuracy.
    * After postProcessing
-   * @params model The fitted model
-   * @params datasource The source pointing the data
+   * @param model The fitted model
+   * @param datasource The source pointing the data
    * @returns Accuracy - larger values are better.
    */
   double measurePostProcessing(ModelFittingBase &model, DataSource &datasource) const override;

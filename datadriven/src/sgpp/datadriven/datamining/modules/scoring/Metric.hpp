@@ -82,8 +82,8 @@ class Metric {
   /**
    * Quantify the difference between predicted values and actual values after PostProcessing.
    * Does not have an inner state.
-   * @params model The fitted model
-   * @params datasource The source pointing the data
+   * @param model The fitted model
+   * @param datasource The source pointing the data
    * @return Quantification of the difference.
    */
   virtual double measurePostProcessing(ModelFittingBase &model, DataSource &datasource) const = 0;

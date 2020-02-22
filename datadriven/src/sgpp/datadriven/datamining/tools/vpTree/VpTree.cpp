@@ -19,7 +19,6 @@ namespace sgpp {
 namespace datadriven {
 
 VpTree::VpTree(DataMatrix matrix) {
-  this->tau = DBL_MAX;
   this->storedItems = matrix;
   this->root = buildRecursively(0, this->storedItems.getNrows());
 }
@@ -33,15 +32,15 @@ std::priority_queue<VpHeapItem> VpTree::getNearestNeighbors(DataVector &target,
   if (noNearestNeighbors >= storedItems.getNrows()) {
     noNearestNeighbors = storedItems.getNrows();
   }
-  tau = DBL_MAX;
+  double tau = DBL_MAX;
 
-  searchRecursively(root, target, noNearestNeighbors, heap);
+  searchRecursively(root, target, noNearestNeighbors, heap, tau);
 
   return heap;
 }
 
 void VpTree::searchRecursively(VpNode* &node, DataVector &target, size_t noNearestNeighbors,
-    std::priority_queue<VpHeapItem> &heap) {
+    std::priority_queue<VpHeapItem> &heap, double &tau) {
   if (node == nullptr) {
     return;
   }
@@ -74,23 +73,23 @@ void VpTree::searchRecursively(VpNode* &node, DataVector &target, size_t noNeare
   if (distance <= node->threshold) {
     if (distance - tau <= node->threshold) {
       // if there can still be neighbors inside the ball, recursively search left child first
-      searchRecursively(node->left, target, noNearestNeighbors, heap);
+      searchRecursively(node->left, target, noNearestNeighbors, heap, tau);
     }
 
     if (distance + tau >= node->threshold) {
       // if there can still be neighbors outside the ball, recursively search right child
-      searchRecursively(node->right, target, noNearestNeighbors, heap);
+      searchRecursively(node->right, target, noNearestNeighbors, heap, tau);
     }
     // If the target lies outsize the radius of the ball
   } else {
     if (distance + tau >= node->threshold) {
       // if there can still be neighbors outside the ball, recursively search right child first
-      searchRecursively(node->right, target, noNearestNeighbors, heap);
+      searchRecursively(node->right, target, noNearestNeighbors, heap, tau);
     }
 
     if (distance - tau <= node->threshold) {
       // if there can still be neighbors inside the ball, recursively search left child
-      searchRecursively(node->left, target, noNearestNeighbors, heap);
+      searchRecursively(node->left, target, noNearestNeighbors, heap, tau);
     }
   }
 }

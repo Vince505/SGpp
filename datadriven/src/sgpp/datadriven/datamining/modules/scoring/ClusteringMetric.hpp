@@ -43,9 +43,8 @@ class ClusteringMetric: public Metric {
 
   /**
    * Quantify the quality of a cluster using a specific metric
-   * @params model The fitted model
-   * @params datasource The source pointing the data
-   * @param testDataset dataset with test data
+   * @param model The fitted model
+   * @param datasource The source pointing the data
    * @return Cluster quality score Value
    */
   virtual double measurePostProcessing(ModelFittingBase &model, DataSource &datasource) const = 0;

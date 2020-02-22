@@ -47,7 +47,6 @@ class Visualizer{
    * Runs the tsne algorithm to visualize high dimensional data in 2 dimensions
    * @param originalData Matrix with the original points in high dimensional space
    * @param compressedData Matrix which will contain the compressed points
-   * @param model The fitted model
    */
   void runTsne(DataMatrix &originalData, DataMatrix &compressedData);
 
@@ -62,6 +61,7 @@ class Visualizer{
    * @param model The model used to evaluate the heatmap
    * @param currentDirectory The current directory to store the heatmap results
    * @param matrix The matrix containing the points to evaluate the heatmap
+   * @param nDimensions Number of dimensions of the data to generate the Heatmap
  */
   void getHeatmap(ModelFittingBase &model, std::string currentDirectory, DataMatrix &matrix,
                   size_t &nDimensions);
@@ -71,6 +71,7 @@ class Visualizer{
    * @param model The model used to evaluate the linear cuts
    * @param currentDirectory The current directory to store the linear cuts results
    * @param matrix The matrix containing the points to evaluate the cuts
+   * @param nDimensions Number of dimensions of the data to generate the linear cuts
    */
   void getLinearCuts(ModelFittingBase &model, std::string currentDirectory, DataMatrix &matrix,
                      size_t &nDimensions);
@@ -86,15 +87,15 @@ class Visualizer{
 
   /**
    * Method which builds the matrices used to generate a heatmap of a given model
-   * @param model The model used to evaluate the heatmaps
    * @param heatmapMatrix matrix to be initialized
+   * @param nDimensions Number of dimensions of the data to generate the Heatmap
    */
   void initializeHeatmapMatrix(DataMatrix &heatmapMatrix, size_t &nDimensions);
 
   /**
    * Method which builds the matrices used to generate the linear Cuts of a given model
-   * @param model The model used to evaluate the linear cuts
    * @param cutMatrix matrix to be initialized
+   * @param nDimensions Number of dimensions of the data to generate the linear cuts
    */
   void initializeCutMatrix(DataMatrix &cutMatrix, size_t &nDimensions);
 
@@ -228,19 +229,6 @@ class Visualizer{
    * @param filepath The current directory to store the json file
    */
   virtual void storeCutJson(DataMatrix &matrix, std::string filepath) = 0;
-
-  /**
-   * Method to generate and store in json  format for the
-   * plotly library the output of the hetamaps for models of 3 or more dimensions
-   * @param matrix Matrix with the content to be stored
-   * @param model The model used when evaluating the heatmaps
-   * @param indexes Vectors containing the dimensions used when generating these heatmaps
-   * @param varDim1 The first dimension number varying and whose evaluation
-   * is shown in the model
-   * @param varDim2 The second dimension number varying and whose evaluation
-   * is shown in the model
-   * @param filepath The current directory to store the json file
-   */
 
   /**
    * Method to generate and store in json format for the

@@ -22,8 +22,8 @@ class DavidBouldin: public ClusteringMetric {
   /**
    * Quantify the David-Bouldin score
    * of a clustering after postprocessing
-   * @params model The fitted model
-   * @params datasource The source pointing the data
+   * @param model The fitted model
+   * @param datasource The source pointing the data
    * @return the David-Bouldin score of a clustering
    */
   double measurePostProcessing(ModelFittingBase &model, DataSource &datasource) const override;

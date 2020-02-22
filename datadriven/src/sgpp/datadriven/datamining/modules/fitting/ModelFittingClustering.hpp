@@ -210,7 +210,7 @@ class ModelFittingClustering : public ModelFittingBase {
 
   /**
    * Method that generates the density estimation model of the unlabeled dataset
-   * @params dataset the training dataset that is used to fit the model.
+   * @param dataset the training dataset that is used to fit the model.
    */
   void generateDensityEstimationModel(Dataset &dataset);
 

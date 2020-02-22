@@ -20,7 +20,7 @@ class FowlkesMallows: public ClusteringMetric {
   /**
    * Quantify the Fowlkes-Mallows score
    * of a clustering
-   * @params model The fitted model
+   * @param model The fitted model
    * @params datasource The source pointing the data
    * @return the Fowlkes-Mallows score of a clustering
    */

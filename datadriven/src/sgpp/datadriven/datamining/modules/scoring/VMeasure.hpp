@@ -20,8 +20,8 @@ class VMeasure: public ClusteringMetric {
   /**
    * Quantify the V Measure score
    * of a clustering
-   * @params model The fitted model
-   * @params datasource The source pointing the data
+   * @param model The fitted model
+   * @param datasource The source pointing the data
    * @return he v Measure score of a clustering
    */
   double measurePostProcessing(ModelFittingBase &model, DataSource &datasource) const override;
