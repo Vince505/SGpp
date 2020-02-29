@@ -110,7 +110,9 @@
             "kNearestNeighbors": 20,
             "minDensityThreshold": 0.1,
             "maxDensityThreshold": 0.3,
-            "steps":4
+            "steps":4,
+            "storeHierarchy": true,
+            "outputDirectory": "."
         }
     },
     "visualization": {

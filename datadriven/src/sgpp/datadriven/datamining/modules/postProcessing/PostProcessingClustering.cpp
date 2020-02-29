@@ -6,9 +6,12 @@
 #include <sgpp/datadriven/datamining/modules/postProcessing/PostProcessingClustering.hpp>
 #include <sgpp/datadriven/datamining/modules/fitting/ModelFittingClustering.hpp>
 #include <sgpp/datadriven/datamining/tools/Graph.hpp>
+#include <sgpp/datadriven/tools/Dataset.hpp>
+#include <sgpp/datadriven/tools/CSVWriter.hpp>
 
 #include<map>
 
+using sgpp::datadriven::CSVWriter;
 namespace sgpp {
 namespace datadriven {
 
@@ -49,8 +52,22 @@ void PostProcessingClustering::postProcessing(DataSource &datasource,
       break;
     }
   }
-  clusteringModel->storeHierarchy(".");
-  std::cout << "Done post processing" << std::endl;
+
+  if (clusteringModel->getFitterConfiguration().
+    getClusteringConfig().storeHierarchy) {
+    // Storing the metadata of the hierarchical tree
+    clusteringModel->storeHierarchyTree();
+
+    // Storing the evaluated labels
+
+    Dataset *allSamples = datasource.getAllSamples();
+    DataVector &targets = allSamples->getTargets();
+
+    clusteringModel->evaluate(allSamples->getData(), targets);
+
+    CSVWriter::writeCSVToFile(clusteringModel->getFitterConfiguration().
+      getClusteringConfig().outputDirectory+"/hierarchyLabels.csv", *allSamples);
+  }
 
   visualizer.runPostProcessingVisualization(model, datasource, fold);
 }

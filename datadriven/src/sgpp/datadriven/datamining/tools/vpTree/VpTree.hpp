@@ -66,7 +66,7 @@ class VpTree {
    * @param point Point whose index is being looked for
    * @return Index of the point
    */
-  size_t getIndexedKeyFromPoint(sgpp::base::DataVector &point);
+  size_t getIndexedKeyFromPoint(const sgpp::base::DataVector &point);
 
   /**
    * Prints the vpTRee in a preorder fashion
@@ -112,7 +112,7 @@ class VpTree {
    * @param point Point whose index is being looked for
    * @return The index of the given point
    */
-  size_t findIndex(VpNode* node, sgpp::base::DataVector &point);
+  size_t findIndex(VpNode* node, const sgpp::base::DataVector &point);
 
   /**
    * Recursive search to find the nearest neighbors of a point

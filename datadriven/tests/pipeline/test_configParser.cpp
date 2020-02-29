@@ -331,6 +331,8 @@ BOOST_AUTO_TEST_CASE(testClusteringConfig) {
     defaults.minDensityThreshold = 0.2;
     defaults.maxDensityThreshold = 0.8;
     defaults.steps = 5;
+    defaults.storeHierarchy = false;
+    defaults.outputDirectory = "someDirectory";
     ClusteringConfiguration config;
     bool hasConfig;
 
@@ -341,6 +343,8 @@ BOOST_AUTO_TEST_CASE(testClusteringConfig) {
     BOOST_CHECK_EQUAL(config.minDensityThreshold, 0.1);
     BOOST_CHECK_EQUAL(config.maxDensityThreshold, 0.3);
     BOOST_CHECK_EQUAL(config.steps, 4);
+    BOOST_CHECK_EQUAL(config.storeHierarchy, true);
+    BOOST_CHECK_EQUAL(config.outputDirectory, ".");
 }
 
 BOOST_AUTO_TEST_CASE(testVisualizationGeneralConfig) {

@@ -134,7 +134,7 @@ VpNode* VpTree::buildRecursively(size_t startIndex, size_t endIndex)  {
     return node;
 }
 
-size_t VpTree::getIndexedKeyFromPoint(DataVector &point) {
+size_t VpTree::getIndexedKeyFromPoint(const DataVector &point) {
   return findIndex(root, point);
 }
 
@@ -190,7 +190,7 @@ VpNode* VpTree::findInsertionNode(VpNode* node, DataVector &newPoint) {
   }
 }
 
-size_t  VpTree::findIndex(VpNode* node, DataVector &point) {
+size_t  VpTree::findIndex(VpNode* node, const DataVector &point) {
   DataVector vantagePoint(storedItems.getNcols());
 
   storedItems.getRow(node->index, vantagePoint);

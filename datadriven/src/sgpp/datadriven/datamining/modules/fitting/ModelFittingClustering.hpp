@@ -53,11 +53,16 @@ class ModelFittingClustering : public ModelFittingBase {
    */
   void update(Dataset& newDataset) override;
 
-
+  /**
+   * Evaluates a single of sample and assigns it a cluster label if the point
+   * was used in the clustering. Otherwise it will be labeled as noise
+   * @param sample Sample to evaluate
+   * @return Label assigned to the sample
+   */
   double evaluate(const DataVector& sample) override;
 
   /**
-   * Evaluates a series of samples and assign them a cluster label if the point
+   * Evaluates a series of samples and assigns them a cluster label if the point
    * was used in the clustering. Otherwise it will be labeled as noise
    * @param samples Samples to evaluate
    * @param results Labels assigned to the samples
@@ -65,10 +70,11 @@ class ModelFittingClustering : public ModelFittingBase {
   void evaluate(DataMatrix& samples, DataVector& results) override;
 
   /**
-   * Performs a refinement given the new grid size and the points to coarsened
-   * @return if the grid was refined (true)
+   * Improve accuracy of the model on the given training data by adaptive refinement or coarsening
+   * of the grid.
+   * @return true if refinement or coarsening was performed, else false.
    */
-  bool refine() override;
+  bool adapt() override;
 
   /**
    * Clears the model
@@ -166,9 +172,8 @@ class ModelFittingClustering : public ModelFittingBase {
 
   /**
    * Stores the info of the hierarchy
-   * @param outputDirectory Directory to store the file with the hierarchy info
    */
-  void storeHierarchy(std::string outputDirectory);
+  void storeHierarchyTree();
 
   /**
    * Method to obtain the points used in the clustering

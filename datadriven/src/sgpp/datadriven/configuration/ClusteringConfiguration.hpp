@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <string>
 /**
  * Struct that stores all the configuration information
  * for an offline object for density based clustering
@@ -24,6 +25,12 @@ struct ClusteringConfiguration {
 
     // Number of steps to run the hierarchy
     size_t steps = 0;
+
+    // Flag that indicates if to store the hierachy information
+    bool storeHierarchy = false;
+
+    // Output directory to store the hierarchy information
+    std::string outputDirectory = ".";
 };
 }  // namespace datadriven
 }  // namespace sgpp

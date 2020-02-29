@@ -522,16 +522,22 @@ bool DataMiningConfigParser::getFitterClusteringConfig(ClusteringConfiguration &
     auto clusteringConfig = static_cast<DictNode *> (&(*configFile)[fitter]["clusteringConfig"]);
 
     config.noNearestNeighbors = parseUInt(*clusteringConfig, "kNearestNeighbors",
-        defaults.noNearestNeighbors, "clusteringConfig");
+      defaults.noNearestNeighbors, "clusteringConfig");
 
     config.minDensityThreshold = parseDouble(*clusteringConfig, "minDensityThreshold",
-                                          defaults.minDensityThreshold, "clusteringConfig");
+      defaults.minDensityThreshold, "clusteringConfig");
 
     config.maxDensityThreshold = parseDouble(*clusteringConfig, "maxDensityThreshold",
-                                             defaults.maxDensityThreshold, "clusteringConfig");
+      defaults.maxDensityThreshold, "clusteringConfig");
 
     config.steps = parseUInt(*clusteringConfig, "steps",
-                                          defaults.steps, "clusteringConfig");
+      defaults.steps, "clusteringConfig");
+
+    config.storeHierarchy = parseBool(*clusteringConfig, "storeHierarchy",
+      defaults.storeHierarchy, "clusteringConfig");
+
+    config.outputDirectory = parseString(*clusteringConfig, "outputDirectory",
+      defaults.outputDirectory, "clusteringConfig");
   } else {
     std::cout
         << "# Could not find specification  of fitter[clusteringConfig]. Falling Back to "
@@ -740,11 +746,12 @@ bool DataMiningConfigParser::getVisualizationGeneralConfig(
     config.plots = parseStringArray(*visualizationGeneralConfig, "plots",
                                         defaults.plots, "visualization");
     config.algorithm =
-        parseStringArray(*visualizationGeneralConfig, "algorithm",
+        parseString(*visualizationGeneralConfig, "algorithm",
                          defaults.algorithm, "visualization");
 
     config.numberCores =
-      parseUInt(*visualizationGeneralConfig, "numberCores", defaults.numberCores, "visualization");
+      parseUInt(*visualizationGeneralConfig, "numberCores",
+        defaults.numberCores, "visualization");
 
     config.targetDirectory =
         parseString(*visualizationGeneralConfig, "targetDirectory",

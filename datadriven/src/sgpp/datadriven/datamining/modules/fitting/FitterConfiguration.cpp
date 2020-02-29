@@ -167,6 +167,8 @@ void FitterConfiguration::setupDefaults() {
   clusteringConfig.minDensityThreshold = 0.1;
   clusteringConfig.maxDensityThreshold = 0.5;
   clusteringConfig.steps = 5;
+  clusteringConfig.storeHierarchy = false;
+  clusteringConfig.outputDirectory = ".";
 
   //databaseConfig.filepath = "";
 

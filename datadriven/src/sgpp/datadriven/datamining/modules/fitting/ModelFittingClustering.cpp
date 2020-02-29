@@ -59,8 +59,17 @@ void ModelFittingClustering::update(Dataset &newDataset) {
 }
 
 double ModelFittingClustering::evaluate(const DataVector &sample) {
-  std::cout << "Method not defined for Clustering Models" << std::endl;
-  return 0.0;
+  if (hierarchy == nullptr) {
+    return densityEstimationModel->evaluate(sample);
+  } else {
+    size_t vpIndex = vpTree->getIndexedKeyFromPoint(sample);
+    if (vpIndex == getPoints().getNrows()) {
+      std::cout << "Point " + sample.toString() + " wasn't used for clustering" << std::endl;
+      return -1.0;
+    } else {
+      return static_cast<double>(hierarchy->getMostSpecificCluster(vpIndex)->getClusterLabel());
+    }
+  }
 }
 
 void ModelFittingClustering::evaluate(DataMatrix &samples, DataVector &results) {
@@ -85,9 +94,8 @@ void ModelFittingClustering::evaluate(DataMatrix &samples, DataVector &results) 
   }
 }
 
-bool ModelFittingClustering::refine() {
-  densityEstimationModel->refine();
-  return true;
+bool ModelFittingClustering::adapt() {
+  return densityEstimationModel->adapt();
 }
 
 void ModelFittingClustering::reset() {
@@ -258,8 +266,8 @@ std::shared_ptr<Graph> ModelFittingClustering::getGraph() {
   return graph;
 }
 
-void ModelFittingClustering::storeHierarchy(std::string outputDirectory) {
-  hierarchy->storeHierarchy(outputDirectory);
+void ModelFittingClustering::storeHierarchyTree() {
+  hierarchy->storeHierarchy(getFitterConfiguration().getClusteringConfig().outputDirectory);
 }
 }  // namespace datadriven
 }  // namespace sgpp
