@@ -42,7 +42,7 @@ void ClusterNode::addChildren(std::vector<ClusterNode*> children) {
 }
 
 bool ClusterNode::splitChild(ClusterNode* child, std::shared_ptr<Graph> graph,
-  double densityThreshold) {
+  double spliThreshold) {
   std::vector<size_t> parentVertexIndexes = this->getVertexIndexes();
   std::vector<size_t> childVertexIndexes = child->getVertexIndexes();
 
@@ -72,22 +72,17 @@ bool ClusterNode::splitChild(ClusterNode* child, std::shared_ptr<Graph> graph,
     }
   }
 
-  visitedVertex.clear();
+// visitedVertex.clear();
   for (auto vertex : childVertexIndexes) {
     if (graph->containsVertex(vertex)) {
       auto adjacentVertices = graph->getAdjacentVertices(vertex);
       for (auto adjacentVertex : adjacentVertices) {
-        if (std::find(visitedVertex.begin(), visitedVertex.end(), adjacentVertex)
-            == visitedVertex.end()) {
-          // Check that the adjacent vertex is in the parent node and checking that we have not
-          // procesed it in a previous iteration
           if (std::find(parentVertexIndexes.begin(), parentVertexIndexes.end(), adjacentVertex)
               != parentVertexIndexes.end()) {
             connectionsChildParent++;
           }
-        }
       }
-      visitedVertex.push_back(vertex);
+// visitedVertex.push_back(vertex);
     }
   }
 
@@ -98,12 +93,12 @@ bool ClusterNode::splitChild(ClusterNode* child, std::shared_ptr<Graph> graph,
 
   double compare = connectivityChildParent/connectivityParent;
 
-  return compare <= densityThreshold;
+  return compare <= spliThreshold;
 }
 
-bool ClusterNode::split(std::shared_ptr<Graph>  graph,  double densityThreshold) {
+bool ClusterNode::split(std::shared_ptr<Graph>  graph,  double spliThreshold) {
   for (auto child : children) {
-    if (splitChild(child, graph, densityThreshold)) {
+    if (splitChild(child, graph, spliThreshold)) {
       return true;
     }
   }

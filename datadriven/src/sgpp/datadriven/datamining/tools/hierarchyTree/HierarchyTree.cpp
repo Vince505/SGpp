@@ -196,6 +196,10 @@ void HierarchyTree::storeHierarchy(ClusterNode* node, json::JSON &output) {
       .addIDAttr("Density Threshold", node->getDensityThreshold());
 
     output["Level "+std::to_string(node->getLevel())]
+    ["Cluster " + std::to_string(node->getClusterLabel())]
+      .addIDAttr("No. points", node->getVertexIndexes().size());
+
+    output["Level "+std::to_string(node->getLevel())]
     ["Cluster " + std::to_string(node->getClusterLabel())].addListAttr("Children");
 
     if (node->getChildren().size() > 0) {

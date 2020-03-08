@@ -169,6 +169,9 @@ void FitterConfiguration::setupDefaults() {
   clusteringConfig.steps = 5;
   clusteringConfig.storeHierarchy = false;
   clusteringConfig.outputDirectory = ".";
+  clusteringConfig.splitThreshold = 0.4;
+
+
 
   //databaseConfig.filepath = "";
 

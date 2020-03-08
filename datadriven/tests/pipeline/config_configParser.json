@@ -111,6 +111,7 @@
             "minDensityThreshold": 0.1,
             "maxDensityThreshold": 0.3,
             "steps":4,
+            "splitThreshold": 0.5,
             "storeHierarchy": true,
             "outputDirectory": "."
         }

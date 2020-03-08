@@ -240,7 +240,7 @@ namespace datadriven {
 
       (*tree)->evaluateClusteringAtLevel(zCol, frame);
 
-      separateClustersIntoTraces(matrix, zCol, traces);
+      separateClustersIntoTraces(matrix, model, zCol, traces, frame);
 
       // Per frame Each cluster is processed as a separate component in a trace
       for (size_t cluster = 0; cluster <= numberClusters; cluster++) {
@@ -295,7 +295,8 @@ namespace datadriven {
       jsonOutput["data"][traceIndex].addIDAttr("mode", "\"lines\"");
       jsonOutput["data"][traceIndex].addIDAttr("name", "\"Graph\"");
       jsonOutput["data"][traceIndex].addDictAttr("line");
-      jsonOutput["data"][traceIndex]["line"].addIDAttr("width", 0.5);
+      jsonOutput["data"][traceIndex]["line"].addIDAttr("width", 1.0);
+      jsonOutput["data"][traceIndex]["line"].addIDAttr("color", "\"navy\"");
       jsonOutput["data"][traceIndex].addListAttr("x");
       jsonOutput["data"][traceIndex].addListAttr("y");
       if (frame == 0) {
@@ -430,12 +431,21 @@ namespace datadriven {
 
 
 void VisualizerClustering::separateClustersIntoTraces(DataMatrix &points,
-  DataVector &labels, std::vector<DataMatrix> &traces) {
+  ModelFittingClustering &model, DataVector &labels,
+  std::vector<DataMatrix> &traces, size_t level) {
+
+    auto tree = model.getHierarchyTree();
     for (size_t cluster = 0 ; cluster < traces.size(); cluster++) {
       traces[cluster].resize(0, points.getNcols());
     }
 
     for (size_t index = 0 ; index < labels.size(); index++) {
+      if (level >= 2) {
+        size_t pointLevel = (*tree)->getMostSpecificLevel(index);
+        if (pointLevel <= level - 2) {
+          continue;
+        }
+      }
       DataVector traceRow(points.getNcols());
       points.getRow(index, traceRow);
       traces[static_cast<int>(labels.get(index))+1].appendRow(traceRow);

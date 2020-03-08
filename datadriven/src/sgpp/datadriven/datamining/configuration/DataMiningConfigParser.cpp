@@ -533,6 +533,9 @@ bool DataMiningConfigParser::getFitterClusteringConfig(ClusteringConfiguration &
     config.steps = parseUInt(*clusteringConfig, "steps",
       defaults.steps, "clusteringConfig");
 
+    config.splitThreshold = parseDouble(*clusteringConfig, "splitThreshold",
+      defaults.splitThreshold, "clusteringConfig");
+
     config.storeHierarchy = parseBool(*clusteringConfig, "storeHierarchy",
       defaults.storeHierarchy, "clusteringConfig");
 

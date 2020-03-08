@@ -26,6 +26,9 @@ struct ClusteringConfiguration {
     // Number of steps to run the hierarchy
     size_t steps = 0;
 
+    // Split threshold used to determine if a cluster is to be splitted or not
+    double splitThreshold = 0.4;
+
     // Flag that indicates if to store the hierachy information
     bool storeHierarchy = false;
 

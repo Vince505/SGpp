@@ -53,16 +53,14 @@ double VMeasure::measurePostProcessing(ModelFittingBase &model, DataSource &data
     countMatrix.set(trueLabelsMap[trueValue], predLabelsMap[predictedValue],
                     countMatrix.get(trueLabelsMap[trueValue], predLabelsMap[predictedValue])+1);
   }
+
   // CALCULATING HOMOGENEITY
   //  Entropy of classes
 
   double classConditionalEntropy = 0.0;
   double classEntropy = 0.0;
 
-  DataMatrix transposeCountMatrix(countMatrix);
-
-  transposeCountMatrix.transpose();
-  DataVector predictedVector(transposeCountMatrix.getNcols());
+  DataVector predictedVector(countMatrix.getNrows());
 
   DataVector trueVector(countMatrix.getNcols());
 
@@ -72,7 +70,7 @@ double VMeasure::measurePostProcessing(ModelFittingBase &model, DataSource &data
     // Calculating class conditional entropy
     for (auto &predLabel : predLabelsMap) {
       double nck = countMatrix.get(trueLabel.second, predLabel.second);
-      transposeCountMatrix.getRow(predLabel.second, predictedVector);
+      countMatrix.getColumn(predLabel.second, predictedVector);
       double nk = predictedVector.sum();
 
       if (nck != 0) {
@@ -86,7 +84,9 @@ double VMeasure::measurePostProcessing(ModelFittingBase &model, DataSource &data
     double nc = trueVector.sum();
 
     // Calculating class entropy
-    classEntropy = classEntropy + (nc/n) * log(nc/n);
+    if (nc > 0) {
+      classEntropy = classEntropy + (nc / n) * log(nc / n);
+    }
   }
 
   classConditionalEntropy = -1*classConditionalEntropy;
@@ -121,11 +121,13 @@ double VMeasure::measurePostProcessing(ModelFittingBase &model, DataSource &data
       }
     }
 
-    transposeCountMatrix.getRow(predLabel.second, predictedVector);
+    countMatrix.getColumn(predLabel.second, predictedVector);
     double nk = predictedVector.sum();
 
     // Calculating cluster entropy
-    clusterEntropy = clusterEntropy + (nk/n) * log2(nk/n);
+    if (nk > 0) {
+      clusterEntropy = clusterEntropy + (nk / n) * log(nk / n);
+    }
   }
 
   clusterConditionalEntropy = -1*clusterConditionalEntropy;

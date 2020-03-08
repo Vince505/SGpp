@@ -77,13 +77,16 @@ class VisualizerClustering : public VisualizerClassification {
 
   /**
    * Method which separates a matrix of points into multiple matrices depending on their value
-   * obtained by the model. This makes the generation of he json easier
+   * obtained by the model. It only select points of the current level and the previous one.
+   * This makes the generation of he json easier
    * @param points The matrix of points to separate
+   * @param model The trained model
    * @param labels THe labels associated to the points
    * @param traces vector of matrices in which the points will be distributed
+   * @param level THe level being processed
    */
-  void separateClustersIntoTraces(sgpp::base::DataMatrix &points,
-    sgpp::base::DataVector &labels, std::vector<sgpp::base::DataMatrix> &traces);
+  void separateClustersIntoTraces(sgpp::base::DataMatrix &points,  ModelFittingClustering &model,
+    sgpp::base::DataVector &labels, std::vector<sgpp::base::DataMatrix> &traces, size_t level);
 
   /**
    * Stores the cluster labels of all of the dimensionally

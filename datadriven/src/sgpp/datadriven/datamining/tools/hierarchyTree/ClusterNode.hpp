@@ -55,21 +55,22 @@ class ClusterNode {
   void addChildren(std::vector<ClusterNode*> children);
 
   /**
-   *
-   * @param graph
-   * @param densityThreshold
-   * @return
+   * Trigger of the split routine to determine if this cluster node is to be split
+   * @param graph The graph at the end of the previous step
+   * @param splitThreshold Threshold to determine if the node is to be split
+   * @return Boolean value that determines if the node is to be split
    */
-  bool split(std::shared_ptr<Graph> graph, double densityThreshold);
+  bool split(std::shared_ptr<Graph> graph, double splitThreshold);
 
   /**
-   *
-   * @param child
-   * @param graph
-   * @param densityThreshold
-   * @return
+   * Splitting routine that measures the dissimilarity between this node and one of its children
+   * to determine if the node is to be split
+   * @param child The child of this node which is to be processed
+   * @param graph The graph at the end of the previous step
+   * @param splitThreshold Threshold to determine if the node is to be splitted
+   * @return Boolean value that determines if the node is to be splitted
    */
-  bool splitChild(ClusterNode* child, std::shared_ptr<Graph>  graph, double densityThreshold);
+  bool splitChild(ClusterNode* child, std::shared_ptr<Graph>  graph, double splitThreshold);
 
   /**
    * Gets the list of indexes pointing to the poinst contained in this node
