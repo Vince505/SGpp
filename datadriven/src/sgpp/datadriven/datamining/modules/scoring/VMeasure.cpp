@@ -42,18 +42,20 @@ double VMeasure::measurePostProcessing(ModelFittingBase &model, DataSource &data
 
     if (trueLabelsMap.find(trueValue) == trueLabelsMap.end()) {
       trueLabelsMap[trueValue] = nTrueValues++;
-      countMatrix.resizeRows(nTrueValues);
     }
 
     if (predLabelsMap.find(predictedValue) == predLabelsMap.end()) {
       predLabelsMap[predictedValue] = nPredictedValues++;
-      countMatrix.resizeRowsCols(nTrueValues, nPredictedValues);
     }
-
-    countMatrix.set(trueLabelsMap[trueValue], predLabelsMap[predictedValue],
-                    countMatrix.get(trueLabelsMap[trueValue], predLabelsMap[predictedValue])+1);
   }
+  countMatrix.resizeRowsCols(nTrueValues, nPredictedValues);
 
+  for (size_t index = 0; index < predictedValues.size() ; index++) {
+    auto trueValue = static_cast<int>(trueValues.get(index));
+    auto predictedValue = static_cast<int>(predictedValues.get(index));
+    auto previousValue = countMatrix.get(trueLabelsMap[trueValue], predLabelsMap[predictedValue]);
+    countMatrix.set(trueLabelsMap[trueValue], predLabelsMap[predictedValue], (previousValue+1));
+  }
   // CALCULATING HOMOGENEITY
   //  Entropy of classes
 

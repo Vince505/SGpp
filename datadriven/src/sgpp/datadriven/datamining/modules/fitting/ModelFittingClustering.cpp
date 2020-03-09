@@ -219,9 +219,9 @@ void ModelFittingClustering::getHierarchy(
   }
   for (auto parent : updatedClusters) {
     if (parent->getChildren().size() > 1) {
-      if (parent->split(prunedGraphPreviousStep, densityThreshold)) {
-        // Check if the node is the root. We cannot split the root
-        if (parent->getParent() != nullptr) {
+      // Check if the node is the root. We cannot split the root
+      if (parent->getParent() != nullptr) {
+        if (parent->split(prunedGraphPreviousStep, densityThreshold)) {
           // Assigning the level of the node to its children
           for (auto child : parent->getChildren()) {
             child->setLevel(parent->getLevel());

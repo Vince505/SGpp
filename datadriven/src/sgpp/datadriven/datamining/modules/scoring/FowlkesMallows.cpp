@@ -41,16 +41,19 @@ double FowlkesMallows::measurePostProcessing(ModelFittingBase &model,
 
     if (trueLabelsMap.find(trueValue) == trueLabelsMap.end()) {
       trueLabelsMap[trueValue] = nTrueValues++;
-      countMatrix.resizeRows(nTrueValues);
     }
 
     if (predLabelsMap.find(predictedValue) == predLabelsMap.end()) {
       predLabelsMap[predictedValue] = nPredictedValues++;
-      countMatrix.resizeRowsCols(nTrueValues, nPredictedValues);
     }
+  }
+  countMatrix.resizeRowsCols(nTrueValues, nPredictedValues);
 
-    countMatrix.set(trueLabelsMap[trueValue], predLabelsMap[predictedValue],
-      countMatrix.get(trueLabelsMap[trueValue], predLabelsMap[predictedValue])+1);
+  for (size_t index = 0; index < predictedValues.size() ; index++) {
+    auto trueValue = static_cast<int>(trueValues.get(index));
+    auto predictedValue = static_cast<int>(predictedValues.get(index));
+    auto previousValue = countMatrix.get(trueLabelsMap[trueValue], predLabelsMap[predictedValue]);
+    countMatrix.set(trueLabelsMap[trueValue], predLabelsMap[predictedValue], (previousValue+1));
   }
 
   DataMatrix squareMatrix(countMatrix);
