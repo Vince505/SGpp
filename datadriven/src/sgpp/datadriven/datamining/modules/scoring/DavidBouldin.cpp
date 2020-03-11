@@ -36,24 +36,19 @@ double DavidBouldin::measurePostProcessing(ModelFittingBase &model, DataSource &
   DataVector allLabels;
 
   (*hierarchy)->evaluateClustering(allLabels);
-  size_t numberNoise = 0;
 
   // Getting the number of labels and the centroids
   for (size_t index = 0; index < allLabels.size() ; index++) {
     auto value = static_cast<int>(allLabels.get(index));
-    if (value != -1) {  // Skipping all noisy data
-      if (std::find(clusterLabels.begin(), clusterLabels.end(), value) == clusterLabels.end()) {
-        clusterLabels.push_back(value);
-        DataVector centroid(samples.getNcols(), 0);
-        clusterCentroids[value] = centroid;
-      }
-      DataVector row(samples.getNcols());
-      samples.getRow(index, row);
-      clusterCentroids[value].add(row);
-      pointsPerLabel[value]++;
-    } else {
-      numberNoise++;
+    if (std::find(clusterLabels.begin(), clusterLabels.end(), value) == clusterLabels.end()) {
+      clusterLabels.push_back(value);
+      DataVector centroid(samples.getNcols(), 0);
+      clusterCentroids[value] = centroid;
     }
+    DataVector row(samples.getNcols());
+    samples.getRow(index, row);
+    clusterCentroids[value].add(row);
+    pointsPerLabel[value]++;
   }
   for (auto &label : clusterLabels) {
     clusterCentroids[label].mult(1/ static_cast<double>(pointsPerLabel[label]));
@@ -62,14 +57,12 @@ double DavidBouldin::measurePostProcessing(ModelFittingBase &model, DataSource &
   // Calculating the average distances to the cluster centroids
   for (size_t index = 0; index < allLabels.size() ; index++) {
     auto value = static_cast<int>(allLabels.get(index));
-    if (value != -1) {  // Skipping all noisy data
-      DataVector row(samples.getNcols());
-      samples.getRow(index, row);
+    DataVector row(samples.getNcols());
+    samples.getRow(index, row);
 
-      row.sub(clusterCentroids[value]);
+    row.sub(clusterCentroids[value]);
 
-      averageDistances[value] = averageDistances[value] + row.l2Norm();
-    }
+    averageDistances[value] = averageDistances[value] + row.l2Norm();
   }
   for (auto &label : clusterLabels) {
     averageDistances[label] = averageDistances[label]/static_cast<double>(pointsPerLabel[label]);
@@ -96,8 +89,7 @@ double DavidBouldin::measurePostProcessing(ModelFittingBase &model, DataSource &
     }
     davidBouldinIndex+=maxIndex;
   }
-  davidBouldinIndex = davidBouldinIndex/static_cast<double>(clusterLabels.size())+
-    static_cast<double>(numberNoise)/4.0;
+  davidBouldinIndex = davidBouldinIndex/static_cast<double>(clusterLabels.size());
 
   std::cout << "David Bouldin Score is " << davidBouldinIndex << std::endl;
   return davidBouldinIndex;
